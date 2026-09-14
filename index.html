@@ -1,29 +1,34 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes Market - Professional Student Notes Marketplace</title>
+    <title>Notes Bazar - Professional Student Notes & Study Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        :root {
+            --theme-primary: #6366f1;
+            --theme-secondary: #7c3aed;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+
         /* Continuous Rotating RGB Glow Animation */
         @keyframes rgbRotate {
-            0% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); }
-            20% { border-color: #ffaa00; box-shadow: 0 0 20px rgba(255, 170, 0, 0.5); }
-            40% { border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.5); }
-            60% { border-color: #0088ff; box-shadow: 0 0 20px rgba(0, 136, 255, 0.5); }
-            80% { border-color: #aa00ff; box-shadow: 0 0 20px rgba(170, 0, 255, 0.5); }
-            100% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); }
+            0% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.4); }
+            33% { border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.4); }
+            66% { border-color: #0088ff; box-shadow: 0 0 20px rgba(0, 136, 255, 0.4); }
+            100% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.4); }
         }
 
-        .rgb-border-anim {
-            animation: rgbRotate 6s infinite linear;
-            border-width: 2px;
+        .hover-rgb-glow:hover {
+            animation: rgbRotate 3s infinite linear !important;
+            transform: translateY(-5px);
         }
 
-        /* Note Cards Idle & Hover Animations */
         @keyframes floatAnim {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-6px); }
@@ -33,36 +38,14 @@
             animation: floatAnim 4s ease-in-out infinite;
         }
 
-        .note-card-idle:hover {
-            animation: rgbRotate 3s infinite linear !important;
-            transform: translateY(-6px);
-        }
-
-        /* Hover Color Shift for Divs & Cards */
-        .hover-color-shift {
-            transition: all 0.3s ease;
-        }
-        .hover-color-shift:hover {
-            border-color: var(--theme-primary) !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
-            transform: translateY(-2px);
-        }
-
-        /* Background & Hero Watermark Animations */
         @keyframes waterMarkFloat {
-            0% { transform: translateY(0px) rotate(0deg); opacity: 0.12; }
-            50% { transform: translateY(-20px) rotate(8deg); opacity: 0.25; }
-            100% { transform: translateY(0px) rotate(0deg); opacity: 0.12; }
+            0% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
+            50% { transform: translateY(-15px) rotate(6deg); opacity: 0.2; }
+            100% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
         }
 
         .watermark-book {
-            animation: waterMarkFloat 7s ease-in-out infinite;
-        }
-
-        /* Dynamic Theme Variables */
-        :root {
-            --theme-primary: #6366f1;
-            --theme-secondary: #7c3aed;
+            animation: waterMarkFloat 6s ease-in-out infinite;
         }
 
         .dynamic-bg {
@@ -77,11 +60,16 @@
             background-color: var(--theme-primary) !important;
         }
         .dynamic-btn:hover {
-            opacity: 0.92;
+            opacity: 0.9;
             transform: translateY(-1px);
         }
 
-        /* Smooth Transition */
+        .nav-btn-active {
+            background-color: var(--theme-primary) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
         * {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
@@ -106,34 +94,33 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.notes = [];
+        window.allItems = [];
         window.messages = [];
         let selectedFileBase64 = "";
         let selectedFileName = "";
 
-        // Load Notes from Cloud Realtime Database
-        window.loadCloudNotes = async function() {
+        window.loadCloudData = async function() {
             try {
-                const notesRef = ref(db, 'notes_market_data');
-                const snapshot = await get(notesRef);
-                window.notes = [];
+                const dataRef = ref(db, 'notes_bazar_data');
+                const snapshot = await get(dataRef);
+                window.allItems = [];
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     Object.keys(data).forEach(key => {
-                        window.notes.push({ id: key, ...data[key] });
+                        window.allItems.push({ id: key, ...data[key] });
                     });
                 }
-                renderNotes(window.notes);
+                renderAllPages();
                 loadMessages();
+                renderNotifications();
             } catch (error) {
-                console.error("Error loading notes: ", error);
+                console.error("Error loading data: ", error);
             }
         };
 
-        // Load Messages
         async function loadMessages() {
             try {
-                const msgRef = ref(db, 'notes_market_messages');
+                const msgRef = ref(db, 'notes_bazar_messages');
                 const snapshot = await get(msgRef);
                 window.messages = [];
                 if (snapshot.exists()) {
@@ -147,67 +134,113 @@
             }
         }
 
-        // Render Notes to Grid
-        function renderNotes(notesToDisplay) {
-            const grid = document.getElementById('notesGrid');
-            const countSpan = document.getElementById('notesCount');
-            if (!grid) return;
-            grid.innerHTML = '';
-            countSpan.textContent = notesToDisplay.length;
+        window.renderAllPages = function() {
+            renderGrid('notesGrid', 'notesCount', 'note');
+            renderGrid('booksGrid', 'booksCount', 'book');
+            renderGrid('pyqGrid', 'pyqCount', 'pyq');
+        };
 
-            if (notesToDisplay.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover-color-shift"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">No notes found on cloud</h3></div>`;
+        function renderGrid(gridId, countId, typeFilter) {
+            const grid = document.getElementById(gridId);
+            const countSpan = document.getElementById(countId);
+            if (!grid) return;
+
+            const filtered = window.allItems.filter(item => (item.type || 'note') === typeFilter);
+            grid.innerHTML = '';
+            if (countSpan) countSpan.textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">No ${typeFilter}s found on cloud</h3></div>`;
                 return;
             }
 
-            notesToDisplay.forEach(note => {
+            filtered.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between note-card-idle hover-color-shift";
+                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between note-card-idle hover-rgb-glow";
                 
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start gap-2 mb-3">
-                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${note.className}</span>
-                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${note.subject}</span>
+                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${item.className || 'General'}</span>
+                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${item.subject || 'General'}</span>
                         </div>
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${note.title}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${note.description || ''}</p>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${item.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${item.description || ''}</p>
                     </div>
                     <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${note.fileName || 'Document'}</span>
+                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${item.fileName || 'Document'}</span>
                         <div class="flex items-center space-x-2">
-                            <button onclick="openPreview('${note.id}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">Preview</button>
-                            ${note.fileLink ? `<a href="${note.fileLink}" target="_blank" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadNote('${note.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
+                            <button onclick="openPreview('${item.id}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">Preview</button>
+                            ${item.fileLink ? `<a href="${item.fileLink}" target="_blank" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadItem('${item.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
                         </div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
-        window.renderNotes = renderNotes;
 
-        // Preview Note Functionality
+        function renderNotifications() {
+            const list = document.getElementById('notificationList');
+            if (!list) return;
+            list.innerHTML = '';
+            
+            const sorted = [...window.allItems].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 8);
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">No recent notifications.</p>`;
+                return;
+            }
+
+            sorted.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700 text-xs flex items-start space-x-3";
+                div.innerHTML = `
+                    <div class="dynamic-bg text-white p-2 rounded-lg shrink-0"><i class="fa-solid fa-bell"></i></div>
+                    <div>
+                        <p class="font-bold text-slate-800 dark:text-slate-200">New ${item.type || 'note'} uploaded!</p>
+                        <p class="text-slate-500 dark:text-slate-400 mt-0.5">${item.title} (${item.subject || ''})</p>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        window.switchView = function(viewName) {
+            ['homeView', 'notesView', 'booksView', 'pyqView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            ['navHomeBtn', 'navNotesBtn', 'navBooksBtn', 'navPyqBtn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if(btn) btn.classList.remove('nav-btn-active');
+            });
+
+            document.getElementById(viewName + 'View').classList.remove('hidden');
+            const activeBtn = document.getElementById('nav' + viewName.charAt(0).toUpperCase() + viewName.slice(1) + 'Btn');
+            if(activeBtn) activeBtn.classList.add('nav-btn-active');
+            closeModal('mobileMenuModal');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
         window.openPreview = function(id) {
-            const note = window.notes.find(n => n.id === id);
-            if (!note) return;
-            document.getElementById('previewTitle').textContent = note.title;
-            document.getElementById('previewMeta').textContent = `${note.className} • ${note.subject}`;
-            document.getElementById('previewDesc').textContent = note.description || 'No description provided.';
+            const item = window.allItems.find(i => i.id === id);
+            if (!item) return;
+            document.getElementById('previewTitle').textContent = item.title;
+            document.getElementById('previewMeta').textContent = `${item.className || 'General'} • ${item.subject || 'General'}`;
+            document.getElementById('previewDesc').textContent = item.description || 'No description provided.';
             
             const container = document.getElementById('previewContentContainer');
             container.innerHTML = '';
 
-            if (note.fileLink) {
+            if (item.fileLink) {
                 container.innerHTML = `
                     <div class="p-6 text-center bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-                        <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">This note is hosted via Google Drive link.</p>
-                        <a href="${note.fileLink}" target="_blank" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-block shadow">Open Google Drive Link</a>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">This item is hosted via Google Drive link.</p>
+                        <a href="${item.fileLink}" target="_blank" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-block shadow">Open Google Drive Link</a>
                     </div>
                 `;
-            } else if (note.fileData) {
+            } else if (item.fileData) {
                 container.innerHTML = `
                     <div class="w-full h-80 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
-                        <iframe src="${note.fileData}" class="w-full h-full"></iframe>
+                        <iframe src="${item.fileData}" class="w-full h-full"></iframe>
                     </div>
                 `;
             } else {
@@ -216,47 +249,59 @@
             openModal('previewModal');
         };
 
-        // Filter Function
-        window.filterNotes = function() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const classVal = document.getElementById('classFilter').value;
-            const subjectVal = document.getElementById('subjectFilter').value;
-
-            const filtered = window.notes.filter(note => {
-                const matchesQuery = note.title.toLowerCase().includes(query) || note.subject.toLowerCase().includes(query);
-                const matchesClass = classVal === "" || note.className.toLowerCase() === classVal.toLowerCase();
-                const matchesSubject = subjectVal === "" || note.subject.toLowerCase() === subjectVal.toLowerCase();
-                return matchesQuery && matchesClass && matchesSubject;
-            });
-            renderNotes(filtered);
-        };
-
-        window.resetFilters = function() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('classFilter').value = '';
-            document.getElementById('subjectFilter').value = '';
-            renderNotes(window.notes);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        // Download Direct Note
-        window.downloadNote = function(id) {
-            const note = window.notes.find(n => n.id === id);
-            if (!note) return;
-            let downloadUrl = note.fileData;
-            if (!downloadUrl || downloadUrl.length < 100) {
+        window.downloadItem = function(id) {
+            const item = window.allItems.find(i => i.id === id);
+            if (!item || !item.fileData) {
                 alert("File data not available.");
                 return;
             }
             const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = note.fileName || 'document.pdf';
+            a.href = item.fileData;
+            a.download = item.fileName || 'document.pdf';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         };
 
-        // Toggle Upload Type
+        window.filterItems = function(type) {
+            const query = document.getElementById(type + 'SearchInput').value.toLowerCase();
+            const classVal = document.getElementById(type + 'ClassFilter').value;
+            const subjectVal = document.getElementById(type + 'SubjectFilter').value;
+
+            const filtered = window.allItems.filter(item => {
+                const matchesType = (item.type || 'note') === type;
+                const matchesQuery = item.title.toLowerCase().includes(query) || item.subject.toLowerCase().includes(query);
+                const matchesClass = classVal === "" || (item.className || '').toLowerCase() === classVal.toLowerCase();
+                const matchesSubject = subjectVal === "" || (item.subject || '').toLowerCase() === subjectVal.toLowerCase();
+                return matchesType && matchesQuery && matchesClass && matchesSubject;
+            });
+
+            const grid = document.getElementById(type + 'Grid');
+            grid.innerHTML = '';
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between note-card-idle hover-rgb-glow";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${item.className || 'General'}</span>
+                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${item.subject || 'General'}</span>
+                        </div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${item.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${item.description || ''}</p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${item.fileName || 'Document'}</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openPreview('${item.id}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">Preview</button>
+                            ${item.fileLink ? `<a href="${item.fileLink}" target="_blank" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadItem('${item.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
         window.switchUploadType = function(type) {
             const fileSection = document.getElementById('fileUploadSection');
             const linkSection = document.getElementById('linkUploadSection');
@@ -279,21 +324,46 @@
         window.handleClassChange = function() {
             const select = document.getElementById('uploadClass');
             const customDiv = document.getElementById('customClassDiv');
-            if (select.value === 'Other') {
-                customDiv.classList.remove('hidden');
-            } else {
-                customDiv.classList.add('hidden');
-            }
+            if (select.value === 'Other') customDiv.classList.remove('hidden');
+            else customDiv.classList.add('hidden');
         };
 
         window.handleSubjectChange = function() {
             const select = document.getElementById('uploadSubject');
             const customDiv = document.getElementById('customSubjectDiv');
-            if (select.value === 'Other') {
-                customDiv.classList.remove('hidden');
-            } else {
-                customDiv.classList.add('hidden');
+            if (select.value === 'Other') customDiv.classList.remove('hidden');
+            else customDiv.classList.add('hidden');
+        };
+
+        // Theme Switcher Functions
+        window.setTheme = function(themeName) {
+            const root = document.documentElement;
+            if (themeName === 'default') {
+                root.style.setProperty('--theme-primary', '#6366f1');
+                root.style.setProperty('--theme-secondary', '#7c3aed');
+            } else if (themeName === 'dark') {
+                root.style.setProperty('--theme-primary', '#334155');
+                root.style.setProperty('--theme-secondary', '#0f172a');
+            } else if (themeName === 'light') {
+                root.style.setProperty('--theme-primary', '#2563eb');
+                root.style.setProperty('--theme-secondary', '#1d4ed8');
+            } else if (themeName === 'emerald') {
+                root.style.setProperty('--theme-primary', '#059669');
+                root.style.setProperty('--theme-secondary', '#10b981');
+            } else if (themeName === 'sunset') {
+                root.style.setProperty('--theme-primary', '#ea580c');
+                root.style.setProperty('--theme-secondary', '#f97316');
             }
+            closeModal('themeModal');
+        };
+
+        window.applyCustomTheme = function() {
+            const primary = document.getElementById('customPrimaryColor').value;
+            const secondary = document.getElementById('customSecondaryColor').value;
+            const root = document.documentElement;
+            root.style.setProperty('--theme-primary', primary);
+            root.style.setProperty('--theme-secondary', secondary);
+            closeModal('themeModal');
         };
 
         // Admin Auth
@@ -319,24 +389,25 @@
 
         window.closeAdminDashboard = function() { 
             document.getElementById('adminDashboardModal').classList.add('hidden'); 
-            window.loadCloudNotes(); 
+            window.loadCloudData(); 
         };
 
         function renderAdminTable() {
-            const tbody = document.getElementById('adminNotesTableBody');
-            document.getElementById('adminTotalNotes').textContent = window.notes.length;
+            const tbody = document.getElementById('adminItemsTableBody');
+            document.getElementById('adminTotalItems').textContent = window.allItems.length;
             tbody.innerHTML = '';
-            if (window.notes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400 text-xs">No notes found.</td></tr>`;
+            if (window.allItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">No items found.</td></tr>`;
                 return;
             }
-            window.notes.forEach(note => {
+            window.allItems.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
                 tr.innerHTML = `
-                    <td class="p-4"><div class="font-bold text-slate-800 dark:text-slate-200">${note.title}</div><div class="text-xs text-slate-400">${note.subject}</div></td>
-                    <td class="p-4 text-slate-600 dark:text-slate-300">${note.className}</td>
-                    <td class="p-4 text-right"><button onclick="deleteCloudNote('${note.id}')" class="bg-red-50 text-red-600 p-2 rounded-xl text-xs hover:bg-red-100 transition"><i class="fa-solid fa-trash"></i></button></td>
+                    <td class="p-4"><span class="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 rounded text-xs font-semibold uppercase">${item.type || 'note'}</span><div class="font-bold text-slate-800 dark:text-slate-200 mt-1">${item.title}</div></td>
+                    <td class="p-4 text-slate-600 dark:text-slate-300 text-xs">${item.subject}</td>
+                    <td class="p-4 text-slate-600 dark:text-slate-300 text-xs">${item.className}</td>
+                    <td class="p-4 text-right"><button onclick="deleteCloudItem('${item.id}')" class="bg-red-50 text-red-600 p-2 rounded-xl text-xs hover:bg-red-100 transition"><i class="fa-solid fa-trash"></i></button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -347,7 +418,7 @@
             document.getElementById('adminTotalMessages').textContent = window.messages.length;
             tbody.innerHTML = '';
             if (window.messages.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">No user messages yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">No messages yet.</td></tr>`;
                 return;
             }
             window.messages.forEach(msg => {
@@ -366,15 +437,15 @@
             });
         }
 
-        window.deleteCloudNote = async function(id) {
-            if (confirm("Delete this note from cloud?")) {
+        window.deleteCloudItem = async function(id) {
+            if (confirm("Delete this item from cloud?")) {
                 try {
-                    await remove(ref(db, 'notes_market_data/' + id));
+                    await remove(ref(db, 'notes_bazar_data/' + id));
                     alert("Deleted successfully!");
-                    await window.loadCloudNotes();
+                    await window.loadCloudData();
                     renderAdminTable();
                 } catch (err) {
-                    alert("Error deleting note.");
+                    alert("Error deleting item.");
                 }
             }
         };
@@ -382,7 +453,7 @@
         window.deleteMessage = async function(id) {
             if (confirm("Delete this message?")) {
                 try {
-                    await remove(ref(db, 'notes_market_messages/' + id));
+                    await remove(ref(db, 'notes_bazar_messages/' + id));
                     alert("Deleted!");
                     await loadMessages();
                     renderAdminMessagesTable();
@@ -399,16 +470,14 @@
             document.getElementById('adminReplyText').value = '';
             document.getElementById('adminReplyModal').classList.remove('hidden');
         };
-        window.closeReplyModal = function() {
-            document.getElementById('adminReplyModal').classList.add('hidden');
-        };
+        window.closeReplyModal = function() { document.getElementById('adminReplyModal').classList.add('hidden'); };
 
         window.sendAdminReply = async function(e) {
             e.preventDefault();
             const replyText = document.getElementById('adminReplyText').value.trim();
             if(!replyText || !currentReplyId) return;
             try {
-                const msgRef = ref(db, 'notes_market_messages/' + currentReplyId);
+                const msgRef = ref(db, 'notes_bazar_messages/' + currentReplyId);
                 const snapshot = await get(msgRef);
                 if(snapshot.exists()) {
                     const data = snapshot.val();
@@ -424,8 +493,8 @@
             }
         };
 
-        window.openUploadModal = function() { document.getElementById('uploadNoteModal').classList.remove('hidden'); };
-        window.closeUploadModal = function() { document.getElementById('uploadNoteModal').classList.add('hidden'); };
+        window.openUploadModal = function() { document.getElementById('uploadModal').classList.remove('hidden'); };
+        window.closeUploadModal = function() { document.getElementById('uploadModal').classList.add('hidden'); };
 
         window.handleFileSelect = function(e) {
             const file = e.target.files[0];
@@ -437,14 +506,12 @@
                 }
                 selectedFileName = file.name;
                 const reader = new FileReader();
-                reader.onload = function(event) { 
-                    selectedFileBase64 = event.target.result; 
-                };
+                reader.onload = function(event) { selectedFileBase64 = event.target.result; };
                 reader.readAsDataURL(file);
             }
         };
 
-        window.handleUploadNote = async function(e) {
+        window.handleUploadItem = async function(e) {
             e.preventDefault();
             const isLinkActive = !document.getElementById('linkUploadSection').classList.contains('hidden');
             
@@ -454,7 +521,8 @@
             let subjectVal = document.getElementById('uploadSubject').value;
             if (subjectVal === 'Other') subjectVal = document.getElementById('uploadCustomSubject').value.trim();
 
-            const newNote = {
+            const newItem = {
+                type: document.getElementById('uploadCategoryType').value, // note, book, pyq
                 title: document.getElementById('uploadTitle').value,
                 className: classVal,
                 subject: subjectVal,
@@ -463,33 +531,29 @@
             };
 
             if (isLinkActive) {
-                newNote.fileLink = document.getElementById('uploadLink').value;
-                newNote.fileName = "Drive Folder / PDF";
+                newItem.fileLink = document.getElementById('uploadLink').value;
+                newItem.fileName = "Drive Folder / PDF";
             } else {
-                newNote.fileData = selectedFileBase64;
-                newNote.fileName = selectedFileName || "document.pdf";
+                newItem.fileData = selectedFileBase64;
+                newItem.fileName = selectedFileName || "document.pdf";
             }
 
             try {
-                const notesRef = ref(db, 'notes_market_data');
-                const newNoteRef = push(notesRef);
-                await set(newNoteRef, newNote);
+                const dataRef = ref(db, 'notes_bazar_data');
+                const newItemRef = push(dataRef);
+                await set(newItemRef, newItem);
 
-                alert("Note published to Cloud successfully!");
+                alert("Published to cloud successfully!");
                 closeUploadModal();
-                document.getElementById('uploadTitle').value = '';
-                document.getElementById('uploadDesc').value = '';
-                document.getElementById('uploadLink').value = '';
-                document.getElementById('uploadFile').value = '';
-                await window.loadCloudNotes();
+                document.getElementById('uploadForm').reset();
+                await window.loadCloudData();
                 openAdminDashboard();
             } catch (error) {
                 console.error(error);
-                alert("Failed to publish note.");
+                alert("Failed to publish item.");
             }
         };
 
-        // Submit Complain / Support / Feedback
         window.submitUserMessage = async function(e, type) {
             e.preventDefault();
             const name = document.getElementById(`${type}Name`).value;
@@ -497,7 +561,7 @@
             const message = document.getElementById(`${type}Msg`).value;
 
             try {
-                const msgRef = ref(db, 'notes_market_messages');
+                const msgRef = ref(db, 'notes_bazar_messages');
                 const newMsgRef = push(msgRef);
                 await set(newMsgRef, { type, name, email, message, createdAt: Date.now(), reply: "" });
                 alert(`${type.charAt(0).toUpperCase() + type.slice(1)} submitted successfully!`);
@@ -508,7 +572,6 @@
             }
         };
 
-        // Fully Working AI Chat Logic
         window.sendAiMessage = function() {
             const input = document.getElementById('aiInput');
             const chatHistory = document.getElementById('aiChatHistory');
@@ -516,7 +579,6 @@
             const userText = input.value.trim();
             if (!userText) return;
 
-            // Append User Message
             chatHistory.innerHTML += `
                 <div class="flex justify-end mb-3">
                     <div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${userText}</div>
@@ -525,19 +587,8 @@
             input.value = '';
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // Simulate Smart AI Response based on Category
             setTimeout(() => {
-                let aiReply = "";
-                const lower = userText.toLowerCase();
-
-                if (category === 'study') {
-                    aiReply = `📚 <strong>Study Support AI:</strong> Great question! To master this topic, try breaking down your notes into key formula sheets and practice active recall. Reviewing previous year questions will also boost your confidence!`;
-                } else if (category === 'emotional') {
-                    aiReply = `💙 <strong>Emotional Support AI:</strong> I hear you, and it's completely okay to feel stressed or overwhelmed sometimes. Take a deep breath, step away from your desk for 5 minutes, drink some water, and remember you are doing your absolute best! We believe in you.`;
-                } else {
-                    aiReply = `🌟 <strong>General Support AI:</strong> I am here to help you navigate Notes Market! Whether you need help finding specific class notes, uploading your study materials, or general guidance, feel free to ask.`;
-                }
-
+                let aiReply = category === 'study' ? `📚 <strong>Study AI:</strong> Break your topics into smaller segments and revise daily!` : `💙 <strong>Support AI:</strong> Take deep breaths, you are doing great!`;
                 chatHistory.innerHTML += `
                     <div class="flex justify-start mb-3">
                         <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">${aiReply}</div>
@@ -547,274 +598,375 @@
             }, 600);
         };
 
+        window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
+        window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); };
+        window.closeAllModals = function() {
+            document.querySelectorAll('.fixed').forEach(el => el.classList.add('hidden'));
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
-            window.loadCloudNotes();
+            window.loadCloudData();
         });
     </script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden">
 
-    <!-- External Background Animated Watermarks -->
+    <!-- Background Watermarks -->
     <div class="absolute -left-16 top-40 opacity-10 pointer-events-none watermark-book z-0"><i class="fa-solid fa-graduation-cap text-8xl"></i></div>
     <div class="absolute right-10 top-96 opacity-10 pointer-events-none watermark-book z-0" style="animation-delay: 2.5s;"><i class="fa-solid fa-book-open text-9xl"></i></div>
-    <div class="absolute left-20 bottom-1/3 opacity-10 pointer-events-none watermark-book z-0" style="animation-delay: 4s;"><i class="fa-solid fa-atom text-7xl"></i></div>
-    <div class="absolute right-24 bottom-20 opacity-10 pointer-events-none watermark-book z-0" style="animation-delay: 1.5s;"><i class="fa-solid fa-laptop-code text-8xl"></i></div>
 
     <!-- Header / Navigation -->
     <header class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <button onclick="toggleSidebar()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center justify-center shadow-sm hover-color-shift">
-                    <i class="fa-solid fa-bars text-lg"></i>
+            <div class="flex items-center space-x-4">
+                <!-- Hamburger Menu Button (Three Lines) -->
+                <button onclick="openModal('mobileMenuModal')" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition hover-rgb-glow shadow-sm" title="Menu">
+                    <i class="fa-solid fa-bars text-sm"></i>
                 </button>
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
-                    <div class="dynamic-bg text-white p-2 rounded-xl flex items-center justify-center shadow-md">
-                        <i class="fa-solid fa-book-open text-xl"></i>
+
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
+                    <div class="dynamic-bg text-white p-2.5 rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-book-open text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold dynamic-text">Notes Market</h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Student Notes Marketplace</p>
+                        <h1 class="text-lg font-bold dynamic-text">Notes Bazar</h1>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Student Marketplace</p>
                     </div>
                 </div>
+
+                <!-- Desktop Nav Tabs -->
+                <nav class="hidden lg:flex items-center space-x-1 ml-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <button id="navHomeBtn" onclick="switchView('home')" class="nav-btn-active px-3.5 py-1.5 rounded-lg text-xs font-bold transition">Home</button>
+                    <button id="navNotesBtn" onclick="switchView('notes')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition">Notes</button>
+                    <button id="navBooksBtn" onclick="switchView('books')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition">Books</button>
+                    <button id="navPyqBtn" onclick="switchView('pyq')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition">PYQ</button>
+                </nav>
             </div>
 
+            <!-- Right Header Actions -->
             <div class="flex items-center space-x-3">
-                <button onclick="openAdminLogin()" class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 hover:text-indigo-600 px-4 py-2 rounded-xl font-medium text-sm transition border border-slate-200 dark:border-slate-700 rgb-border-anim shadow-sm">
+                <!-- Theme Customizer Button -->
+                <button onclick="openModal('themeModal')" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition hover-rgb-glow shadow-sm" title="Customize Theme">
+                    <i class="fa-solid fa-palette text-sm"></i>
+                </button>
+
+                <!-- Notification Button -->
+                <button onclick="openModal('notificationModal')" class="relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition hover-rgb-glow shadow-sm" title="Notifications">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                </button>
+
+                <!-- Admin Login Button -->
+                <button onclick="openAdminLogin()" class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-medium text-sm transition border border-slate-200 dark:border-slate-700 shadow-sm">
                     <i class="fa-solid fa-lock text-xs"></i>
-                    <span>Admin Login</span>
+                    <span>Admin</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Side Menu / Sidebar -->
-    <div id="sideMenu" class="fixed inset-y-0 left-0 w-80 bg-white dark:bg-slate-900 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200 dark:border-slate-800">
-        <div class="p-6 dynamic-bg text-white flex justify-between items-center shadow-md">
-            <h3 class="font-bold text-lg"><i class="fa-solid fa-bars mr-2"></i> Menu</h3>
-            <button onclick="toggleSidebar()" class="text-white/80 hover:text-white transition p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <!-- ================= VIEW 1: HOME PAGE ================= -->
+    <main id="homeView" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-10">
+        <div class="dynamic-bg rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden flex flex-col items-center text-center note-card-idle">
+            <div class="absolute -right-10 -bottom-10 opacity-15"><i class="fa-solid fa-graduation-cap text-9xl"></i></div>
+            <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4 backdrop-blur-sm">Welcome to Notes Bazar 🌟</span>
+            <h2 class="text-3xl sm:text-5xl font-extrabold mb-4 tracking-tight">Your Ultimate Student Study Hub</h2>
+            <p class="text-white/90 text-sm sm:text-base max-w-2xl leading-relaxed mb-6">Discover verified class notes, reference books, previous year questions (PYQs), and get instant AI-powered study & support!</p>
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button onclick="switchView('notes')" class="bg-white text-indigo-600 font-bold px-6 py-3 rounded-2xl shadow hover:bg-slate-100 transition text-xs sm:text-sm">Explore Notes</button>
+                <button onclick="switchView('pyq')" class="bg-indigo-900/60 text-white font-bold px-6 py-3 rounded-2xl shadow hover:bg-indigo-900 transition text-xs sm:text-sm border border-white/20">View PYQs</button>
+            </div>
         </div>
-        <div class="p-6 overflow-y-auto flex-grow space-y-3 text-sm font-medium">
-            <a href="#" onclick="toggleSidebar(); resetFilters();" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-house dynamic-text w-5"></i><span>Home</span></a>
-            <a href="#notesGrid" onclick="toggleSidebar();" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-book dynamic-text w-5"></i><span>Browse Notes</span></a>
-            <a href="#" onclick="toggleSidebar(); openModal('themeModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-palette dynamic-text w-5"></i><span>Customize Theme</span></a>
-            <hr class="border-slate-100 dark:border-slate-800 my-2">
-            <a href="#" onclick="toggleSidebar(); openModal('complainModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-circle-exclamation text-amber-500 w-5"></i><span>Complain</span></a>
-            <a href="#" onclick="toggleSidebar(); openModal('supportModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-headset text-emerald-500 w-5"></i><span>Support</span></a>
-            <a href="#" onclick="toggleSidebar(); openModal('feedbackModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-comment-dots text-indigo-500 w-5"></i><span>Feedback</span></a>
-            <hr class="border-slate-100 dark:border-slate-800 my-2">
-            <a href="#" onclick="toggleSidebar(); openModal('settingModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-gear text-slate-600 dark:text-slate-400 w-5"></i><span>Settings</span></a>
-        </div>
-    </div>
-    <div id="menuOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full relative z-10">
-        
-        <!-- Hero Search Section with Watermarks Inside -->
-        <div class="dynamic-bg rounded-3xl p-8 md:p-12 text-white mb-10 shadow-2xl relative overflow-hidden hover-color-shift">
-            <div class="absolute -right-12 -bottom-12 opacity-20 pointer-events-none watermark-book"><i class="fa-solid fa-book-bookmark text-9xl"></i></div>
-            <div class="absolute right-48 top-6 opacity-15 pointer-events-none watermark-book" style="animation-delay: 2s;"><i class="fa-solid fa-graduation-cap text-7xl"></i></div>
-            <div class="absolute left-1/3 bottom-4 opacity-15 pointer-events-none watermark-book" style="animation-delay: 4s;"><i class="fa-solid fa-book-open text-8xl"></i></div>
-            <div class="absolute left-10 top-10 opacity-15 pointer-events-none watermark-book" style="animation-delay: 1.5s;"><i class="fa-solid fa-file-pdf text-6xl"></i></div>
-
-            <div class="max-w-2xl relative z-10">
-                <span class="bg-white/20 text-white text-xs font-semibold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-4 inline-block shadow-sm">Cloud Synced Notes Hub</span>
-                <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">Find & Download Verified Study Notes Instantly</h2>
-                <p class="text-indigo-100 text-sm md:text-base mb-6 leading-relaxed">Browse organized academic notes stored safely on the cloud database with full realtime support.</p>
-                
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-grow">
-                        <i class="fa-solid fa-search absolute left-4 top-4 text-slate-400"></i>
-                        <input type="text" id="searchInput" oninput="filterNotes()" placeholder="Search by title, subject, or class..." class="w-full pl-11 pr-4 py-3.5 rounded-2xl text-slate-800 bg-white placeholder-slate-400 focus:outline-none text-sm shadow-lg">
-                    </div>
+        <div>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center"><i class="fa-solid fa-compass dynamic-text mr-2"></i> Quick Options</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div onclick="switchView('notes')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="dynamic-bg text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-book"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">Notes</h4><p class="text-xs text-slate-500 mt-1">Class notes & study PDFs</p></div>
+                </div>
+                <div onclick="switchView('books')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="bg-emerald-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-book-bookmark"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">Books</h4><p class="text-xs text-slate-500 mt-1">Reference books & guides</p></div>
+                </div>
+                <div onclick="switchView('pyq')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="bg-amber-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-file-lines"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">PYQ</h4><p class="text-xs text-slate-500 mt-1">Previous year questions</p></div>
+                </div>
+                <div onclick="openModal('aiModal')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="bg-purple-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-robot"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">Help & AI</h4><p class="text-xs text-slate-500 mt-1">24/7 AI chatbot assistant</p></div>
+                </div>
+                <div onclick="openModal('supportModal')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="bg-blue-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-headset"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">Support</h4><p class="text-xs text-slate-500 mt-1">Customer support center</p></div>
+                </div>
+                <div onclick="openModal('complainModal')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="bg-rose-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-circle-exclamation"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">Complain</h4><p class="text-xs text-slate-500 mt-1">Report issues & feedback</p></div>
                 </div>
             </div>
         </div>
-
-        <!-- Filter Controls -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover-color-shift">
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                <div class="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-300 font-medium">
-                    <i class="fa-solid fa-filter dynamic-text"></i>
-                    <span>Filters:</span>
-                </div>
-                <select id="classFilter" onchange="filterNotes()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3.5 py-2.5">
-                    <option value="">All Classes</option>
-                    <option value="Class 1">Class 1</option>
-                    <option value="Class 2">Class 2</option>
-                    <option value="Class 3">Class 3</option>
-                    <option value="Class 4">Class 4</option>
-                    <option value="Class 5">Class 5</option>
-                    <option value="Class 6">Class 6</option>
-                    <option value="Class 7">Class 7</option>
-                    <option value="Class 8">Class 8</option>
-                    <option value="Class 9">Class 9</option>
-                    <option value="Class 10">Class 10</option>
-                    <option value="Class 11">Class 11</option>
-                    <option value="Class 12">Class 12</option>
-                    <option value="College">College</option>
-                    <option value="Other">Other</option>
-                </select>
-
-                <select id="subjectFilter" onchange="filterNotes()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3.5 py-2.5">
-                    <option value="">All Subjects</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Biology">Biology</option>
-                    <option value="Science">Science</option>
-                    <option value="English">English</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="SST">SST</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-
-            <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                Showing <span id="notesCount" class="dynamic-text font-bold">0</span> notes
-            </div>
-        </div>
-
-        <!-- Notes Grid -->
-        <div id="notesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamic Notes Rendered Here -->
-        </div>
-
     </main>
 
-    <!-- Lower Right Side AI Assistant Widget Button -->
-    <div class="fixed bottom-6 right-6 z-40">
-        <button onclick="openModal('aiModal')" class="dynamic-bg text-white p-4 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform group relative">
-            <i class="fa-solid fa-robot text-2xl"></i>
-            <span class="absolute right-16 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-medium pointer-events-none">AI Study & Emotional Assistant</span>
-        </button>
-    </div>
+    <!-- ================= VIEW 2: NOTES PAGE ================= -->
+    <main id="notesView" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center"><i class="fa-solid fa-book dynamic-text mr-3"></i> Class Notes (<span id="notesCount">0</span>)</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Browse all uploaded notes.</p>
+            </div>
+            <button onclick="switchView('home')" class="text-xs font-semibold bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl text-slate-700 hover-rgb-glow transition">← Back to Home</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="relative md:col-span-2">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                <input type="text" id="notesSearchInput" oninput="filterItems('note')" placeholder="Search notes..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none">
+            </div>
+            <select id="notesClassFilter" onchange="filterItems('note')" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs focus:outline-none">
+                <option value="">All Classes</option>
+                <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option><option value="Class 5">Class 5</option><option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option>
+            </select>
+            <select id="notesSubjectFilter" onchange="filterItems('note')" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs focus:outline-none">
+                <option value="">All Subjects</option>
+                <option value="Science">Science</option><option value="Math">Math</option><option value="Hindi">Hindi</option><option value="English">English</option><option value="SST">SST</option><option value="Maithili">Maithili</option>
+            </select>
+        </div>
+        <div id="notesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <!-- ================= VIEW 3: BOOKS PAGE ================= -->
+    <main id="booksView" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center"><i class="fa-solid fa-book-bookmark text-emerald-500 mr-3"></i> Reference Books (<span id="booksCount">0</span>)</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Explore reference textbooks.</p>
+            </div>
+            <button onclick="switchView('home')" class="text-xs font-semibold bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl text-slate-700 hover-rgb-glow transition">← Back to Home</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="relative md:col-span-2">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                <input type="text" id="booksSearchInput" oninput="filterItems('book')" placeholder="Search books..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none">
+            </div>
+            <select id="booksClassFilter" onchange="filterItems('book')" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs focus:outline-none">
+                <option value="">All Classes</option>
+                <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option><option value="Class 5">Class 5</option><option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option>
+            </select>
+            <select id="booksSubjectFilter" onchange="filterItems('book')" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs focus:outline-none">
+                <option value="">All Subjects</option>
+                <option value="Science">Science</option><option value="Math">Math</option><option value="Hindi">Hindi</option><option value="English">English</option><option value="SST">SST</option><option value="Maithili">Maithili</option>
+            </select>
+        </div>
+        <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <!-- ================= VIEW 4: PYQ PAGE ================= -->
+    <main id="pyqView" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center"><i class="fa-solid fa-file-lines text-amber-500 mr-3"></i> Previous Year Questions (<span id="pyqCount">0</span>)</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Practice with PYQ papers.</p>
+            </div>
+            <button onclick="switchView('home')" class="text-xs font-semibold bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl text-slate-700 hover-rgb-glow transition">← Back to Home</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="relative md:col-span-2">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                <input type="text" id="pyqSearchInput" oninput="filterItems('pyq')" placeholder="Search PYQs..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none">
+            </div>
+            <select id="pyqClassFilter" onchange="filterItems('pyq')" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs focus:outline-none">
+                <option value="">All Classes</option>
+                <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option><option value="Class 5">Class 5</option><option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option>
+            </select>
+            <select id="pyqSubjectFilter" onchange="filterItems('pyq')" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs focus:outline-none">
+                <option value="">All Subjects</option>
+                <option value="Science">Science</option><option value="Math">Math</option><option value="Hindi">Hindi</option><option value="English">English</option><option value="SST">SST</option><option value="Maithili">Maithili</option>
+            </select>
+        </div>
+        <div id="pyqGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto z-10">
-        <p>&copy; 2026 Notes Market. Professional Student Cloud Platform.</p>
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+        <p>&copy; 2026 Notes Bazar. All rights reserved. Built with professional student care.</p>
     </footer>
 
-    <!-- Note Preview Modal -->
-    <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-            <button onclick="closeModal('previewModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div class="mb-4">
-                <span id="previewMeta" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg"></span>
-                <h3 id="previewTitle" class="font-bold text-slate-800 dark:text-slate-100 text-xl mt-2"></h3>
-                <p id="previewDesc" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+    <!-- ================= MODALS & DRAWERS ================= -->
+
+    <!-- Mobile / 3-Line Menu Modal -->
+    <div id="mobileMenuModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-start">
+        <div class="bg-white dark:bg-slate-900 w-80 h-full p-6 shadow-2xl border-r border-slate-200 dark:border-slate-800 space-y-6 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="dynamic-bg text-white p-2 rounded-xl"><i class="fa-solid fa-book-open"></i></div>
+                        <h3 class="font-bold text-base dynamic-text">Notes Bazar Menu</h3>
+                    </div>
+                    <button onclick="closeModal('mobileMenuModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <nav class="space-y-2 text-xs font-semibold">
+                    <button onclick="switchView('home')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-house dynamic-text"></i><span>Home</span></button>
+                    <button onclick="switchView('notes')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-book dynamic-text"></i><span>Notes</span></button>
+                    <button onclick="switchView('books')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-book-bookmark dynamic-text"></i><span>Books</span></button>
+                    <button onclick="switchView('pyq')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-file-lines dynamic-text"></i><span>PYQ</span></button>
+                    <hr class="border-slate-100 dark:border-slate-800 my-2">
+                    <button onclick="closeModal('mobileMenuModal'); openModal('aiModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-robot text-purple-500"></i><span>Help & AI</span></button>
+                    <button onclick="closeModal('mobileMenuModal'); openModal('supportModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-headset text-blue-500"></i><span>Support</span></button>
+                    <button onclick="closeModal('mobileMenuModal'); openModal('complainModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-circle-exclamation text-rose-500"></i><span>Complain</span></button>
+                </nav>
             </div>
-            <div id="previewContentContainer" class="my-4">
-                <!-- Preview rendered here -->
+            <div class="text-[10px] text-slate-400 text-center">Notes Bazar v2.5</div>
+        </div>
+    </div>
+
+    <!-- Theme Customizer Modal -->
+    <div id="themeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center"><i class="fa-solid fa-palette dynamic-text mr-2"></i> Theme Customizer</h3>
+                <button onclick="closeModal('themeModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <button onclick="closeModal('previewModal')" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Close Preview</button>
+            <div class="space-y-3 text-xs">
+                <p class="text-slate-500">Choose from preset themes or pick your own custom colors:</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setTheme('default')" class="p-3 rounded-xl bg-indigo-600 text-white font-bold shadow">Default Indigo</button>
+                    <button onclick="setTheme('dark')" class="p-3 rounded-xl bg-slate-800 text-white font-bold shadow">Dark Mode</button>
+                    <button onclick="setTheme('emerald')" class="p-3 rounded-xl bg-emerald-600 text-white font-bold shadow">Emerald Green</button>
+                    <button onclick="setTheme('sunset')" class="p-3 rounded-xl bg-orange-600 text-white font-bold shadow">Sunset Orange</button>
+                </div>
+                <hr class="border-slate-100 dark:border-slate-800 my-2">
+                <div>
+                    <label class="block font-medium mb-1">Custom Color Picker</label>
+                    <div class="flex gap-2 items-center mb-2">
+                        <input type="color" id="customPrimaryColor" value="#6366f1" class="w-10 h-10 rounded-lg cursor-pointer">
+                        <span>Primary Color</span>
+                    </div>
+                    <div class="flex gap-2 items-center mb-3">
+                        <input type="color" id="customSecondaryColor" value="#7c3aed" class="w-10 h-10 rounded-lg cursor-pointer">
+                        <span>Secondary Color</span>
+                    </div>
+                    <button onclick="applyCustomTheme()" class="w-full dynamic-btn text-white py-2 rounded-xl font-bold shadow">Apply Custom Colors</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center"><i class="fa-solid fa-bell dynamic-text mr-2"></i> Recent Upload Notifications</h3>
+                <button onclick="closeModal('notificationModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="notificationList" class="space-y-3 max-h-80 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span id="previewMeta" class="text-xs font-semibold px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 rounded-lg"></span>
+                    <h3 id="previewTitle" class="font-bold text-lg text-slate-800 dark:text-slate-100 mt-1"></h3>
+                </div>
+                <button onclick="closeModal('previewModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p id="previewDesc" class="text-xs text-slate-600 dark:text-slate-300"></p>
+            <div id="previewContentContainer"></div>
         </div>
     </div>
 
     <!-- Admin Login Modal -->
-    <div id="adminLoginModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl relative border-2 rgb-border-anim">
-            <button onclick="closeAdminLogin()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <div class="text-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Admin Login</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Enter administrative credentials</p>
+    <div id="adminLoginModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-lock dynamic-text mr-2"></i> Admin Login</h3>
+                <button onclick="closeAdminLogin()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Username</label>
-                    <input type="text" id="adminUser" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Password</label>
-                    <input type="password" id="adminPass" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none">
-                </div>
-                <p id="loginError" class="text-xs text-red-500 font-medium hidden">Invalid credentials.</p>
-                <button type="submit" class="w-full dynamic-btn text-white font-semibold py-3 rounded-xl shadow-lg text-sm transition">Login</button>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-3 text-xs">
+                <div><label class="block font-medium mb-1">Username</label><input type="text" id="adminUser" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></div>
+                <div><label class="block font-medium mb-1">Password</label><input type="password" id="adminPass" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></div>
+                <p id="loginError" class="text-red-500 hidden">Invalid username or password.</p>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Login to Dashboard</button>
             </form>
         </div>
     </div>
 
     <!-- Admin Dashboard Modal -->
-    <div id="adminDashboardModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-            <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
-                <h3 class="font-bold text-lg">Admin Dashboard</h3>
-                <button onclick="closeAdminDashboard()" class="text-slate-400 hover:text-white transition p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <div id="adminDashboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                    <h3 class="font-bold text-lg"><i class="fa-solid fa-gauge dynamic-text mr-2"></i> Admin Dashboard</h3>
+                    <p class="text-xs text-slate-500">Manage uploaded items and user messages.</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="openUploadModal()" class="dynamic-btn text-white px-4 py-2 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-plus mr-1"></i> Upload New Item</button>
+                    <button onclick="closeAdminDashboard()" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold">Close</button>
+                </div>
             </div>
-            <div class="p-6 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-950 space-y-6">
-                <div class="flex justify-between items-center bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover-color-shift">
-                    <div>
-                        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Cloud Notes Repository</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Total notes: <span id="adminTotalNotes">0</span></p>
-                    </div>
-                    <button onclick="openUploadModal()" class="dynamic-btn text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition"><i class="fa-solid fa-plus text-xs mr-1"></i> Add New Note</button>
-                </div>
-                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs uppercase border-b dark:border-slate-700">
-                                <th class="p-4">Title & Subject</th>
-                                <th class="p-4">Class</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminNotesTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
-                    </table>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 mt-6 shadow-sm hover-color-shift">
-                    <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">User Complaints, Support & Feedback Messages</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Total messages: <span id="adminTotalMessages">0</span></p>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
+            <div class="space-y-6">
+                <div>
+                    <h4 class="font-bold text-sm mb-3">All Cloud Items (<span id="adminTotalItems">0</span>)</h4>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs uppercase border-b dark:border-slate-700">
-                                    <th class="p-4">Type & User</th>
-                                    <th class="p-4">Message</th>
-                                    <th class="p-4">Reply Status</th>
-                                    <th class="p-4 text-right">Actions</th>
+                                <tr class="border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                                    <th class="p-3 font-bold">Title & Type</th>
+                                    <th class="p-3 font-bold">Subject</th>
+                                    <th class="p-3 font-bold">Class</th>
+                                    <th class="p-3 font-bold text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="adminMessagesTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                            <tbody id="adminItemsTableBody"></tbody>
                         </table>
                     </div>
                 </div>
-
+                <div>
+                    <h4 class="font-bold text-sm mb-3">User Messages & Complaints (<span id="adminTotalMessages">0</span>)</h4>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                                    <th class="p-3 font-bold">Type & User</th>
+                                    <th class="p-3 font-bold">Message</th>
+                                    <th class="p-3 font-bold">Reply Status</th>
+                                    <th class="p-3 font-bold text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminMessagesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Reply Modal -->
-    <div id="adminReplyModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-            <button onclick="closeReplyModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">Reply to User</h3>
-            <p id="replyTargetInfo" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
-            <form onsubmit="sendAdminReply(event)" class="space-y-4">
-                <textarea id="adminReplyText" required rows="3" placeholder="Type your reply here..." class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none"></textarea>
-                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold shadow">Send Reply</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Upload Note Modal -->
-    <div id="uploadNoteModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl relative border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-            <button onclick="closeUploadModal()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Add Study Note / PDF</h3>
-            
-            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4">
-                <button type="button" id="tabFileBtn" onclick="switchUploadType('file')" class="flex-1 py-2 text-xs font-bold rounded-lg dynamic-btn text-white shadow">Direct File Upload</button>
-                <button type="button" id="tabLinkBtn" onclick="switchUploadType('link')" class="flex-1 py-2 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Google Drive Link</button>
+    <!-- Upload Item Modal with 1-12 Class & Science, Math, Hindi, English, SST, Maithili Subjects -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-cloud-arrow-up dynamic-text mr-2"></i> Upload Study Material</h3>
+                <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
-            <form onsubmit="handleUploadNote(event)" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
+            <form id="uploadForm" onsubmit="handleUploadItem(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1">Select Category / Page</label>
+                    <select id="uploadCategoryType" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none font-semibold">
+                        <option value="note">Class Notes (Notes Page)</option>
+                        <option value="book">Reference Book (Books Page)</option>
+                        <option value="pyq">Previous Year Question (PYQ Page)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Title</label>
+                    <input type="text" id="uploadTitle" required placeholder="e.g. Science Chapter 1 Notes" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Class</label>
-                        <select id="uploadClass" required onchange="handleClassChange()" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                        <label class="block font-medium mb-1">Class</label>
+                        <select id="uploadClass" onchange="handleClassChange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none">
                             <option value="Class 1">Class 1</option>
                             <option value="Class 2">Class 2</option>
                             <option value="Class 3">Class 3</option>
@@ -824,242 +976,131 @@
                             <option value="Class 7">Class 7</option>
                             <option value="Class 8">Class 8</option>
                             <option value="Class 9">Class 9</option>
-                            <option value="Class 10" selected>Class 10</option>
+                            <option value="Class 10">Class 10</option>
                             <option value="Class 11">Class 11</option>
                             <option value="Class 12">Class 12</option>
-                            <option value="College">College</option>
                             <option value="Other">Other</option>
                         </select>
+                    </div>
+                    <div id="customClassDiv" class="hidden">
+                        <label class="block font-medium mb-1">Custom Class</label>
+                        <input type="text" id="uploadCustomClass" placeholder="Enter Class Name" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Subject</label>
-                        <select id="uploadSubject" required onchange="handleSubjectChange()" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
-                            <option value="Physics">Physics</option>
-                            <option value="Mathematics">Mathematics</option>
-                            <option value="Chemistry">Chemistry</option>
-                            <option value="Biology">Biology</option>
+                        <label class="block font-medium mb-1">Subject</label>
+                        <select id="uploadSubject" onchange="handleSubjectChange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none">
                             <option value="Science">Science</option>
-                            <option value="English">English</option>
+                            <option value="Math">Math</option>
                             <option value="Hindi">Hindi</option>
+                            <option value="English">English</option>
                             <option value="SST">SST</option>
+                            <option value="Maithili">Maithili</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                </div>
-
-                <div id="customClassDiv" class="hidden">
-                    <label class="block text-xs font-semibold dynamic-text uppercase mb-1">Type Custom Class Name</label>
-                    <input type="text" id="uploadCustomClass" placeholder="e.g., Nursery..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
-                </div>
-
-                <div id="customSubjectDiv" class="hidden">
-                    <label class="block text-xs font-semibold dynamic-text uppercase mb-1">Type Custom Subject Name</label>
-                    <input type="text" id="uploadCustomSubject" placeholder="e.g., Computer Science..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Note Title</label>
-                    <input type="text" id="uploadTitle" required placeholder="e.g., Electricity Rapid Revision" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                    <div id="customSubjectDiv" class="hidden">
+                        <label class="block font-medium mb-1">Custom Subject</label>
+                        <input type="text" id="uploadCustomSubject" placeholder="Enter Subject Name" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Description</label>
-                    <textarea id="uploadDesc" rows="2" placeholder="Brief overview..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></textarea>
+                    <label class="block font-medium mb-1">Description</label>
+                    <textarea id="uploadDesc" rows="2" placeholder="Brief summary..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></textarea>
                 </div>
-
-                <div id="fileUploadSection">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Select PDF File (Max 8MB)</label>
-                    <input type="file" id="uploadFile" accept=".pdf" onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                <div>
+                    <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-2">
+                        <button type="button" id="tabFileBtn" onclick="switchUploadType('file')" class="flex-1 py-2 text-xs font-bold rounded-lg dynamic-btn text-white shadow">Upload File (PDF)</button>
+                        <button type="button" id="tabLinkBtn" onclick="switchUploadType('link')" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 dark:text-slate-300">Google Drive Link</button>
+                    </div>
+                    <div id="fileUploadSection">
+                        <input type="file" id="uploadFile" accept=".pdf,.doc,.docx,.ppt" onchange="handleFileSelect(event)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs">
+                        <p class="text-[10px] text-slate-400 mt-1">Max file size: 8MB</p>
+                    </div>
+                    <div id="linkUploadSection" class="hidden">
+                        <input type="url" id="uploadLink" placeholder="https://drive.google.com/..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs">
+                    </div>
                 </div>
-
-                <div id="linkUploadSection" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Google Drive PDF / Folder Link</label>
-                    <input type="url" id="uploadLink" placeholder="https://drive.google.com/..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
-                </div>
-
-                <button type="submit" class="w-full dynamic-btn text-white font-semibold py-3 rounded-xl text-sm shadow-lg transition">Publish to Cloud</button>
+                <button type="submit" class="w-full dynamic-btn text-white py-3 rounded-xl font-bold shadow mt-2">Publish Material to Cloud</button>
             </form>
         </div>
     </div>
 
-    <!-- Theme Customizer Modal -->
-    <div id="themeModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative text-center border border-slate-200 dark:border-slate-800">
-            <button onclick="closeModal('themeModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2"><i class="fa-solid fa-palette mr-2 dynamic-text"></i> Customize Theme</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Choose from professional presets or pick your own custom accent color:</p>
-            
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <button onclick="setThemePreset('#6366f1', '#7c3aed', false)" class="p-3 rounded-xl bg-indigo-50 dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex flex-col items-center gap-1">
-                    <span class="w-6 h-6 rounded-full bg-indigo-600 block shadow"></span> Default Blue
-                </button>
-                <button onclick="setThemePreset('#0f172a', '#1e293b', true)" class="p-3 rounded-xl bg-slate-900 border border-slate-700 hover:scale-105 transition text-xs font-semibold text-white flex flex-col items-center gap-1">
-                    <span class="w-6 h-6 rounded-full bg-slate-900 border border-slate-500 block shadow"></span> Dark Theme
-                </button>
-                <button onclick="setThemePreset('#059669', '#047857', false)" class="p-3 rounded-xl bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex flex-col items-center gap-1">
-                    <span class="w-6 h-6 rounded-full bg-emerald-600 block shadow"></span> Emerald Green
-                </button>
-                <button onclick="setThemePreset('#ea580c', '#c2410c', false)" class="p-3 rounded-xl bg-orange-50 dark:bg-slate-800 border border-orange-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-orange-700 dark:text-orange-300 flex flex-col items-center gap-1">
-                    <span class="w-6 h-6 rounded-full bg-orange-600 block shadow"></span> Sunset Orange
-                </button>
-                <button onclick="setThemePreset('#9333ea', '#7e22ce', false)" class="p-3 rounded-xl bg-purple-50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-purple-700 dark:text-purple-300 flex flex-col items-center gap-1">
-                    <span class="w-6 h-6 rounded-full bg-purple-600 block shadow"></span> Royal Purple
-                </button>
-                <button onclick="setThemePreset('#db2777', '#4f46e5', false)" class="p-3 rounded-xl bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-pink-700 dark:text-pink-300 flex flex-col items-center gap-1">
-                    <span class="w-6 h-6 rounded-full bg-pink-600 block shadow"></span> Cyberpunk Neon
-                </button>
-            </div>
-
-            <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 mb-4">
-                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Custom Accent Color</span>
-                <input type="color" id="themeColorInput" value="#6366f1" class="w-12 h-10 rounded-xl cursor-pointer border-0 bg-transparent">
-            </div>
-            <button onclick="applyCustomThemeColor()" class="w-full dynamic-btn text-white py-3 rounded-xl text-xs font-semibold shadow">Apply Custom Color</button>
-        </div>
-    </div>
-
-    <!-- Fully Working AI Study & Emotional Support Assistant Modal -->
-    <div id="aiModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800 flex flex-col h-[500px]">
-            <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
-                <div class="flex items-center space-x-3">
-                    <div class="dynamic-bg text-white p-2.5 rounded-2xl"><i class="fa-solid fa-robot text-lg"></i></div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">AI Assistant (Study & Emotional Support)</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Ask for study help, stress relief, or motivation</p>
-                    </div>
+    <!-- AI Chat Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[500px]">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="dynamic-bg text-white p-2 rounded-xl"><i class="fa-solid fa-robot"></i></div>
+                    <h3 class="font-bold text-sm">Study & AI Support</h3>
                 </div>
                 <button onclick="closeModal('aiModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
-            <!-- Category Selector -->
-            <div class="py-3">
-                <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Select Support Type</label>
-                <select id="aiCategory" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 font-medium">
-                    <option value="study">📚 Study Support & Tips</option>
-                    <option value="emotional">💙 Emotional Support & Motivation</option>
-                    <option value="other">🌟 Other Support & Guidance</option>
+            <div class="mb-3">
+                <select id="aiCategory" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold">
+                    <option value="study">📚 Study Support AI</option>
+                    <option value="emotional">💙 Emotional Support AI</option>
                 </select>
             </div>
-
-            <!-- Chat History Box -->
-            <div id="aiChatHistory" class="flex-grow overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div class="flex justify-start">
+            <div id="aiChatHistory" class="flex-grow overflow-y-auto space-y-2 pr-1 text-xs">
+                <div class="flex justify-start mb-3">
                     <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">
-                        👋 Hello student! I am your AI companion. Whether you need study tips, exam strategies, or emotional support when feeling low, I am here for you. How can I help today?
+                        👋 Hello! How can I assist you with your studies today?
                     </div>
                 </div>
             </div>
-
-            <!-- Input & Send -->
-            <div class="pt-3 flex gap-2">
-                <input type="text" id="aiInput" onkeypress="if(event.key === 'Enter') sendAiMessage()" placeholder="Type your message here..." class="flex-grow p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none">
-                <button onclick="sendAiMessage()" class="dynamic-bg text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md">Send</button>
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
+                <input type="text" id="aiInput" placeholder="Type your question..." onkeypress="if(event.key==='Enter') sendAiMessage()" class="flex-grow bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none">
+                <button onclick="sendAiMessage()" class="dynamic-bg text-white px-4 py-2 rounded-xl text-xs font-bold shadow">Send</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Complain Modal -->
-    <div id="complainModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-            <button onclick="closeModal('complainModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-circle-exclamation text-amber-500 mr-2"></i> Submit a Complain</h3>
-            <form id="complainForm" onsubmit="submitUserMessage(event, 'complain')" class="space-y-3">
-                <input type="text" id="complainName" required placeholder="Your Name" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
-                <input type="email" id="complainEmail" required placeholder="Your Email" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
-                <textarea id="complainMsg" required rows="3" placeholder="Describe your complain..." class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"></textarea>
-                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Submit Complain</button>
-            </form>
         </div>
     </div>
 
     <!-- Support Modal -->
-    <div id="supportModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-            <button onclick="closeModal('supportModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-headset text-emerald-500 mr-2"></i> Contact Support</h3>
-            <form id="supportForm" onsubmit="submitUserMessage(event, 'support')" class="space-y-3">
-                <input type="text" id="supportName" required placeholder="Your Name" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
-                <input type="email" id="supportEmail" required placeholder="Your Email" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
-                <textarea id="supportMsg" required rows="3" placeholder="How can we help you?" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"></textarea>
-                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Send Support Request</button>
+    <div id="supportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-headset text-emerald-500 mr-2"></i> Support</h3>
+                <button onclick="closeModal('supportModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="supportForm" onsubmit="submitUserMessage(event, 'support')" class="space-y-3 text-xs">
+                <div><label class="block font-medium mb-1">Name</label><input type="text" id="supportName" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
+                <div><label class="block font-medium mb-1">Email</label><input type="email" id="supportEmail" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
+                <div><label class="block font-medium mb-1">How can we help?</label><textarea id="supportMsg" rows="3" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></textarea></div>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Send Support Request</button>
             </form>
         </div>
     </div>
 
-    <!-- Feedback Modal -->
-    <div id="feedbackModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-            <button onclick="closeModal('feedbackModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-comment-dots text-indigo-500 mr-2"></i> Send Feedback</h3>
-            <form id="feedbackForm" onsubmit="submitUserMessage(event, 'feedback')" class="space-y-3">
-                <input type="text" id="feedbackName" required placeholder="Your Name" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
-                <input type="email" id="feedbackEmail" required placeholder="Your Email" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
-                <textarea id="feedbackMsg" required rows="3" placeholder="Your feedback or suggestions..." class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"></textarea>
-                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Submit Feedback</button>
+    <!-- Complain Modal -->
+    <div id="complainModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-circle-exclamation text-rose-500 mr-2"></i> Complain / Report</h3>
+                <button onclick="closeModal('complainModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="complainForm" onsubmit="submitUserMessage(event, 'complain')" class="space-y-3 text-xs">
+                <div><label class="block font-medium mb-1">Name</label><input type="text" id="complainName" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
+                <div><label class="block font-medium mb-1">Email</label><input type="email" id="complainEmail" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
+                <div><label class="block font-medium mb-1">Issue Details</label><textarea id="complainMsg" rows="3" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></textarea></div>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Submit Complain</button>
             </form>
         </div>
     </div>
 
-    <!-- Setting Modal -->
-    <div id="settingModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center border border-slate-200 dark:border-slate-800">
-            <button onclick="closeModal('settingModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-gear mr-1"></i> Website Settings</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Notes Market Cloud Platform v3.1<br>Connected with Realtime Database & AI Engine.</p>
-            <button onclick="closeModal('settingModal')" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Close</button>
+    <!-- Reply Modal -->
+    <div id="adminReplyModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Reply to User</h3>
+                <button onclick="closeReplyModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p id="replyTargetInfo" class="text-xs text-indigo-600 font-semibold"></p>
+            <form onsubmit="sendAdminReply(event)" class="space-y-3 text-xs">
+                <div><label class="block font-medium mb-1">Your Reply Message</label><textarea id="adminReplyText" rows="3" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></textarea></div>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Send Reply</button>
+            </form>
         </div>
     </div>
 
-    <!-- Global JS helpers -->
-    <script>
-        function toggleSidebar() {
-            const menu = document.getElementById('sideMenu');
-            const overlay = document.getElementById('menuOverlay');
-            if(menu.classList.contains('-translate-x-full')) {
-                menu.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                menu.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function closeAllModals() {
-            ['themeModal', 'complainModal', 'supportModal', 'feedbackModal', 'settingModal', 'aiModal', 'previewModal'].forEach(id => closeModal(id));
-        }
-
-        function setThemePreset(primary, secondary, isDark) {
-            document.documentElement.style.setProperty('--theme-primary', primary);
-            document.documentElement.style.setProperty('--theme-secondary', secondary);
-            
-            if (isDark) {
-                document.body.classList.add('dark', 'bg-slate-950');
-                document.body.classList.remove('bg-slate-50');
-            } else {
-                document.body.classList.remove('dark', 'bg-slate-950');
-                document.body.classList.add('bg-slate-50');
-            }
-            alert("Theme preset applied successfully!");
-            closeModal('themeModal');
-        }
-
-        function applyCustomThemeColor() {
-            const color = document.getElementById('themeColorInput').value;
-            document.documentElement.style.setProperty('--theme-primary', color);
-            document.documentElement.style.setProperty('--theme-secondary', color);
-            document.body.classList.remove('dark', 'bg-slate-950');
-            document.body.classList.add('bg-slate-50');
-            alert("Custom theme color applied successfully!");
-            closeModal('themeModal');
-        }
-    </script>
 </body>
 </html>
