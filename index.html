@@ -1,459 +1,1065 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="indigo">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes Market - Professional Study Hub & Gemini AI Mentor</title>
+    <title>Notes Market - Professional Student Notes Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Continuous Rotating RGB Glow Animation */
+        @keyframes rgbRotate {
+            0% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); }
+            20% { border-color: #ffaa00; box-shadow: 0 0 20px rgba(255, 170, 0, 0.5); }
+            40% { border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.5); }
+            60% { border-color: #0088ff; box-shadow: 0 0 20px rgba(0, 136, 255, 0.5); }
+            80% { border-color: #aa00ff; box-shadow: 0 0 20px rgba(170, 0, 255, 0.5); }
+            100% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); }
+        }
+
+        .rgb-border-anim {
+            animation: rgbRotate 6s infinite linear;
+            border-width: 2px;
+        }
+
+        /* Note Cards Idle & Hover Animations */
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .note-card-idle {
+            animation: floatAnim 4s ease-in-out infinite;
+        }
+
+        .note-card-idle:hover {
+            animation: rgbRotate 3s infinite linear !important;
+            transform: translateY(-6px);
+        }
+
+        /* Hover Color Shift for Divs & Cards */
+        .hover-color-shift {
+            transition: all 0.3s ease;
+        }
+        .hover-color-shift:hover {
+            border-color: var(--theme-primary) !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Background & Hero Watermark Animations */
+        @keyframes waterMarkFloat {
+            0% { transform: translateY(0px) rotate(0deg); opacity: 0.12; }
+            50% { transform: translateY(-20px) rotate(8deg); opacity: 0.25; }
+            100% { transform: translateY(0px) rotate(0deg); opacity: 0.12; }
+        }
+
+        .watermark-book {
+            animation: waterMarkFloat 7s ease-in-out infinite;
+        }
+
+        /* Dynamic Theme Variables */
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #3730a3;
-            --bg-color: #f4f6fc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-            --hero-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            --theme-primary: #6366f1;
+            --theme-secondary: #7c3aed;
         }
 
-        [data-theme="dark"] {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --hero-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        .dynamic-bg {
+            background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary)) !important;
         }
 
-        [data-theme="emerald"] {
-            --primary: #059669;
-            --primary-dark: #047857;
-            --bg-color: #f0fdf4;
-            --card-bg: #ffffff;
-            --text-main: #064e3b;
-            --text-sub: #047857;
-            --hero-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
+        .dynamic-text {
+            color: var(--theme-primary) !important;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; }
-        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; position: relative; min-height: 100vh; }
-        
-        /* Animated Watermark */
-        .platform-watermark { 
-            position: fixed; bottom: 15px; right: 20px; font-size: 12px; font-weight: 800; 
-            color: var(--primary); letter-spacing: 2px; pointer-events: none; z-index: 999; 
-            text-transform: uppercase; opacity: 0.3; animation: pulseWatermark 3s infinite ease-in-out; 
+        .dynamic-btn {
+            background-color: var(--theme-primary) !important;
         }
-        @keyframes pulseWatermark { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.03); } }
+        .dynamic-btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
 
-        /* Navbar */
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: var(--card-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-        .nav-left { display: flex; align-items: center; gap: 20px; }
-        .menu-toggle-btn { background: transparent; border: none; font-size: 22px; cursor: pointer; color: var(--primary); }
-        .brand-logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { background: var(--hero-gradient); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; }
-        .brand-text h1 { font-size: 18px; color: var(--text-main); font-weight: 700; }
-        .brand-text span { font-size: 9px; color: var(--primary); letter-spacing: 1px; font-weight: 600; }
-
-        /* Sidebar */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); box-shadow: 5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
-        .sidebar.active { left: 0; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-        .sidebar-overlay.active { opacity: 1; visibility: visible; }
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .close-sidebar { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); }
-        .sidebar-links { list-style: none; padding: 20px 0; overflow-y: auto; }
-        .sidebar-links li a { display: flex; align-items: center; gap: 15px; padding: 12px 25px; color: var(--text-main); text-decoration: none; font-weight: 500; transition: all 0.2s ease; }
-        .sidebar-links li a:hover { background: rgba(79, 70, 229, 0.1); color: var(--primary); padding-left: 30px; }
-        .sidebar-divider { height: 1px; background: rgba(0,0,0,0.1); margin: 15px 0; }
-        .admin-link { color: #dc2626 !important; font-weight: 700 !important; }
-
-        /* Hero Section - Fixed with Margins (Not touching borders) */
-        .hero-section-wrapper { padding: 30px 40px 10px; max-width: 1300px; margin: 0 auto; }
-        .hero-section { background: var(--hero-gradient); color: white; padding: 50px 40px; text-align: left; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .hero-content { max-width: 800px; }
-        .hero-content h1 { font-size: 32px; margin-bottom: 15px; font-weight: 800; line-height: 1.3; }
-        .hero-content p { font-size: 15px; opacity: 0.9; margin-bottom: 30px; }
-        .search-container { background: white; max-width: 100%; display: flex; align-items: center; padding: 12px 20px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .search-icon { color: #94a3b8; margin-right: 12px; }
-        .search-container input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; background: transparent; }
-
-        /* Filter Section */
-        .filter-section { padding: 20px 40px; max-width: 1300px; margin: 0 auto; }
-        .filter-wrapper { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .filter-label { font-size: 12px; font-weight: 700; color: var(--text-sub); }
-        .custom-select { padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.2); background: var(--card-bg); font-size: 13px; color: var(--text-main); outline: none; cursor: pointer; }
-
-        /* Notes Grid */
-        .notes-grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 10px 40px 50px; max-width: 1300px; margin: 0 auto; }
-        .note-card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(0,0,0,0.05); }
-        .note-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
-        .card-badges { display: flex; gap: 8px; margin-bottom: 12px; }
-        .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
-        .class-badge { background: rgba(79, 70, 229, 0.15); color: var(--primary); }
-        .sub-badge { background: rgba(0,0,0,0.05); color: var(--text-sub); }
-        .note-card h3 { font-size: 16px; color: var(--text-main); margin-bottom: 8px; font-weight: 700; }
-        .card-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; line-height: 1.4; }
-        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
-        .file-type-tag { font-size: 12px; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 2px 8px; border-radius: 4px; }
-        .download-btn { background: var(--primary); color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
-        .download-btn:hover { background: var(--primary-dark); }
-        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-sub); font-size: 16px; font-weight: 500; display: none; }
-
-        /* Gemini AI Floating Widget */
-        .ai-widget-wrapper { position: fixed; bottom: 25px; right: 25px; z-index: 1000; }
-        .ai-floating-trigger { width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; animation: floatAI 3s infinite ease-in-out; }
-        @keyframes floatAI { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        
-        .ai-chat-box { position: absolute; bottom: 80px; right: 0; width: 380px; height: 500px; background: var(--card-bg); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.1); }
-        .ai-chat-box.hidden { opacity: 0; visibility: hidden; transform: scale(0.8); pointer-events: none; }
-        .ai-chat-header { background: linear-gradient(135deg, #059669, #047857); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .ai-header-title { display: flex; align-items: center; gap: 12px; }
-        .ai-header-title i { font-size: 22px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%; }
-        .ai-header-title h4 { font-size: 14px; font-weight: 700; }
-        .ai-header-title span { font-size: 10px; opacity: 0.9; display: block; }
-        .ai-chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg-color); }
-        .ai-message { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; word-wrap: break-word; }
-        .bot-msg { background: var(--card-bg); color: var(--text-main); align-self: flex-start; border: 1px solid rgba(0,0,0,0.1); border-top-left-radius: 2px; }
-        .user-msg { background: #059669; color: #ffffff; align-self: flex-end; border-top-right-radius: 2px; }
-        .ai-chat-footer { padding: 12px; background: var(--card-bg); border-top: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; }
-        .ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid rgba(0,0,0,0.2); border-radius: 20px; outline: none; font-size: 13px; background: var(--bg-color); color: var(--text-main); }
-        .ai-chat-footer button { background: #059669; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        /* Modal Popups for Admin, Support, Feedback, Complaints, Theme */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-card { background: var(--card-bg); width: 90%; max-width: 450px; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); color: var(--text-main); position: relative; }
-        .modal-card h3 { margin-bottom: 15px; font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .modal-card input, .modal-card textarea { width: 100%; padding: 10px 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.2); background: var(--bg-color); color: var(--text-main); outline: none; font-size: 14px; }
-        .modal-card textarea { height: 100px; resize: none; }
-        .modal-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
-        .modal-close { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-sub); }
-        .theme-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
-        .theme-btn { padding: 10px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); background: var(--bg-color); color: var(--text-main); cursor: pointer; font-weight: 600; text-align: center; }
-        .theme-btn:hover { border-color: var(--primary); }
+        /* Smooth Transition */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
     </style>
-</head>
-<body>
-    <div class="platform-watermark">StudyGen AI Engine • Gemini Pro</div>
-    
-    <header class="navbar">
-        <div class="nav-left">
-            <button class="menu-toggle-btn" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
-            <div class="brand-logo">
-                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                <div class="brand-text">
-                    <h1>Notes Market</h1>
-                    <span>VERIFIED STUDENT HUB</span>
+
+    <!-- Firebase Realtime Database Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyChG_jBGcieowmVVKHdwaiI1zvOwvvPag0",
+            authDomain: "notes-market-d309b.firebaseapp.com",
+            databaseURL: "https://notes-market-d309b-default-rtdb.firebaseio.com",
+            projectId: "notes-market-d309b",
+            storageBucket: "notes-market-d309b.firebasestorage.app",
+            messagingSenderId: "661796727875",
+            appId: "1:661796727875:web:f19697629ed298546138f6",
+            measurementId: "G-9YM7BT3BM2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.notes = [];
+        window.messages = [];
+        let selectedFileBase64 = "";
+        let selectedFileName = "";
+
+        // Load Notes from Cloud Realtime Database
+        window.loadCloudNotes = async function() {
+            try {
+                const notesRef = ref(db, 'notes_market_data');
+                const snapshot = await get(notesRef);
+                window.notes = [];
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.keys(data).forEach(key => {
+                        window.notes.push({ id: key, ...data[key] });
+                    });
+                }
+                renderNotes(window.notes);
+                loadMessages();
+            } catch (error) {
+                console.error("Error loading notes: ", error);
+            }
+        };
+
+        // Load Messages
+        async function loadMessages() {
+            try {
+                const msgRef = ref(db, 'notes_market_messages');
+                const snapshot = await get(msgRef);
+                window.messages = [];
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.keys(data).forEach(key => {
+                        window.messages.push({ id: key, ...data[key] });
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Render Notes to Grid
+        function renderNotes(notesToDisplay) {
+            const grid = document.getElementById('notesGrid');
+            const countSpan = document.getElementById('notesCount');
+            if (!grid) return;
+            grid.innerHTML = '';
+            countSpan.textContent = notesToDisplay.length;
+
+            if (notesToDisplay.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover-color-shift"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">No notes found on cloud</h3></div>`;
+                return;
+            }
+
+            notesToDisplay.forEach(note => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between note-card-idle hover-color-shift";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${note.className}</span>
+                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${note.subject}</span>
+                        </div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${note.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${note.description || ''}</p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${note.fileName || 'Document'}</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openPreview('${note.id}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">Preview</button>
+                            ${note.fileLink ? `<a href="${note.fileLink}" target="_blank" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadNote('${note.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        window.renderNotes = renderNotes;
+
+        // Preview Note Functionality
+        window.openPreview = function(id) {
+            const note = window.notes.find(n => n.id === id);
+            if (!note) return;
+            document.getElementById('previewTitle').textContent = note.title;
+            document.getElementById('previewMeta').textContent = `${note.className} • ${note.subject}`;
+            document.getElementById('previewDesc').textContent = note.description || 'No description provided.';
+            
+            const container = document.getElementById('previewContentContainer');
+            container.innerHTML = '';
+
+            if (note.fileLink) {
+                container.innerHTML = `
+                    <div class="p-6 text-center bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">This note is hosted via Google Drive link.</p>
+                        <a href="${note.fileLink}" target="_blank" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-block shadow">Open Google Drive Link</a>
+                    </div>
+                `;
+            } else if (note.fileData) {
+                container.innerHTML = `
+                    <div class="w-full h-80 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
+                        <iframe src="${note.fileData}" class="w-full h-full"></iframe>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No direct file attached.</p>`;
+            }
+            openModal('previewModal');
+        };
+
+        // Filter Function
+        window.filterNotes = function() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const classVal = document.getElementById('classFilter').value;
+            const subjectVal = document.getElementById('subjectFilter').value;
+
+            const filtered = window.notes.filter(note => {
+                const matchesQuery = note.title.toLowerCase().includes(query) || note.subject.toLowerCase().includes(query);
+                const matchesClass = classVal === "" || note.className.toLowerCase() === classVal.toLowerCase();
+                const matchesSubject = subjectVal === "" || note.subject.toLowerCase() === subjectVal.toLowerCase();
+                return matchesQuery && matchesClass && matchesSubject;
+            });
+            renderNotes(filtered);
+        };
+
+        window.resetFilters = function() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('classFilter').value = '';
+            document.getElementById('subjectFilter').value = '';
+            renderNotes(window.notes);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Download Direct Note
+        window.downloadNote = function(id) {
+            const note = window.notes.find(n => n.id === id);
+            if (!note) return;
+            let downloadUrl = note.fileData;
+            if (!downloadUrl || downloadUrl.length < 100) {
+                alert("File data not available.");
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = note.fileName || 'document.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+        // Toggle Upload Type
+        window.switchUploadType = function(type) {
+            const fileSection = document.getElementById('fileUploadSection');
+            const linkSection = document.getElementById('linkUploadSection');
+            const btnFile = document.getElementById('tabFileBtn');
+            const btnLink = document.getElementById('tabLinkBtn');
+
+            if (type === 'file') {
+                fileSection.classList.remove('hidden');
+                linkSection.classList.add('hidden');
+                btnFile.className = "flex-1 py-2 text-xs font-bold rounded-lg dynamic-btn text-white shadow";
+                btnLink.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
+            } else {
+                fileSection.classList.add('hidden');
+                linkSection.classList.remove('hidden');
+                btnLink.className = "flex-1 py-2 text-xs font-bold rounded-lg dynamic-btn text-white shadow";
+                btnFile.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
+            }
+        };
+
+        window.handleClassChange = function() {
+            const select = document.getElementById('uploadClass');
+            const customDiv = document.getElementById('customClassDiv');
+            if (select.value === 'Other') {
+                customDiv.classList.remove('hidden');
+            } else {
+                customDiv.classList.add('hidden');
+            }
+        };
+
+        window.handleSubjectChange = function() {
+            const select = document.getElementById('uploadSubject');
+            const customDiv = document.getElementById('customSubjectDiv');
+            if (select.value === 'Other') {
+                customDiv.classList.remove('hidden');
+            } else {
+                customDiv.classList.add('hidden');
+            }
+        };
+
+        // Admin Auth
+        window.openAdminLogin = function() { document.getElementById('adminLoginModal').classList.remove('hidden'); };
+        window.closeAdminLogin = function() { document.getElementById('adminLoginModal').classList.add('hidden'); };
+
+        window.handleAdminLogin = function(e) {
+            e.preventDefault();
+            if (document.getElementById('adminUser').value.trim() === "notesmarket_1" && document.getElementById('adminPass').value.trim() === "notes market_2") {
+                closeAdminLogin();
+                openAdminDashboard();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        };
+
+        window.openAdminDashboard = async function() {
+            document.getElementById('adminDashboardModal').classList.remove('hidden');
+            await loadMessages();
+            renderAdminTable();
+            renderAdminMessagesTable();
+        };
+
+        window.closeAdminDashboard = function() { 
+            document.getElementById('adminDashboardModal').classList.add('hidden'); 
+            window.loadCloudNotes(); 
+        };
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminNotesTableBody');
+            document.getElementById('adminTotalNotes').textContent = window.notes.length;
+            tbody.innerHTML = '';
+            if (window.notes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400 text-xs">No notes found.</td></tr>`;
+                return;
+            }
+            window.notes.forEach(note => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
+                tr.innerHTML = `
+                    <td class="p-4"><div class="font-bold text-slate-800 dark:text-slate-200">${note.title}</div><div class="text-xs text-slate-400">${note.subject}</div></td>
+                    <td class="p-4 text-slate-600 dark:text-slate-300">${note.className}</td>
+                    <td class="p-4 text-right"><button onclick="deleteCloudNote('${note.id}')" class="bg-red-50 text-red-600 p-2 rounded-xl text-xs hover:bg-red-100 transition"><i class="fa-solid fa-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderAdminMessagesTable() {
+            const tbody = document.getElementById('adminMessagesTableBody');
+            document.getElementById('adminTotalMessages').textContent = window.messages.length;
+            tbody.innerHTML = '';
+            if (window.messages.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">No user messages yet.</td></tr>`;
+                return;
+            }
+            window.messages.forEach(msg => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
+                tr.innerHTML = `
+                    <td class="p-4"><span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded">${msg.type}</span><div class="text-xs text-slate-500 mt-1">${msg.name} (${msg.email})</div></td>
+                    <td class="p-4 text-slate-700 dark:text-slate-300 text-xs">${msg.message}</td>
+                    <td class="p-4 text-slate-500 text-xs">${msg.reply || '<span class="text-amber-500 italic">No reply yet</span>'}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="openReplyModal('${msg.id}', '${msg.type}', '${msg.email}')" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition">Reply</button>
+                        <button onclick="deleteMessage('${msg.id}')" class="bg-red-50 text-red-600 p-1.5 rounded-xl text-xs hover:bg-red-100 transition ml-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.deleteCloudNote = async function(id) {
+            if (confirm("Delete this note from cloud?")) {
+                try {
+                    await remove(ref(db, 'notes_market_data/' + id));
+                    alert("Deleted successfully!");
+                    await window.loadCloudNotes();
+                    renderAdminTable();
+                } catch (err) {
+                    alert("Error deleting note.");
+                }
+            }
+        };
+
+        window.deleteMessage = async function(id) {
+            if (confirm("Delete this message?")) {
+                try {
+                    await remove(ref(db, 'notes_market_messages/' + id));
+                    alert("Deleted!");
+                    await loadMessages();
+                    renderAdminMessagesTable();
+                } catch(e) {
+                    alert("Error deleting message");
+                }
+            }
+        };
+
+        let currentReplyId = null;
+        window.openReplyModal = function(id, type, email) {
+            currentReplyId = id;
+            document.getElementById('replyTargetInfo').textContent = `Replying to ${type} from ${email}`;
+            document.getElementById('adminReplyText').value = '';
+            document.getElementById('adminReplyModal').classList.remove('hidden');
+        };
+        window.closeReplyModal = function() {
+            document.getElementById('adminReplyModal').classList.add('hidden');
+        };
+
+        window.sendAdminReply = async function(e) {
+            e.preventDefault();
+            const replyText = document.getElementById('adminReplyText').value.trim();
+            if(!replyText || !currentReplyId) return;
+            try {
+                const msgRef = ref(db, 'notes_market_messages/' + currentReplyId);
+                const snapshot = await get(msgRef);
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    data.reply = replyText;
+                    await set(msgRef, data);
+                    alert("Reply sent successfully!");
+                    closeReplyModal();
+                    await loadMessages();
+                    renderAdminMessagesTable();
+                }
+            } catch(err) {
+                alert("Failed to send reply.");
+            }
+        };
+
+        window.openUploadModal = function() { document.getElementById('uploadNoteModal').classList.remove('hidden'); };
+        window.closeUploadModal = function() { document.getElementById('uploadNoteModal').classList.add('hidden'); };
+
+        window.handleFileSelect = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if(file.size > 8 * 1024 * 1024) {
+                    alert("File size is larger than 8MB. Please use Google Drive Link option!");
+                    e.target.value = "";
+                    return;
+                }
+                selectedFileName = file.name;
+                const reader = new FileReader();
+                reader.onload = function(event) { 
+                    selectedFileBase64 = event.target.result; 
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.handleUploadNote = async function(e) {
+            e.preventDefault();
+            const isLinkActive = !document.getElementById('linkUploadSection').classList.contains('hidden');
+            
+            let classVal = document.getElementById('uploadClass').value;
+            if (classVal === 'Other') classVal = document.getElementById('uploadCustomClass').value.trim();
+
+            let subjectVal = document.getElementById('uploadSubject').value;
+            if (subjectVal === 'Other') subjectVal = document.getElementById('uploadCustomSubject').value.trim();
+
+            const newNote = {
+                title: document.getElementById('uploadTitle').value,
+                className: classVal,
+                subject: subjectVal,
+                description: document.getElementById('uploadDesc').value,
+                createdAt: Date.now()
+            };
+
+            if (isLinkActive) {
+                newNote.fileLink = document.getElementById('uploadLink').value;
+                newNote.fileName = "Drive Folder / PDF";
+            } else {
+                newNote.fileData = selectedFileBase64;
+                newNote.fileName = selectedFileName || "document.pdf";
+            }
+
+            try {
+                const notesRef = ref(db, 'notes_market_data');
+                const newNoteRef = push(notesRef);
+                await set(newNoteRef, newNote);
+
+                alert("Note published to Cloud successfully!");
+                closeUploadModal();
+                document.getElementById('uploadTitle').value = '';
+                document.getElementById('uploadDesc').value = '';
+                document.getElementById('uploadLink').value = '';
+                document.getElementById('uploadFile').value = '';
+                await window.loadCloudNotes();
+                openAdminDashboard();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to publish note.");
+            }
+        };
+
+        // Submit Complain / Support / Feedback
+        window.submitUserMessage = async function(e, type) {
+            e.preventDefault();
+            const name = document.getElementById(`${type}Name`).value;
+            const email = document.getElementById(`${type}Email`).value;
+            const message = document.getElementById(`${type}Msg`).value;
+
+            try {
+                const msgRef = ref(db, 'notes_market_messages');
+                const newMsgRef = push(msgRef);
+                await set(newMsgRef, { type, name, email, message, createdAt: Date.now(), reply: "" });
+                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} submitted successfully!`);
+                closeAllModals();
+                document.getElementById(`${type}Form`).reset();
+            } catch(err) {
+                alert("Submission failed.");
+            }
+        };
+
+        // Fully Working AI Chat Logic
+        window.sendAiMessage = function() {
+            const input = document.getElementById('aiInput');
+            const chatHistory = document.getElementById('aiChatHistory');
+            const category = document.getElementById('aiCategory').value;
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            // Append User Message
+            chatHistory.innerHTML += `
+                <div class="flex justify-end mb-3">
+                    <div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${userText}</div>
                 </div>
+            `;
+            input.value = '';
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            // Simulate Smart AI Response based on Category
+            setTimeout(() => {
+                let aiReply = "";
+                const lower = userText.toLowerCase();
+
+                if (category === 'study') {
+                    aiReply = `📚 <strong>Study Support AI:</strong> Great question! To master this topic, try breaking down your notes into key formula sheets and practice active recall. Reviewing previous year questions will also boost your confidence!`;
+                } else if (category === 'emotional') {
+                    aiReply = `💙 <strong>Emotional Support AI:</strong> I hear you, and it's completely okay to feel stressed or overwhelmed sometimes. Take a deep breath, step away from your desk for 5 minutes, drink some water, and remember you are doing your absolute best! We believe in you.`;
+                } else {
+                    aiReply = `🌟 <strong>General Support AI:</strong> I am here to help you navigate Notes Market! Whether you need help finding specific class notes, uploading your study materials, or general guidance, feel free to ask.`;
+                }
+
+                chatHistory.innerHTML += `
+                    <div class="flex justify-start mb-3">
+                        <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">${aiReply}</div>
+                    </div>
+                `;
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 600);
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.loadCloudNotes();
+        });
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden">
+
+    <!-- External Background Animated Watermarks -->
+    <div class="absolute -left-16 top-40 opacity-10 pointer-events-none watermark-book z-0"><i class="fa-solid fa-graduation-cap text-8xl"></i></div>
+    <div class="absolute right-10 top-96 opacity-10 pointer-events-none watermark-book z-0" style="animation-delay: 2.5s;"><i class="fa-solid fa-book-open text-9xl"></i></div>
+    <div class="absolute left-20 bottom-1/3 opacity-10 pointer-events-none watermark-book z-0" style="animation-delay: 4s;"><i class="fa-solid fa-atom text-7xl"></i></div>
+    <div class="absolute right-24 bottom-20 opacity-10 pointer-events-none watermark-book z-0" style="animation-delay: 1.5s;"><i class="fa-solid fa-laptop-code text-8xl"></i></div>
+
+    <!-- Header / Navigation -->
+    <header class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleSidebar()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center justify-center shadow-sm hover-color-shift">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="dynamic-bg text-white p-2 rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold dynamic-text">Notes Market</h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Student Notes Marketplace</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="openAdminLogin()" class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 hover:text-indigo-600 px-4 py-2 rounded-xl font-medium text-sm transition border border-slate-200 dark:border-slate-700 rgb-border-anim shadow-sm">
+                    <i class="fa-solid fa-lock text-xs"></i>
+                    <span>Admin Login</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>Navigation Menu</h3>
-            <button class="close-sidebar" id="closeSidebar"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Side Menu / Sidebar -->
+    <div id="sideMenu" class="fixed inset-y-0 left-0 w-80 bg-white dark:bg-slate-900 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200 dark:border-slate-800">
+        <div class="p-6 dynamic-bg text-white flex justify-between items-center shadow-md">
+            <h3 class="font-bold text-lg"><i class="fa-solid fa-bars mr-2"></i> Menu</h3>
+            <button onclick="toggleSidebar()" class="text-white/80 hover:text-white transition p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
-        <ul class="sidebar-links">
-            <li><a href="#" id="homeNav"><i class="fa-solid fa-house"></i> Home</a></li>
-            <li><a href="#" id="browseNav"><i class="fa-solid fa-book-open"></i> Browse Notes</a></li>
-            <li><a href="#" id="uploadNav"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Notes</a></li>
-            <li><a href="#" id="themeModalBtn"><i class="fa-solid fa-palette"></i> Customize Theme</a></li>
-            <li class="sidebar-divider"></li>
-            <li><a href="#" id="supportModalBtn"><i class="fa-solid fa-headset"></i> Support</a></li>
-            <li><a href="#" id="feedbackModalBtn"><i class="fa-solid fa-comment-dots"></i> Feedback</a></li>
-            <li><a href="#" id="complaintModalBtn"><i class="fa-solid fa-triangle-exclamation"></i> Complaint</a></li>
-            <li class="sidebar-divider"></li>
-            <li><a href="#" class="admin-link" id="adminPanelBtn"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a></li>
-        </ul>
-    </nav>
+        <div class="p-6 overflow-y-auto flex-grow space-y-3 text-sm font-medium">
+            <a href="#" onclick="toggleSidebar(); resetFilters();" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-house dynamic-text w-5"></i><span>Home</span></a>
+            <a href="#notesGrid" onclick="toggleSidebar();" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-book dynamic-text w-5"></i><span>Browse Notes</span></a>
+            <a href="#" onclick="toggleSidebar(); openModal('themeModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-palette dynamic-text w-5"></i><span>Customize Theme</span></a>
+            <hr class="border-slate-100 dark:border-slate-800 my-2">
+            <a href="#" onclick="toggleSidebar(); openModal('complainModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-circle-exclamation text-amber-500 w-5"></i><span>Complain</span></a>
+            <a href="#" onclick="toggleSidebar(); openModal('supportModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-headset text-emerald-500 w-5"></i><span>Support</span></a>
+            <a href="#" onclick="toggleSidebar(); openModal('feedbackModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-comment-dots text-indigo-500 w-5"></i><span>Feedback</span></a>
+            <hr class="border-slate-100 dark:border-slate-800 my-2">
+            <a href="#" onclick="toggleSidebar(); openModal('settingModal');" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition hover-color-shift"><i class="fa-solid fa-gear text-slate-600 dark:text-slate-400 w-5"></i><span>Settings</span></a>
+        </div>
+    </div>
+    <div id="menuOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
 
-    <!-- Hero Section Wrapper with Margins -->
-    <div class="hero-section-wrapper">
-        <section class="hero-section">
-            <div class="hero-content">
-                <h1>Find & Download Verified<br>Study Notes Instantly</h1>
-                <p>Access high-quality class notes, revision summaries, and academic modules built by top students.</p>
-                <div class="search-container">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="Search notes by title, subject, or class name...">
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full relative z-10">
+        
+        <!-- Hero Search Section with Watermarks Inside -->
+        <div class="dynamic-bg rounded-3xl p-8 md:p-12 text-white mb-10 shadow-2xl relative overflow-hidden hover-color-shift">
+            <div class="absolute -right-12 -bottom-12 opacity-20 pointer-events-none watermark-book"><i class="fa-solid fa-book-bookmark text-9xl"></i></div>
+            <div class="absolute right-48 top-6 opacity-15 pointer-events-none watermark-book" style="animation-delay: 2s;"><i class="fa-solid fa-graduation-cap text-7xl"></i></div>
+            <div class="absolute left-1/3 bottom-4 opacity-15 pointer-events-none watermark-book" style="animation-delay: 4s;"><i class="fa-solid fa-book-open text-8xl"></i></div>
+            <div class="absolute left-10 top-10 opacity-15 pointer-events-none watermark-book" style="animation-delay: 1.5s;"><i class="fa-solid fa-file-pdf text-6xl"></i></div>
+
+            <div class="max-w-2xl relative z-10">
+                <span class="bg-white/20 text-white text-xs font-semibold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-4 inline-block shadow-sm">Cloud Synced Notes Hub</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">Find & Download Verified Study Notes Instantly</h2>
+                <p class="text-indigo-100 text-sm md:text-base mb-6 leading-relaxed">Browse organized academic notes stored safely on the cloud database with full realtime support.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-grow">
+                        <i class="fa-solid fa-search absolute left-4 top-4 text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="filterNotes()" placeholder="Search by title, subject, or class..." class="w-full pl-11 pr-4 py-3.5 rounded-2xl text-slate-800 bg-white placeholder-slate-400 focus:outline-none text-sm shadow-lg">
+                    </div>
                 </div>
             </div>
-        </section>
-    </div>
-
-    <section class="filter-section">
-        <div class="filter-wrapper">
-            <span class="filter-label"><i class="fa-solid fa-filter"></i> FILTER BY:</span>
-            <select class="custom-select" id="classFilter">
-                <option value="">All Classes</option>
-                <option value="Class 10">Class 10</option>
-                <option value="Class 12">Class 12</option>
-            </select>
-            <select class="custom-select" id="subjectFilter">
-                <option value="">All Subjects</option>
-                <option value="SST">SST</option>
-                <option value="Biology">Biology</option>
-                <option value="Physics">Physics</option>
-                <option value="Mathematics">Mathematics</option>
-            </select>
-        </div>
-    </section>
-
-    <main class="notes-grid-container" id="notesGrid">
-        <div class="note-card" data-class="Class 10" data-subject="SST" data-title="सामजिक विज्ञान के 750 रामबाण प्रश्न">
-            <div class="card-badges"><span class="badge class-badge">Class 10</span><span class="badge sub-badge">SST</span></div>
-            <h3>सामजिक_विज्ञान_के_750_रामबाण</h3>
-            <p class="card-desc">सामजिक विज्ञान - के 750 महत्वपूर्ण प्रश्न रामबाण संग्रह...</p>
-            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: सामजिक_विज्ञान_के_750_रामबाण.pdf')">Download</a></div>
         </div>
 
-        <div class="note-card" data-class="Class 10" data-subject="Biology" data-title="class 10 control and coordination notes">
-            <div class="card-badges"><span class="badge class-badge">Class 10</span><span class="badge sub-badge">Biology</span></div>
-            <h3>class 10 control and coordination notes</h3>
-            <p class="card-desc">Full chapter notes and all topic covered thoroughly with diagrams.</p>
-            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: Control and Coordination Notes.pdf')">Download</a></div>
+        <!-- Filter Controls -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover-color-shift">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div class="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-300 font-medium">
+                    <i class="fa-solid fa-filter dynamic-text"></i>
+                    <span>Filters:</span>
+                </div>
+                <select id="classFilter" onchange="filterNotes()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3.5 py-2.5">
+                    <option value="">All Classes</option>
+                    <option value="Class 1">Class 1</option>
+                    <option value="Class 2">Class 2</option>
+                    <option value="Class 3">Class 3</option>
+                    <option value="Class 4">Class 4</option>
+                    <option value="Class 5">Class 5</option>
+                    <option value="Class 6">Class 6</option>
+                    <option value="Class 7">Class 7</option>
+                    <option value="Class 8">Class 8</option>
+                    <option value="Class 9">Class 9</option>
+                    <option value="Class 10">Class 10</option>
+                    <option value="Class 11">Class 11</option>
+                    <option value="Class 12">Class 12</option>
+                    <option value="College">College</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <select id="subjectFilter" onchange="filterNotes()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3.5 py-2.5">
+                    <option value="">All Subjects</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Science">Science</option>
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="SST">SST</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                Showing <span id="notesCount" class="dynamic-text font-bold">0</span> notes
+            </div>
         </div>
 
-        <div class="note-card" data-class="Class 12" data-subject="Physics" data-title="class 12 ray optics short notes">
-            <div class="card-badges"><span class="badge class-badge">Class 12</span><span class="badge sub-badge">Physics</span></div>
-            <h3>Class 12 Ray Optics Revision Notes</h3>
-            <p class="card-desc">Quick formula sheet and derivations for board examinations.</p>
-            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: Ray Optics Notes.pdf')">Download</a></div>
+        <!-- Notes Grid -->
+        <div id="notesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Notes Rendered Here -->
         </div>
 
-        <div class="no-results" id="noResults">No matching notes found. Try a different search term or filter!</div>
     </main>
 
-    <!-- Gemini AI Assistant Floating Widget -->
-    <div class="ai-widget-wrapper">
-        <div class="ai-chat-box hidden" id="aiChatBox">
-            <div class="ai-chat-header">
-                <div class="ai-header-title">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+    <!-- Lower Right Side AI Assistant Widget Button -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button onclick="openModal('aiModal')" class="dynamic-bg text-white p-4 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform group relative">
+            <i class="fa-solid fa-robot text-2xl"></i>
+            <span class="absolute right-16 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-medium pointer-events-none">AI Study & Emotional Assistant</span>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto z-10">
+        <p>&copy; 2026 Notes Market. Professional Student Cloud Platform.</p>
+    </footer>
+
+    <!-- Note Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('previewModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="mb-4">
+                <span id="previewMeta" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg"></span>
+                <h3 id="previewTitle" class="font-bold text-slate-800 dark:text-slate-100 text-xl mt-2"></h3>
+                <p id="previewDesc" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+            </div>
+            <div id="previewContentContainer" class="my-4">
+                <!-- Preview rendered here -->
+            </div>
+            <button onclick="closeModal('previewModal')" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Close Preview</button>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl relative border-2 rgb-border-anim">
+            <button onclick="closeAdminLogin()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Admin Login</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Enter administrative credentials</p>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Username</label>
+                    <input type="text" id="adminUser" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Password</label>
+                    <input type="password" id="adminPass" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none">
+                </div>
+                <p id="loginError" class="text-xs text-red-500 font-medium hidden">Invalid credentials.</p>
+                <button type="submit" class="w-full dynamic-btn text-white font-semibold py-3 rounded-xl shadow-lg text-sm transition">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div id="adminDashboardModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg">Admin Dashboard</h3>
+                <button onclick="closeAdminDashboard()" class="text-slate-400 hover:text-white transition p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-950 space-y-6">
+                <div class="flex justify-between items-center bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover-color-shift">
                     <div>
-                        <h4>Gemini AI Mentor</h4>
-                        <span>Study answers & emotional support</span>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Cloud Notes Repository</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Total notes: <span id="adminTotalNotes">0</span></p>
+                    </div>
+                    <button onclick="openUploadModal()" class="dynamic-btn text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition"><i class="fa-solid fa-plus text-xs mr-1"></i> Add New Note</button>
+                </div>
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs uppercase border-b dark:border-slate-700">
+                                <th class="p-4">Title & Subject</th>
+                                <th class="p-4">Class</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminNotesTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                    </table>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 mt-6 shadow-sm hover-color-shift">
+                    <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">User Complaints, Support & Feedback Messages</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Total messages: <span id="adminTotalMessages">0</span></p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs uppercase border-b dark:border-slate-700">
+                                    <th class="p-4">Type & User</th>
+                                    <th class="p-4">Message</th>
+                                    <th class="p-4">Reply Status</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminMessagesTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
                     </div>
                 </div>
-                <button class="close-ai" id="closeAiBtn" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="ai-chat-body" id="aiChatBody">
-                <div class="ai-message bot-msg">Hello! Main hoon aapka **Gemini AI Mentor**. 🤖💙 Padhai se juda koi bhi doubt ho, notes find karne mein help chahiye, ya life/exam stress ki wajah se emotional support chahiye, aap mujhse bina jhijhak baat kar sakte hain!</div>
-            </div>
-            <div class="ai-chat-footer">
-                <input type="text" placeholder="Ask Gemini anything..." id="aiUserInput">
-                <button id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </div>
-        <button class="ai-floating-trigger" id="aiTriggerBtn"><i class="fa-solid fa-brain"></i></button>
-    </div>
 
-    <!-- Modals for Support, Feedback, Complaint, Admin & Theme -->
-    <div class="modal-overlay" id="genericModal">
-        <div class="modal-card">
-            <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
-            <div id="modalContentBody"></div>
+            </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Sidebar toggle
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const closeSidebar = document.getElementById('closeSidebar');
+    <!-- Admin Reply Modal -->
+    <div id="adminReplyModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <button onclick="closeReplyModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">Reply to User</h3>
+            <p id="replyTargetInfo" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
+            <form onsubmit="sendAdminReply(event)" class="space-y-4">
+                <textarea id="adminReplyText" required rows="3" placeholder="Type your reply here..." class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none"></textarea>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold shadow">Send Reply</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Note Modal -->
+    <div id="uploadNoteModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl relative border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeUploadModal()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Add Study Note / PDF</h3>
             
-            function toggleSidebar() { 
-                sidebar.classList.toggle('active'); 
-                sidebarOverlay.classList.toggle('active'); 
-            }
-            menuToggle.addEventListener('click', toggleSidebar);
-            closeSidebar.addEventListener('click', toggleSidebar);
-            sidebarOverlay.addEventListener('click', toggleSidebar);
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4">
+                <button type="button" id="tabFileBtn" onclick="switchUploadType('file')" class="flex-1 py-2 text-xs font-bold rounded-lg dynamic-btn text-white shadow">Direct File Upload</button>
+                <button type="button" id="tabLinkBtn" onclick="switchUploadType('link')" class="flex-1 py-2 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Google Drive Link</button>
+            </div>
 
-            // Modal System
-            const modalOverlay = document.getElementById('genericModal');
-            const modalContentBody = document.getElementById('modalContentBody');
-            const modalCloseBtn = document.getElementById('modalCloseBtn');
-
-            function openModal(htmlContent) {
-                modalContentBody.innerHTML = htmlContent;
-                modalOverlay.classList.add('active');
-                toggleSidebar();
-            }
-            modalCloseBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
-            modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) modalOverlay.classList.remove('active'); });
-
-            // 1. Admin Panel
-            document.getElementById('adminPanelBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal(`
-                    <h3><i class="fa-solid fa-shield-halved"></i> Admin Control Center</h3>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Welcome Admin! Manage your platform users and uploads here.</p>
-                    <div style="background:var(--bg-color); padding:12px; border-radius:8px; margin-bottom:10px; font-size:13px;">📊 Total Notes Hosted: <b>3 Active</b></div>
-                    <div style="background:var(--bg-color); padding:12px; border-radius:8px; margin-bottom:15px; font-size:13px;">👥 Registered Students: <b>1,420+</b></div>
-                    <button class="modal-btn" onclick="alert('Database backup initiated successfully!'); modalOverlay.classList.remove('active');">Trigger System Backup</button>
-                `);
-            });
-
-            // 2. Support
-            document.getElementById('supportModalBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal(`
-                    <h3><i class="fa-solid fa-headset"></i> Student Support Desk</h3>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Facing any issue with downloads or website features? Drop a message.</p>
-                    <input type="text" placeholder="Your Name">
-                    <input type="email" placeholder="Your Email">
-                    <textarea placeholder="Describe your issue..."></textarea>
-                    <button class="modal-btn" onclick="alert('Support ticket submitted! Our team will contact you soon.'); modalOverlay.classList.remove('active');">Submit Ticket</button>
-                `);
-            });
-
-            // 3. Feedback
-            document.getElementById('feedbackModalBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal(`
-                    <h3><i class="fa-solid fa-comment-dots"></i> Share Your Feedback</h3>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">We love to hear how we can improve Notes Market!</p>
-                    <textarea placeholder="Write your feedback here..."></textarea>
-                    <button class="modal-btn" onclick="alert('Thank you for your valuable feedback!'); modalOverlay.classList.remove('active');">Send Feedback</button>
-                `);
-            });
-
-            // 4. Complaint
-            document.getElementById('complaintModalBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal(`
-                    <h3><i class="fa-solid fa-triangle-exclamation"></i> Lodge a Complaint</h3>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Report broken links, copyright concerns, or bugs.</p>
-                    <input type="text" placeholder="Subject / Issue Title">
-                    <textarea placeholder="Provide detailed information about the complaint..."></textarea>
-                    <button class="modal-btn" onclick="alert('Complaint registered securely. Investigation underway.'); modalOverlay.classList.remove('active');">Submit Complaint</button>
-                `);
-            });
-
-            // 5. Theme Customizer
-            document.getElementById('themeModalBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal(`
-                    <h3><i class="fa-solid fa-palette"></i> Customize Theme</h3>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Choose your preferred visual look for the platform:</p>
-                    <div class="theme-options">
-                        <button class="theme-btn" onclick="setTheme('indigo')">Indigo Blue</button>
-                        <button class="theme-btn" onclick="setTheme('dark')">Dark Midnight</button>
-                        <button class="theme-btn" onclick="setTheme('emerald')">Emerald Green</button>
+            <form onsubmit="handleUploadNote(event)" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Class</label>
+                        <select id="uploadClass" required onchange="handleClassChange()" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                            <option value="Class 1">Class 1</option>
+                            <option value="Class 2">Class 2</option>
+                            <option value="Class 3">Class 3</option>
+                            <option value="Class 4">Class 4</option>
+                            <option value="Class 5">Class 5</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10" selected>Class 10</option>
+                            <option value="Class 11">Class 11</option>
+                            <option value="Class 12">Class 12</option>
+                            <option value="College">College</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
-                `);
-            });
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Subject</label>
+                        <select id="uploadSubject" required onchange="handleSubjectChange()" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                            <option value="Physics">Physics</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Science">Science</option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="SST">SST</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
 
-            window.setTheme = function(themeName) {
-                document.documentElement.setAttribute('data-theme', themeName);
-                modalOverlay.classList.remove('active');
+                <div id="customClassDiv" class="hidden">
+                    <label class="block text-xs font-semibold dynamic-text uppercase mb-1">Type Custom Class Name</label>
+                    <input type="text" id="uploadCustomClass" placeholder="e.g., Nursery..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div id="customSubjectDiv" class="hidden">
+                    <label class="block text-xs font-semibold dynamic-text uppercase mb-1">Type Custom Subject Name</label>
+                    <input type="text" id="uploadCustomSubject" placeholder="e.g., Computer Science..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Note Title</label>
+                    <input type="text" id="uploadTitle" required placeholder="e.g., Electricity Rapid Revision" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Description</label>
+                    <textarea id="uploadDesc" rows="2" placeholder="Brief overview..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100"></textarea>
+                </div>
+
+                <div id="fileUploadSection">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Select PDF File (Max 8MB)</label>
+                    <input type="file" id="uploadFile" accept=".pdf" onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+
+                <div id="linkUploadSection" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">Google Drive PDF / Folder Link</label>
+                    <input type="url" id="uploadLink" placeholder="https://drive.google.com/..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <button type="submit" class="w-full dynamic-btn text-white font-semibold py-3 rounded-xl text-sm shadow-lg transition">Publish to Cloud</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Theme Customizer Modal -->
+    <div id="themeModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative text-center border border-slate-200 dark:border-slate-800">
+            <button onclick="closeModal('themeModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2"><i class="fa-solid fa-palette mr-2 dynamic-text"></i> Customize Theme</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Choose from professional presets or pick your own custom accent color:</p>
+            
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <button onclick="setThemePreset('#6366f1', '#7c3aed', false)" class="p-3 rounded-xl bg-indigo-50 dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex flex-col items-center gap-1">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600 block shadow"></span> Default Blue
+                </button>
+                <button onclick="setThemePreset('#0f172a', '#1e293b', true)" class="p-3 rounded-xl bg-slate-900 border border-slate-700 hover:scale-105 transition text-xs font-semibold text-white flex flex-col items-center gap-1">
+                    <span class="w-6 h-6 rounded-full bg-slate-900 border border-slate-500 block shadow"></span> Dark Theme
+                </button>
+                <button onclick="setThemePreset('#059669', '#047857', false)" class="p-3 rounded-xl bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex flex-col items-center gap-1">
+                    <span class="w-6 h-6 rounded-full bg-emerald-600 block shadow"></span> Emerald Green
+                </button>
+                <button onclick="setThemePreset('#ea580c', '#c2410c', false)" class="p-3 rounded-xl bg-orange-50 dark:bg-slate-800 border border-orange-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-orange-700 dark:text-orange-300 flex flex-col items-center gap-1">
+                    <span class="w-6 h-6 rounded-full bg-orange-600 block shadow"></span> Sunset Orange
+                </button>
+                <button onclick="setThemePreset('#9333ea', '#7e22ce', false)" class="p-3 rounded-xl bg-purple-50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-purple-700 dark:text-purple-300 flex flex-col items-center gap-1">
+                    <span class="w-6 h-6 rounded-full bg-purple-600 block shadow"></span> Royal Purple
+                </button>
+                <button onclick="setThemePreset('#db2777', '#4f46e5', false)" class="p-3 rounded-xl bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 hover:scale-105 transition text-xs font-semibold text-pink-700 dark:text-pink-300 flex flex-col items-center gap-1">
+                    <span class="w-6 h-6 rounded-full bg-pink-600 block shadow"></span> Cyberpunk Neon
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 mb-4">
+                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Custom Accent Color</span>
+                <input type="color" id="themeColorInput" value="#6366f1" class="w-12 h-10 rounded-xl cursor-pointer border-0 bg-transparent">
+            </div>
+            <button onclick="applyCustomThemeColor()" class="w-full dynamic-btn text-white py-3 rounded-xl text-xs font-semibold shadow">Apply Custom Color</button>
+        </div>
+    </div>
+
+    <!-- Fully Working AI Study & Emotional Support Assistant Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800 flex flex-col h-[500px]">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <div class="dynamic-bg text-white p-2.5 rounded-2xl"><i class="fa-solid fa-robot text-lg"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">AI Assistant (Study & Emotional Support)</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Ask for study help, stress relief, or motivation</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('aiModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Category Selector -->
+            <div class="py-3">
+                <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Select Support Type</label>
+                <select id="aiCategory" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 font-medium">
+                    <option value="study">📚 Study Support & Tips</option>
+                    <option value="emotional">💙 Emotional Support & Motivation</option>
+                    <option value="other">🌟 Other Support & Guidance</option>
+                </select>
+            </div>
+
+            <!-- Chat History Box -->
+            <div id="aiChatHistory" class="flex-grow overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div class="flex justify-start">
+                    <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">
+                        👋 Hello student! I am your AI companion. Whether you need study tips, exam strategies, or emotional support when feeling low, I am here for you. How can I help today?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input & Send -->
+            <div class="pt-3 flex gap-2">
+                <input type="text" id="aiInput" onkeypress="if(event.key === 'Enter') sendAiMessage()" placeholder="Type your message here..." class="flex-grow p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none">
+                <button onclick="sendAiMessage()" class="dynamic-bg text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complain Modal -->
+    <div id="complainModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <button onclick="closeModal('complainModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-circle-exclamation text-amber-500 mr-2"></i> Submit a Complain</h3>
+            <form id="complainForm" onsubmit="submitUserMessage(event, 'complain')" class="space-y-3">
+                <input type="text" id="complainName" required placeholder="Your Name" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
+                <input type="email" id="complainEmail" required placeholder="Your Email" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
+                <textarea id="complainMsg" required rows="3" placeholder="Describe your complain..." class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"></textarea>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Submit Complain</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Support Modal -->
+    <div id="supportModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <button onclick="closeModal('supportModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-headset text-emerald-500 mr-2"></i> Contact Support</h3>
+            <form id="supportForm" onsubmit="submitUserMessage(event, 'support')" class="space-y-3">
+                <input type="text" id="supportName" required placeholder="Your Name" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
+                <input type="email" id="supportEmail" required placeholder="Your Email" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
+                <textarea id="supportMsg" required rows="3" placeholder="How can we help you?" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"></textarea>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Send Support Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <button onclick="closeModal('feedbackModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-comment-dots text-indigo-500 mr-2"></i> Send Feedback</h3>
+            <form id="feedbackForm" onsubmit="submitUserMessage(event, 'feedback')" class="space-y-3">
+                <input type="text" id="feedbackName" required placeholder="Your Name" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
+                <input type="email" id="feedbackEmail" required placeholder="Your Email" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100">
+                <textarea id="feedbackMsg" required rows="3" placeholder="Your feedback or suggestions..." class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"></textarea>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Setting Modal -->
+    <div id="settingModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center border border-slate-200 dark:border-slate-800">
+            <button onclick="closeModal('settingModal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-3"><i class="fa-solid fa-gear mr-1"></i> Website Settings</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Notes Market Cloud Platform v3.1<br>Connected with Realtime Database & AI Engine.</p>
+            <button onclick="closeModal('settingModal')" class="w-full dynamic-btn text-white py-2.5 rounded-xl text-xs font-semibold">Close</button>
+        </div>
+    </div>
+
+    <!-- Global JS helpers -->
+    <script>
+        function toggleSidebar() {
+            const menu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('menuOverlay');
+            if(menu.classList.contains('-translate-x-full')) {
+                menu.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                menu.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
             }
+        }
 
-            // Navigation quick links
-            document.getElementById('uploadNav').addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal(`
-                    <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Study Notes</h3>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Contribute to the student community.</p>
-                    <input type="text" placeholder="Note Title (e.g. Class 10 Math)">
-                    <input type="text" placeholder="Class & Subject">
-                    <input type="file">
-                    <button class="modal-btn" onclick="alert('Note uploaded successfully for review!'); modalOverlay.classList.remove('active');">Upload Note</button>
-                `);
-            });
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
 
-            // Search & Filter Logic (Fixed & Robust)
-            const searchInput = document.getElementById('searchInput');
-            const classFilter = document.getElementById('classFilter');
-            const subjectFilter = document.getElementById('subjectFilter');
-            const notesGrid = document.getElementById('notesGrid');
-            const noteCards = notesGrid.querySelectorAll('.note-card');
-            const noResults = document.getElementById('noResults');
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
 
-            function filterNotes() {
-                const query = searchInput.value.toLowerCase().trim();
-                const selectedClass = classFilter.value;
-                const selectedSubject = subjectFilter.value;
-                let visibleCount = 0;
+        function closeAllModals() {
+            ['themeModal', 'complainModal', 'supportModal', 'feedbackModal', 'settingModal', 'aiModal', 'previewModal'].forEach(id => closeModal(id));
+        }
 
-                noteCards.forEach(card => {
-                    const title = card.getAttribute('data-title').toLowerCase();
-                    const desc = card.querySelector('.card-desc').textContent.toLowerCase();
-                    const cardClass = card.getAttribute('data-class');
-                    const cardSubject = card.getAttribute('data-subject');
-
-                    const matchesSearch = title.includes(query) || desc.includes(query);
-                    const matchesClass = selectedClass === "" || cardClass === selectedClass;
-                    const matchesSubject = selectedSubject === "" || cardSubject === selectedSubject;
-
-                    if (matchesSearch && matchesClass && matchesSubject) {
-                        card.style.display = "flex";
-                        visibleCount++;
-                    } else {
-                        card.style.display = "none";
-                    }
-                });
-
-                noResults.style.display = visibleCount === 0 ? "block" : "none";
+        function setThemePreset(primary, secondary, isDark) {
+            document.documentElement.style.setProperty('--theme-primary', primary);
+            document.documentElement.style.setProperty('--theme-secondary', secondary);
+            
+            if (isDark) {
+                document.body.classList.add('dark', 'bg-slate-950');
+                document.body.classList.remove('bg-slate-50');
+            } else {
+                document.body.classList.remove('dark', 'bg-slate-950');
+                document.body.classList.add('bg-slate-50');
             }
+            alert("Theme preset applied successfully!");
+            closeModal('themeModal');
+        }
 
-            searchInput.addEventListener('input', filterNotes);
-            classFilter.addEventListener('change', filterNotes);
-            subjectFilter.addEventListener('change', filterNotes);
-
-            // Gemini AI Chatbot Logic (Emotional Support + Answers)
-            const aiTriggerBtn = document.getElementById('aiTriggerBtn');
-            const aiChatBox = document.getElementById('aiChatBox');
-            const closeAiBtn = document.getElementById('closeAiBtn');
-            const aiChatBody = document.getElementById('aiChatBody');
-            const aiUserInput = document.getElementById('aiUserInput');
-            const aiSendBtn = document.getElementById('aiSendBtn');
-
-            aiTriggerBtn.addEventListener('click', () => aiChatBox.classList.toggle('hidden'));
-            closeAiBtn.addEventListener('click', () => aiChatBox.classList.add('hidden'));
-
-            function handleGeminiResponse() {
-                const text = aiUserInput.value.trim();
-                if (!text) return;
-
-                const userMsgDiv = document.createElement('div');
-                userMsgDiv.className = 'ai-message user-msg';
-                userMsgDiv.textContent = text;
-                aiChatBody.appendChild(userMsgDiv);
-                aiUserInput.value = '';
-                aiChatBody.scrollTop = aiChatBody.scrollHeight;
-
-                setTimeout(() => {
-                    const botMsgDiv = document.createElement('div');
-                    botMsgDiv.className = 'ai-message bot-msg';
-                    const lowerText = text.toLowerCase();
-                    
-                    if (lowerText.includes('stress') || lowerText.includes('sad') || lowerText.includes('tension') || lowerText.includes('dar') || lowerText.includes('fail') || lowerText.includes('rona') || lowerText.includes('akela') || lowerText.includes('depressed') || lowerText.includes('pareshan')) {
-                        botMsgDiv.textContent = "🫂 Main samajh sakta hoon ki exams aur padhai ka pressure kabhi-kabhi bahut bhari pad jata hai. Lekin aapki yeh mehnat zaya nahi jayegi. Thoda gehra saans lijiye, khud par bharosa rakhiye. Aap akele nahi hain, main hamesha aapke sath hoon. Aap strong hain!";
-                    } else if (lowerText.includes('hi') || lowerText.includes('hello') || lowerText.includes('hey')) {
-                        botMsgDiv.textContent = "Hello! Main Gemini AI hoon. Bataiye aaj padhai mein kya help chahiye ya koi aur baat karni hai?";
-                    } else {
-                        botMsgDiv.textContent = `Gemini AI Analysis: Aapka sawal "${text}" kaafi accha hai. Padhai lagatar karte rahiye aur notes ke liye hamare search & filter tools ka use karein. Main aapke har study doubt mein madad karne ke liye taiyar hoon! ✨`;
-                    }
-
-                    aiChatBody.appendChild(botMsgDiv);
-                    aiChatBody.scrollTop = aiChatBody.scrollHeight;
-                }, 700);
-            }
-
-            aiSendBtn.addEventListener('click', handleGeminiResponse);
-            aiUserInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleGeminiResponse();
-            });
-        });
+        function applyCustomThemeColor() {
+            const color = document.getElementById('themeColorInput').value;
+            document.documentElement.style.setProperty('--theme-primary', color);
+            document.documentElement.style.setProperty('--theme-secondary', color);
+            document.body.classList.remove('dark', 'bg-slate-950');
+            document.body.classList.add('bg-slate-50');
+            alert("Custom theme color applied successfully!");
+            closeModal('themeModal');
+        }
     </script>
 </body>
 </html>
