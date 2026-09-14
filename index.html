@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes Market - Professional Study Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6fc; color: #333; overflow-x: hidden; position: relative; min-height: 100vh; }
+        .platform-watermark { position: fixed; bottom: 10px; right: 15px; font-size: 11px; font-weight: 700; color: rgba(100, 116, 139, 0.25); letter-spacing: 1.5px; pointer-events: none; z-index: 999; text-transform: uppercase; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .menu-toggle-btn { background: transparent; border: none; font-size: 22px; cursor: pointer; color: #4f46e5; }
+        .brand-logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; }
+        .brand-text h1 { font-size: 18px; color: #1e1b4b; font-weight: 700; }
+        .brand-text span { font-size: 9px; color: #6366f1; letter-spacing: 1px; font-weight: 600; }
+        
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; box-shadow: 5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e2e8f0; }
+        .close-sidebar { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
+        .sidebar-links { list-style: none; padding: 20px 0; }
+        .sidebar-links li a { display: flex; align-items: center; gap: 15px; padding: 12px 25px; color: #334155; text-decoration: none; font-weight: 500; transition: all 0.2s ease; }
+        .sidebar-links li a:hover { background: #f1f5f9; color: #4f46e5; padding-left: 30px; }
+        .sidebar-divider { height: 1px; background: #e2e8f0; margin: 15px 0; }
+        .admin-link { color: #dc2626 !important; }
+
+        .hero-section { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white; padding: 60px 20px; text-align: center; border-radius: 0 0 30px 30px; }
+        .hero-content { max-width: 700px; margin: 0 auto; }
+        .hero-content h1 { font-size: 36px; margin-bottom: 15px; font-weight: 800; }
+        .hero-content p { font-size: 15px; opacity: 0.9; margin-bottom: 30px; }
+        .search-container { background: white; max-width: 600px; margin: 0 auto; display: flex; align-items: center; padding: 10px 20px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .search-icon { color: #94a3b8; margin-right: 12px; }
+        .search-container input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; }
+
+        .filter-section { padding: 30px 40px 10px; }
+        .filter-wrapper { display: flex; align-items: center; gap: 15px; }
+        .filter-label { font-size: 12px; font-weight: 700; color: #64748b; }
+        .custom-select { padding: 8px 15px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-size: 13px; color: #334155; outline: none; }
+
+        .notes-grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 20px 40px 50px; }
+        .note-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; }
+        .card-badges { display: flex; gap: 8px; margin-bottom: 12px; }
+        .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+        .class-badge { background: #e0e7ff; color: #3730a3; }
+        .sub-badge { background: #f1f5f9; color: #475569; }
+        .note-card h3 { font-size: 16px; color: #1e293b; margin-bottom: 8px; font-weight: 700; }
+        .card-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .download-btn { background: #4f46e5; color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; }
+
+        .ai-widget-wrapper { position: fixed; bottom: 25px; right: 25px; z-index: 1000; }
+        .ai-floating-trigger { width: 55px; height: 55px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; border-radius: 50%; font-size: 22px; cursor: pointer; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; }
+        .ai-chat-box { position: absolute; bottom: 75px; right: 0; width: 360px; height: 480px; background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; transition: all 0.3s ease; }
+        .ai-chat-box.hidden { opacity: 0; visibility: hidden; transform: scale(0.8); }
+        .ai-chat-header { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ai-header-title { display: flex; align-items: center; gap: 12px; }
+        .ai-chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
+        .ai-message { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; }
+        .bot-msg { background: #ffffff; color: #334155; align-self: flex-start; border: 1px solid #e2e8f0; }
+        .user-msg { background: #4f46e5; color: #ffffff; align-self: flex-end; }
+        .ai-chat-footer { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+        .ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 20px; outline: none; font-size: 13px; }
+        .ai-chat-footer button { background: #4f46e5; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+    <div class="platform-watermark">StudyGen AI Engine</div>
+    <header class="navbar">
+        <div class="nav-left">
+            <button class="menu-toggle-btn" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+            <div class="brand-logo">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="brand-text">
+                    <h1>Notes Market</h1>
+                    <span>VERIFIED STUDENT HUB</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Navigation</h3>
+            <button class="close-sidebar" id="closeSidebar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="#"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="#"><i class="fa-solid fa-book-open"></i> Browse Notes</a></li>
+            <li><a href="#"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Notes</a></li>
+            <li class="sidebar-divider"></li>
+            <li><a href="#admin-panel" class="admin-link" id="adminPanelBtn"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Find & Download Verified<br>Study Notes Instantly</h1>
+            <p>Access high-quality class notes, revision summaries, and academic modules built by top students.</p>
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" placeholder="Search notes by title, subject, or class name...">
+            </div>
+        </div>
+    </section>
+
+    <section class="filter-section">
+        <div class="filter-wrapper">
+            <span class="filter-label"><i class="fa-solid fa-filter"></i> FILTER BY:</span>
+            <select class="custom-select"><option>All Classes</option></select>
+            <select class="custom-select"><option>All Subjects</option></select>
+        </div>
+    </section>
+
+    <main class="notes-grid-container">
+        <div class="note-card">
+            <div class="card-badges"><span class="badge class-badge">Class 10</span><span class="badge sub-badge">SST</span></div>
+            <h3>सामजिक_विज्ञान_के_750_रामबाण</h3>
+            <p class="card-desc">सामजिक विज्ञान - के 750 महत्वपूर्ण प्रश्न रामबाण संग्रह...</p>
+            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn">Download</a></div>
+        </div>
+    </main>
+
+    <div class="ai-widget-wrapper">
+        <div class="ai-chat-box hidden" id="aiChatBox">
+            <div class="ai-chat-header">
+                <div class="ai-header-title">
+                    <i class="fa-solid fa-robot"></i>
+                    <div><h4>AI Study Assistant</h4><span>Ask notes, doubts</span></div>
+                </div>
+                <button class="close-ai" id="closeAiBtn" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ai-chat-body" id="aiChatBody">
+                <div class="ai-message bot-msg">Hello student! I am your AI Study Assistant. Ask me anything about your studies!</div>
+            </div>
+            <div class="ai-chat-footer">
+                <input type="text" placeholder="Ask anything..." id="aiUserInput">
+                <button id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <button class="ai-floating-trigger" id="aiTriggerBtn"><i class="fa-solid fa-robot"></i></button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebar = document.getElementById('closeSidebar');
+            function toggleSidebar() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
+            menuToggle.addEventListener('click', toggleSidebar);
+            closeSidebar.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            const aiTriggerBtn = document.getElementById('aiTriggerBtn');
+            const aiChatBox = document.getElementById('aiChatBox');
+            const closeAiBtn = document.getElementById('closeAiBtn');
+            aiTriggerBtn.addEventListener('click', () => aiChatBox.classList.toggle('hidden'));
+            closeAiBtn.addEventListener('click', () => aiChatBox.classList.add('hidden'));
+
+            const adminPanelBtn = document.getElementById('adminPanelBtn');
+            adminPanelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert("🔒 Admin Panel Security Verification: Access Granted.");
+                toggleSidebar();
+            });
+        });
+    </script>
+</body>
+</html>
