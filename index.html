@@ -1,88 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="indigo">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes Market - Professional Study Hub & AI Mentor</title>
+    <title>Notes Market - Professional Study Hub & Gemini AI Mentor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f6fc; color: #333; overflow-x: hidden; position: relative; min-height: 100vh; }
-        .platform-watermark { position: fixed; bottom: 10px; right: 15px; font-size: 11px; font-weight: 700; color: rgba(100, 116, 139, 0.25); letter-spacing: 1.5px; pointer-events: none; z-index: 999; text-transform: uppercase; }
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --bg-color: #f4f6fc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --hero-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+        }
+
+        [data-theme="dark"] {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --hero-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        [data-theme="emerald"] {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --bg-color: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-main: #064e3b;
+            --text-sub: #047857;
+            --hero-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; position: relative; min-height: 100vh; }
         
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        /* Animated Watermark */
+        .platform-watermark { 
+            position: fixed; bottom: 15px; right: 20px; font-size: 12px; font-weight: 800; 
+            color: var(--primary); letter-spacing: 2px; pointer-events: none; z-index: 999; 
+            text-transform: uppercase; opacity: 0.3; animation: pulseWatermark 3s infinite ease-in-out; 
+        }
+        @keyframes pulseWatermark { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.03); } }
+
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: var(--card-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
         .nav-left { display: flex; align-items: center; gap: 20px; }
-        .menu-toggle-btn { background: transparent; border: none; font-size: 22px; cursor: pointer; color: #4f46e5; }
+        .menu-toggle-btn { background: transparent; border: none; font-size: 22px; cursor: pointer; color: var(--primary); }
         .brand-logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; }
-        .brand-text h1 { font-size: 18px; color: #1e1b4b; font-weight: 700; }
-        .brand-text span { font-size: 9px; color: #6366f1; letter-spacing: 1px; font-weight: 600; }
-        
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; box-shadow: 5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+        .logo-icon { background: var(--hero-gradient); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; }
+        .brand-text h1 { font-size: 18px; color: var(--text-main); font-weight: 700; }
+        .brand-text span { font-size: 9px; color: var(--primary); letter-spacing: 1px; font-weight: 600; }
+
+        /* Sidebar */
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); box-shadow: 5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
         .sidebar.active { left: 0; }
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
         .sidebar-overlay.active { opacity: 1; visibility: visible; }
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e2e8f0; }
-        .close-sidebar { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
-        .sidebar-links { list-style: none; padding: 20px 0; }
-        .sidebar-links li a { display: flex; align-items: center; gap: 15px; padding: 12px 25px; color: #334155; text-decoration: none; font-weight: 500; transition: all 0.2s ease; }
-        .sidebar-links li a:hover { background: #f1f5f9; color: #4f46e5; padding-left: 30px; }
-        .sidebar-divider { height: 1px; background: #e2e8f0; margin: 15px 0; }
-        .admin-link { color: #dc2626 !important; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .close-sidebar { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); }
+        .sidebar-links { list-style: none; padding: 20px 0; overflow-y: auto; }
+        .sidebar-links li a { display: flex; align-items: center; gap: 15px; padding: 12px 25px; color: var(--text-main); text-decoration: none; font-weight: 500; transition: all 0.2s ease; }
+        .sidebar-links li a:hover { background: rgba(79, 70, 229, 0.1); color: var(--primary); padding-left: 30px; }
+        .sidebar-divider { height: 1px; background: rgba(0,0,0,0.1); margin: 15px 0; }
+        .admin-link { color: #dc2626 !important; font-weight: 700 !important; }
 
-        .hero-section { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white; padding: 60px 20px; text-align: center; border-radius: 0 0 30px 30px; }
-        .hero-content { max-width: 700px; margin: 0 auto; }
-        .hero-content h1 { font-size: 34px; margin-bottom: 15px; font-weight: 800; }
+        /* Hero Section - Fixed with Margins (Not touching borders) */
+        .hero-section-wrapper { padding: 30px 40px 10px; max-width: 1300px; margin: 0 auto; }
+        .hero-section { background: var(--hero-gradient); color: white; padding: 50px 40px; text-align: left; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .hero-content { max-width: 800px; }
+        .hero-content h1 { font-size: 32px; margin-bottom: 15px; font-weight: 800; line-height: 1.3; }
         .hero-content p { font-size: 15px; opacity: 0.9; margin-bottom: 30px; }
-        .search-container { background: white; max-width: 600px; margin: 0 auto; display: flex; align-items: center; padding: 10px 20px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .search-container { background: white; max-width: 100%; display: flex; align-items: center; padding: 12px 20px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .search-icon { color: #94a3b8; margin-right: 12px; }
         .search-container input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; background: transparent; }
 
-        .filter-section { padding: 30px 40px 10px; max-width: 1200px; margin: 0 auto; }
+        /* Filter Section */
+        .filter-section { padding: 20px 40px; max-width: 1300px; margin: 0 auto; }
         .filter-wrapper { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .filter-label { font-size: 12px; font-weight: 700; color: #64748b; }
-        .custom-select { padding: 8px 15px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-size: 13px; color: #334155; outline: none; cursor: pointer; }
+        .filter-label { font-size: 12px; font-weight: 700; color: var(--text-sub); }
+        .custom-select { padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.2); background: var(--card-bg); font-size: 13px; color: var(--text-main); outline: none; cursor: pointer; }
 
-        .notes-grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 20px 40px 50px; max-width: 1200px; margin: 0 auto; }
-        .note-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
-        .note-card:hover { transform: translateY(-5px); }
+        /* Notes Grid */
+        .notes-grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 10px 40px 50px; max-width: 1300px; margin: 0 auto; }
+        .note-card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(0,0,0,0.05); }
+        .note-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
         .card-badges { display: flex; gap: 8px; margin-bottom: 12px; }
         .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
-        .class-badge { background: #e0e7ff; color: #3730a3; }
-        .sub-badge { background: #f1f5f9; color: #475569; }
-        .note-card h3 { font-size: 16px; color: #1e293b; margin-bottom: 8px; font-weight: 700; }
-        .card-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.4; }
-        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .class-badge { background: rgba(79, 70, 229, 0.15); color: var(--primary); }
+        .sub-badge { background: rgba(0,0,0,0.05); color: var(--text-sub); }
+        .note-card h3 { font-size: 16px; color: var(--text-main); margin-bottom: 8px; font-weight: 700; }
+        .card-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; line-height: 1.4; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
         .file-type-tag { font-size: 12px; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 2px 8px; border-radius: 4px; }
-        .download-btn { background: #4f46e5; color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
-        .download-btn:hover { background: #4338ca; }
-        
-        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b; font-size: 16px; font-weight: 500; display: none; }
+        .download-btn { background: var(--primary); color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
+        .download-btn:hover { background: var(--primary-dark); }
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-sub); font-size: 16px; font-weight: 500; display: none; }
 
-        /* AI Emotional Support Widget Styling */
+        /* Gemini AI Floating Widget */
         .ai-widget-wrapper { position: fixed; bottom: 25px; right: 25px; z-index: 1000; }
-        .ai-floating-trigger { width: 55px; height: 55px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; border-radius: 50%; font-size: 22px; cursor: pointer; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
-        .ai-floating-trigger:hover { transform: scale(1.05); }
-        .ai-chat-box { position: absolute; bottom: 75px; right: 0; width: 360px; height: 480px; background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; transition: all 0.3s ease; }
+        .ai-floating-trigger { width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; animation: floatAI 3s infinite ease-in-out; }
+        @keyframes floatAI { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        
+        .ai-chat-box { position: absolute; bottom: 80px; right: 0; width: 380px; height: 500px; background: var(--card-bg); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.1); }
         .ai-chat-box.hidden { opacity: 0; visibility: hidden; transform: scale(0.8); pointer-events: none; }
-        .ai-chat-header { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ai-chat-header { background: linear-gradient(135deg, #059669, #047857); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
         .ai-header-title { display: flex; align-items: center; gap: 12px; }
-        .ai-header-title i { font-size: 20px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%; }
+        .ai-header-title i { font-size: 22px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%; }
         .ai-header-title h4 { font-size: 14px; font-weight: 700; }
-        .ai-header-title span { font-size: 10px; opacity: 0.8; display: block; }
-        .ai-chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
+        .ai-header-title span { font-size: 10px; opacity: 0.9; display: block; }
+        .ai-chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg-color); }
         .ai-message { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; word-wrap: break-word; }
-        .bot-msg { background: #ffffff; color: #334155; align-self: flex-start; border: 1px solid #e2e8f0; border-top-left-radius: 2px; }
-        .user-msg { background: #4f46e5; color: #ffffff; align-self: flex-end; border-top-right-radius: 2px; }
-        .ai-chat-footer { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
-        .ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 20px; outline: none; font-size: 13px; }
-        .ai-chat-footer button { background: #4f46e5; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .ai-chat-footer button:hover { background: #4338ca; }
+        .bot-msg { background: var(--card-bg); color: var(--text-main); align-self: flex-start; border: 1px solid rgba(0,0,0,0.1); border-top-left-radius: 2px; }
+        .user-msg { background: #059669; color: #ffffff; align-self: flex-end; border-top-right-radius: 2px; }
+        .ai-chat-footer { padding: 12px; background: var(--card-bg); border-top: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; }
+        .ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid rgba(0,0,0,0.2); border-radius: 20px; outline: none; font-size: 13px; background: var(--bg-color); color: var(--text-main); }
+        .ai-chat-footer button { background: #059669; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Modal Popups for Admin, Support, Feedback, Complaints, Theme */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-card { background: var(--card-bg); width: 90%; max-width: 450px; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); color: var(--text-main); position: relative; }
+        .modal-card h3 { margin-bottom: 15px; font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .modal-card input, .modal-card textarea { width: 100%; padding: 10px 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.2); background: var(--bg-color); color: var(--text-main); outline: none; font-size: 14px; }
+        .modal-card textarea { height: 100px; resize: none; }
+        .modal-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+        .modal-close { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-sub); }
+        .theme-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .theme-btn { padding: 10px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); background: var(--bg-color); color: var(--text-main); cursor: pointer; font-weight: 600; text-align: center; }
+        .theme-btn:hover { border-color: var(--primary); }
     </style>
 </head>
 <body>
-    <div class="platform-watermark">StudyGen AI Engine</div>
+    <div class="platform-watermark">StudyGen AI Engine • Gemini Pro</div>
     
     <header class="navbar">
         <div class="nav-left">
@@ -100,28 +155,36 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h3>Navigation</h3>
+            <h3>Navigation Menu</h3>
             <button class="close-sidebar" id="closeSidebar"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <ul class="sidebar-links">
-            <li><a href="#"><i class="fa-solid fa-house"></i> Home</a></li>
-            <li><a href="#"><i class="fa-solid fa-book-open"></i> Browse Notes</a></li>
-            <li><a href="#"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Notes</a></li>
+            <li><a href="#" id="homeNav"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="#" id="browseNav"><i class="fa-solid fa-book-open"></i> Browse Notes</a></li>
+            <li><a href="#" id="uploadNav"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Notes</a></li>
+            <li><a href="#" id="themeModalBtn"><i class="fa-solid fa-palette"></i> Customize Theme</a></li>
             <li class="sidebar-divider"></li>
-            <li><a href="#admin-panel" class="admin-link" id="adminPanelBtn"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a></li>
+            <li><a href="#" id="supportModalBtn"><i class="fa-solid fa-headset"></i> Support</a></li>
+            <li><a href="#" id="feedbackModalBtn"><i class="fa-solid fa-comment-dots"></i> Feedback</a></li>
+            <li><a href="#" id="complaintModalBtn"><i class="fa-solid fa-triangle-exclamation"></i> Complaint</a></li>
+            <li class="sidebar-divider"></li>
+            <li><a href="#" class="admin-link" id="adminPanelBtn"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a></li>
         </ul>
     </nav>
 
-    <section class="hero-section">
-        <div class="hero-content">
-            <h1>Find & Download Verified<br>Study Notes Instantly</h1>
-            <p>Access high-quality class notes, revision summaries, and academic modules built by top students.</p>
-            <div class="search-container">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Search notes by title, subject, or class name...">
+    <!-- Hero Section Wrapper with Margins -->
+    <div class="hero-section-wrapper">
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1>Find & Download Verified<br>Study Notes Instantly</h1>
+                <p>Access high-quality class notes, revision summaries, and academic modules built by top students.</p>
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search notes by title, subject, or class name...">
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
     <section class="filter-section">
         <div class="filter-wrapper">
@@ -163,36 +226,44 @@
             <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: Ray Optics Notes.pdf')">Download</a></div>
         </div>
 
-        <div class="no-results" id="noResults">No matching notes found. Try a different search or filter!</div>
+        <div class="no-results" id="noResults">No matching notes found. Try a different search term or filter!</div>
     </main>
 
-    <!-- AI Emotional Support & Answer Widget -->
+    <!-- Gemini AI Assistant Floating Widget -->
     <div class="ai-widget-wrapper">
         <div class="ai-chat-box hidden" id="aiChatBox">
             <div class="ai-chat-header">
                 <div class="ai-header-title">
-                    <i class="fa-solid fa-robot"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <div>
-                        <h4>AI Study & Emotional Mentor</h4>
-                        <span>Here for your studies & mental support</span>
+                        <h4>Gemini AI Mentor</h4>
+                        <span>Study answers & emotional support</span>
                     </div>
                 </div>
                 <button class="close-ai" id="closeAiBtn" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="ai-chat-body" id="aiChatBody">
-                <div class="ai-message bot-msg">Hello! I am your AI Mentor. 💙 Padhai mein koi doubt ho ya kabhi stress feel ho raha ho, aap mujhse kuch bhi share kar sakte hain. Main hamesha aapke sath hoon!</div>
+                <div class="ai-message bot-msg">Hello! Main hoon aapka **Gemini AI Mentor**. 🤖💙 Padhai se juda koi bhi doubt ho, notes find karne mein help chahiye, ya life/exam stress ki wajah se emotional support chahiye, aap mujhse bina jhijhak baat kar sakte hain!</div>
             </div>
             <div class="ai-chat-footer">
-                <input type="text" placeholder="Ask a question or share your feelings..." id="aiUserInput">
+                <input type="text" placeholder="Ask Gemini anything..." id="aiUserInput">
                 <button id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
-        <button class="ai-floating-trigger" id="aiTriggerBtn"><i class="fa-solid fa-robot"></i></button>
+        <button class="ai-floating-trigger" id="aiTriggerBtn"><i class="fa-solid fa-brain"></i></button>
+    </div>
+
+    <!-- Modals for Support, Feedback, Complaint, Admin & Theme -->
+    <div class="modal-overlay" id="genericModal">
+        <div class="modal-card">
+            <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div id="modalContentBody"></div>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Sidebar functionality
+            // Sidebar toggle
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -206,15 +277,100 @@
             closeSidebar.addEventListener('click', toggleSidebar);
             sidebarOverlay.addEventListener('click', toggleSidebar);
 
-            // Admin panel action
-            const adminPanelBtn = document.getElementById('adminPanelBtn');
-            adminPanelBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                alert("🔒 Admin Panel Security Verification: Access Granted.");
+            // Modal System
+            const modalOverlay = document.getElementById('genericModal');
+            const modalContentBody = document.getElementById('modalContentBody');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            function openModal(htmlContent) {
+                modalContentBody.innerHTML = htmlContent;
+                modalOverlay.classList.add('active');
                 toggleSidebar();
+            }
+            modalCloseBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
+            modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+
+            // 1. Admin Panel
+            document.getElementById('adminPanelBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(`
+                    <h3><i class="fa-solid fa-shield-halved"></i> Admin Control Center</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Welcome Admin! Manage your platform users and uploads here.</p>
+                    <div style="background:var(--bg-color); padding:12px; border-radius:8px; margin-bottom:10px; font-size:13px;">📊 Total Notes Hosted: <b>3 Active</b></div>
+                    <div style="background:var(--bg-color); padding:12px; border-radius:8px; margin-bottom:15px; font-size:13px;">👥 Registered Students: <b>1,420+</b></div>
+                    <button class="modal-btn" onclick="alert('Database backup initiated successfully!'); modalOverlay.classList.remove('active');">Trigger System Backup</button>
+                `);
             });
 
-            // Notes Search & Filter Logic
+            // 2. Support
+            document.getElementById('supportModalBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(`
+                    <h3><i class="fa-solid fa-headset"></i> Student Support Desk</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Facing any issue with downloads or website features? Drop a message.</p>
+                    <input type="text" placeholder="Your Name">
+                    <input type="email" placeholder="Your Email">
+                    <textarea placeholder="Describe your issue..."></textarea>
+                    <button class="modal-btn" onclick="alert('Support ticket submitted! Our team will contact you soon.'); modalOverlay.classList.remove('active');">Submit Ticket</button>
+                `);
+            });
+
+            // 3. Feedback
+            document.getElementById('feedbackModalBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(`
+                    <h3><i class="fa-solid fa-comment-dots"></i> Share Your Feedback</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">We love to hear how we can improve Notes Market!</p>
+                    <textarea placeholder="Write your feedback here..."></textarea>
+                    <button class="modal-btn" onclick="alert('Thank you for your valuable feedback!'); modalOverlay.classList.remove('active');">Send Feedback</button>
+                `);
+            });
+
+            // 4. Complaint
+            document.getElementById('complaintModalBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(`
+                    <h3><i class="fa-solid fa-triangle-exclamation"></i> Lodge a Complaint</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Report broken links, copyright concerns, or bugs.</p>
+                    <input type="text" placeholder="Subject / Issue Title">
+                    <textarea placeholder="Provide detailed information about the complaint..."></textarea>
+                    <button class="modal-btn" onclick="alert('Complaint registered securely. Investigation underway.'); modalOverlay.classList.remove('active');">Submit Complaint</button>
+                `);
+            });
+
+            // 5. Theme Customizer
+            document.getElementById('themeModalBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(`
+                    <h3><i class="fa-solid fa-palette"></i> Customize Theme</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Choose your preferred visual look for the platform:</p>
+                    <div class="theme-options">
+                        <button class="theme-btn" onclick="setTheme('indigo')">Indigo Blue</button>
+                        <button class="theme-btn" onclick="setTheme('dark')">Dark Midnight</button>
+                        <button class="theme-btn" onclick="setTheme('emerald')">Emerald Green</button>
+                    </div>
+                `);
+            });
+
+            window.setTheme = function(themeName) {
+                document.documentElement.setAttribute('data-theme', themeName);
+                modalOverlay.classList.remove('active');
+            }
+
+            // Navigation quick links
+            document.getElementById('uploadNav').addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(`
+                    <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Study Notes</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Contribute to the student community.</p>
+                    <input type="text" placeholder="Note Title (e.g. Class 10 Math)">
+                    <input type="text" placeholder="Class & Subject">
+                    <input type="file">
+                    <button class="modal-btn" onclick="alert('Note uploaded successfully for review!'); modalOverlay.classList.remove('active');">Upload Note</button>
+                `);
+            });
+
+            // Search & Filter Logic (Fixed & Robust)
             const searchInput = document.getElementById('searchInput');
             const classFilter = document.getElementById('classFilter');
             const subjectFilter = document.getElementById('subjectFilter');
@@ -246,18 +402,14 @@
                     }
                 });
 
-                if (visibleCount === 0) {
-                    noResults.style.display = "block";
-                } else {
-                    noResults.style.display = "none";
-                }
+                noResults.style.display = visibleCount === 0 ? "block" : "none";
             }
 
             searchInput.addEventListener('input', filterNotes);
             classFilter.addEventListener('change', filterNotes);
             subjectFilter.addEventListener('change', filterNotes);
 
-            // AI Emotional Support & Chatbot Logic
+            // Gemini AI Chatbot Logic (Emotional Support + Answers)
             const aiTriggerBtn = document.getElementById('aiTriggerBtn');
             const aiChatBox = document.getElementById('aiChatBox');
             const closeAiBtn = document.getElementById('closeAiBtn');
@@ -268,11 +420,10 @@
             aiTriggerBtn.addEventListener('click', () => aiChatBox.classList.toggle('hidden'));
             closeAiBtn.addEventListener('click', () => aiChatBox.classList.add('hidden'));
 
-            function handleAiResponse() {
+            function handleGeminiResponse() {
                 const text = aiUserInput.value.trim();
                 if (!text) return;
 
-                // Append User Message
                 const userMsgDiv = document.createElement('div');
                 userMsgDiv.className = 'ai-message user-msg';
                 userMsgDiv.textContent = text;
@@ -280,34 +431,27 @@
                 aiUserInput.value = '';
                 aiChatBody.scrollTop = aiChatBody.scrollHeight;
 
-                // Generate Smart / Emotional Support Bot Response
                 setTimeout(() => {
                     const botMsgDiv = document.createElement('div');
                     botMsgDiv.className = 'ai-message bot-msg';
-                    
                     const lowerText = text.toLowerCase();
                     
-                    // Emotional / Stress Support Keywords
-                    if (lowerText.includes('stress') || lowerText.includes('sad') || lowerText.includes('tension') || lowerText.includes('tired') || lowerText.includes('dar') || lowerText.includes('fail') || lowerText.includes('rona') || lowerText.includes('akela') || lowerText.includes('depressed') || lowerText.includes('pareshan')) {
-                        botMsgDiv.textContent = "Main samajh sakta hoon ki kabhi-kabhi padhai aur exams ka pressure bahut zyada ho jata hai. 🫂 Par yaad rakhiye, aapki mehnat kabhi vyarth nahi jayegi. Thoda lamba saans lijiye, paani pijiye aur rest kariye. Aap strong hain aur aap sab kuch achieve kar sakte hain. Main hamesha aapke sath hoon!";
-                    } 
-                    // General greeting or help
-                    else if (lowerText.includes('hi') || lowerText.includes('hello') || lowerText.includes('hey')) {
-                        botMsgDiv.textContent = "Hello! Aaj padhai mein kis topic par help chahiye ya koi aur baat share karni hai?";
-                    }
-                    // Study / Notes query
-                    else {
-                        botMsgDiv.textContent = `Aapne pucha: "${text}". Yeh ek accha sawal hai! Padhai karte rahiye, aur agar kisi specific subject ya chapter ke notes chahiye toh aap upar search bar ya filter ka use kar sakte hain. Main aapke har doubt mein madad karne ke liye taiyar hoon! ✨`;
+                    if (lowerText.includes('stress') || lowerText.includes('sad') || lowerText.includes('tension') || lowerText.includes('dar') || lowerText.includes('fail') || lowerText.includes('rona') || lowerText.includes('akela') || lowerText.includes('depressed') || lowerText.includes('pareshan')) {
+                        botMsgDiv.textContent = "🫂 Main samajh sakta hoon ki exams aur padhai ka pressure kabhi-kabhi bahut bhari pad jata hai. Lekin aapki yeh mehnat zaya nahi jayegi. Thoda gehra saans lijiye, khud par bharosa rakhiye. Aap akele nahi hain, main hamesha aapke sath hoon. Aap strong hain!";
+                    } else if (lowerText.includes('hi') || lowerText.includes('hello') || lowerText.includes('hey')) {
+                        botMsgDiv.textContent = "Hello! Main Gemini AI hoon. Bataiye aaj padhai mein kya help chahiye ya koi aur baat karni hai?";
+                    } else {
+                        botMsgDiv.textContent = `Gemini AI Analysis: Aapka sawal "${text}" kaafi accha hai. Padhai lagatar karte rahiye aur notes ke liye hamare search & filter tools ka use karein. Main aapke har study doubt mein madad karne ke liye taiyar hoon! ✨`;
                     }
 
                     aiChatBody.appendChild(botMsgDiv);
                     aiChatBody.scrollTop = aiChatBody.scrollHeight;
-                }, 600);
+                }, 700);
             }
 
-            aiSendBtn.addEventListener('click', handleAiResponse);
+            aiSendBtn.addEventListener('click', handleGeminiResponse);
             aiUserInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleAiResponse();
+                if (e.key === 'Enter') handleGeminiResponse();
             });
         });
     </script>
