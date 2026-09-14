@@ -3,550 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes Market - Professional Study Hub</title>
-    <!-- FontAwesome for Icons -->
+    <title>Notes Market - Professional Study Hub & AI Mentor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Global Reset & Theme */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f4f6fc;
-            color: #333;
-            overflow-x: hidden;
-            position: relative;
-            min-height: 100vh;
-        }
-
-        /* Watermark Style */
-        .platform-watermark {
-            position: fixed;
-            bottom: 10px;
-            right: 15px;
-            font-size: 11px;
-            font-weight: 700;
-            color: rgba(100, 116, 139, 0.25);
-            letter-spacing: 1.5px;
-            pointer-events: none;
-            z-index: 999;
-            text-transform: uppercase;
-        }
-
-        /* Navbar */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background: #ffffff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .menu-toggle-btn {
-            background: transparent;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            color: #4f46e5;
-            transition: transform 0.2s ease;
-        }
-
-        .menu-toggle-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            font-size: 18px;
-        }
-
-        .brand-text h1 {
-            font-size: 18px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
-        .brand-text span {
-            font-size: 9px;
-            color: #6366f1;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        /* Sidebar & Admin Panel Integration (Hidden by default) */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: #ffffff;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(2px);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .close-sidebar {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        .sidebar-links {
-            list-style: none;
-            padding: 20px 0;
-        }
-
-        .sidebar-links li a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px 25px;
-            color: #334155;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .sidebar-links li a:hover {
-            background: #f1f5f9;
-            color: #4f46e5;
-            padding-left: 30px;
-        }
-
-        .sidebar-divider {
-            height: 1px;
-            background: #e2e8f0;
-            margin: 15px 0;
-        }
-
-        .admin-link {
-            color: #dc2626 !important;
-        }
-
-        /* Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
-            color: white;
-            padding: 60px 20px;
-            text-align: center;
-            border-radius: 0 0 30px 30px;
-            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2);
-        }
-
-        .hero-content {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .hero-content h1 {
-            font-size: 36px;
-            margin-bottom: 15px;
-            font-weight: 800;
-        }
-
-        .hero-content p {
-            font-size: 15px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        .search-container {
-            background: white;
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            padding: 10px 20px;
-            border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-
-        .search-icon {
-            color: #94a3b8;
-            margin-right: 12px;
-            font-size: 16px;
-        }
-
-        .search-container input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 15px;
-            color: #333;
-        }
-
-        /* Filter Section */
-        .filter-section {
-            padding: 30px 40px 10px;
-        }
-
-        .filter-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .filter-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .custom-select {
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            background: white;
-            font-size: 13px;
-            color: #334155;
-            outline: none;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .custom-select:hover {
-            border-color: #4f46e5;
-        }
-
-        /* Notes Cards Grid */
-        .notes-grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            padding: 20px 40px 50px;
-        }
-
-        .note-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .note-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
-
-        .card-badges {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .badge {
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .class-badge {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-
-        .sub-badge {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .note-card h3 {
-            font-size: 16px;
-            color: #1e293b;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .card-desc {
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #f1f5f9;
-            padding-top: 15px;
-        }
-
-        .file-type-tag {
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 600;
-        }
-
-        .download-btn {
-            background: #4f46e5;
-            color: white;
-            padding: 7px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .download-btn:hover {
-            background: #4338ca;
-        }
-
-        .drive-btn {
-            background: #0284c7;
-        }
-        .drive-btn:hover {
-            background: #0369a1;
-        }
-
-        /* Floating AI Assistant */
-        .ai-widget-wrapper {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            z-index: 1000;
-        }
-
-        .ai-floating-trigger {
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .ai-floating-trigger:hover {
-            transform: scale(1.1);
-        }
-
-        .ai-chat-box {
-            position: absolute;
-            bottom: 75px;
-            right: 0;
-            width: 360px;
-            height: 480px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transform-origin: bottom right;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .ai-chat-box.hidden {
-            opacity: 0;
-            visibility: hidden;
-            transform: scale(0.8);
-        }
-
-        .ai-chat-header {
-            background: linear-gradient(135deg, #4f46e5, #3730a3);
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .ai-header-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .ai-header-title i {
-            font-size: 20px;
-            background: rgba(255,255,255,0.2);
-            padding: 8px;
-            border-radius: 10px;
-        }
-
-        .ai-header-title h4 {
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .ai-header-title span {
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .close-ai {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-        }
-
-        .ai-chat-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #f8fafc;
-        }
-
-        .ai-message {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        .bot-msg {
-            background: #ffffff;
-            color: #334155;
-            align-self: flex-start;
-            border: 1px solid #e2e8f0;
-            border-bottom-left-radius: 3px;
-        }
-
-        .user-msg {
-            background: #4f46e5;
-            color: #ffffff;
-            align-self: flex-end;
-            border-bottom-right-radius: 3px;
-        }
-
-        .ai-chat-footer {
-            padding: 12px;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .ai-chat-footer input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 20px;
-            outline: none;
-            font-size: 13px;
-        }
-
-        .ai-chat-footer input:focus {
-            border-color: #4f46e5;
-        }
-
-        .ai-chat-footer button {
-            background: #4f46e5;
-            color: white;
-            border: none;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-
-        .ai-chat-footer button:hover {
-            transform: scale(1.05);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6fc; color: #333; overflow-x: hidden; position: relative; min-height: 100vh; }
+        .platform-watermark { position: fixed; bottom: 10px; right: 15px; font-size: 11px; font-weight: 700; color: rgba(100, 116, 139, 0.25); letter-spacing: 1.5px; pointer-events: none; z-index: 999; text-transform: uppercase; }
+        
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .menu-toggle-btn { background: transparent; border: none; font-size: 22px; cursor: pointer; color: #4f46e5; }
+        .brand-logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; }
+        .brand-text h1 { font-size: 18px; color: #1e1b4b; font-weight: 700; }
+        .brand-text span { font-size: 9px; color: #6366f1; letter-spacing: 1px; font-weight: 600; }
+        
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; box-shadow: 5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e2e8f0; }
+        .close-sidebar { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
+        .sidebar-links { list-style: none; padding: 20px 0; }
+        .sidebar-links li a { display: flex; align-items: center; gap: 15px; padding: 12px 25px; color: #334155; text-decoration: none; font-weight: 500; transition: all 0.2s ease; }
+        .sidebar-links li a:hover { background: #f1f5f9; color: #4f46e5; padding-left: 30px; }
+        .sidebar-divider { height: 1px; background: #e2e8f0; margin: 15px 0; }
+        .admin-link { color: #dc2626 !important; }
+
+        .hero-section { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white; padding: 60px 20px; text-align: center; border-radius: 0 0 30px 30px; }
+        .hero-content { max-width: 700px; margin: 0 auto; }
+        .hero-content h1 { font-size: 34px; margin-bottom: 15px; font-weight: 800; }
+        .hero-content p { font-size: 15px; opacity: 0.9; margin-bottom: 30px; }
+        .search-container { background: white; max-width: 600px; margin: 0 auto; display: flex; align-items: center; padding: 10px 20px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .search-icon { color: #94a3b8; margin-right: 12px; }
+        .search-container input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; background: transparent; }
+
+        .filter-section { padding: 30px 40px 10px; max-width: 1200px; margin: 0 auto; }
+        .filter-wrapper { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .filter-label { font-size: 12px; font-weight: 700; color: #64748b; }
+        .custom-select { padding: 8px 15px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-size: 13px; color: #334155; outline: none; cursor: pointer; }
+
+        .notes-grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 20px 40px 50px; max-width: 1200px; margin: 0 auto; }
+        .note-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
+        .note-card:hover { transform: translateY(-5px); }
+        .card-badges { display: flex; gap: 8px; margin-bottom: 12px; }
+        .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+        .class-badge { background: #e0e7ff; color: #3730a3; }
+        .sub-badge { background: #f1f5f9; color: #475569; }
+        .note-card h3 { font-size: 16px; color: #1e293b; margin-bottom: 8px; font-weight: 700; }
+        .card-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.4; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .file-type-tag { font-size: 12px; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 2px 8px; border-radius: 4px; }
+        .download-btn { background: #4f46e5; color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
+        .download-btn:hover { background: #4338ca; }
+        
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b; font-size: 16px; font-weight: 500; display: none; }
+
+        /* AI Emotional Support Widget Styling */
+        .ai-widget-wrapper { position: fixed; bottom: 25px; right: 25px; z-index: 1000; }
+        .ai-floating-trigger { width: 55px; height: 55px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; border-radius: 50%; font-size: 22px; cursor: pointer; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .ai-floating-trigger:hover { transform: scale(1.05); }
+        .ai-chat-box { position: absolute; bottom: 75px; right: 0; width: 360px; height: 480px; background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; transition: all 0.3s ease; }
+        .ai-chat-box.hidden { opacity: 0; visibility: hidden; transform: scale(0.8); pointer-events: none; }
+        .ai-chat-header { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ai-header-title { display: flex; align-items: center; gap: 12px; }
+        .ai-header-title i { font-size: 20px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%; }
+        .ai-header-title h4 { font-size: 14px; font-weight: 700; }
+        .ai-header-title span { font-size: 10px; opacity: 0.8; display: block; }
+        .ai-chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
+        .ai-message { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; word-wrap: break-word; }
+        .bot-msg { background: #ffffff; color: #334155; align-self: flex-start; border: 1px solid #e2e8f0; border-top-left-radius: 2px; }
+        .user-msg { background: #4f46e5; color: #ffffff; align-self: flex-end; border-top-right-radius: 2px; }
+        .ai-chat-footer { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+        .ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 20px; outline: none; font-size: 13px; }
+        .ai-chat-footer button { background: #4f46e5; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .ai-chat-footer button:hover { background: #4338ca; }
     </style>
 </head>
 <body>
-
-    <!-- Watermark -->
     <div class="platform-watermark">StudyGen AI Engine</div>
-
-    <!-- Header Section -->
+    
     <header class="navbar">
         <div class="nav-left">
-            <button class="menu-toggle-btn" id="menuToggle" title="Menu">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <button class="menu-toggle-btn" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
             <div class="brand-logo">
                 <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="brand-text">
@@ -557,7 +97,6 @@
         </div>
     </header>
 
-    <!-- Hidden Sidebar (Hamburger Menu including Admin Panel) -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -569,186 +108,206 @@
             <li><a href="#"><i class="fa-solid fa-book-open"></i> Browse Notes</a></li>
             <li><a href="#"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Notes</a></li>
             <li class="sidebar-divider"></li>
-            <!-- Admin Panel Hidden Inside 3-Lines Menu -->
             <li><a href="#admin-panel" class="admin-link" id="adminPanelBtn"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a></li>
         </ul>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-content">
             <h1>Find & Download Verified<br>Study Notes Instantly</h1>
             <p>Access high-quality class notes, revision summaries, and academic modules built by top students.</p>
-            
             <div class="search-container">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" placeholder="Search notes by title, subject, or class name..." id="mainSearch">
+                <input type="text" id="searchInput" placeholder="Search notes by title, subject, or class name...">
             </div>
         </div>
     </section>
 
-    <!-- Filter Section -->
     <section class="filter-section">
         <div class="filter-wrapper">
             <span class="filter-label"><i class="fa-solid fa-filter"></i> FILTER BY:</span>
-            <select class="custom-select">
-                <option>All Classes</option>
-                <option>Class 10</option>
-                <option>Class 12</option>
+            <select class="custom-select" id="classFilter">
+                <option value="">All Classes</option>
+                <option value="Class 10">Class 10</option>
+                <option value="Class 12">Class 12</option>
             </select>
-            <select class="custom-select">
-                <option>All Subjects</option>
-                <option>Mathematics</option>
-                <option>Science / Biology</option>
-                <option>Social Science</option>
+            <select class="custom-select" id="subjectFilter">
+                <option value="">All Subjects</option>
+                <option value="SST">SST</option>
+                <option value="Biology">Biology</option>
+                <option value="Physics">Physics</option>
+                <option value="Mathematics">Mathematics</option>
             </select>
         </div>
     </section>
 
-    <!-- Notes Cards Grid -->
-    <main class="notes-grid-container">
-        <!-- Card 1 -->
-        <div class="note-card">
-            <div class="card-badges">
-                <span class="badge class-badge">Class 10</span>
-                <span class="badge sub-badge">SST</span>
-            </div>
+    <main class="notes-grid-container" id="notesGrid">
+        <div class="note-card" data-class="Class 10" data-subject="SST" data-title="सामजिक विज्ञान के 750 रामबाण प्रश्न">
+            <div class="card-badges"><span class="badge class-badge">Class 10</span><span class="badge sub-badge">SST</span></div>
             <h3>सामजिक_विज्ञान_के_750_रामबाण</h3>
             <p class="card-desc">सामजिक विज्ञान - के 750 महत्वपूर्ण प्रश्न रामबाण संग्रह...</p>
-            <div class="card-footer">
-                <span class="file-type-tag"><i class="fa-solid fa-file-pdf"></i> PDF</span>
-                <a href="#" class="download-btn"><i class="fa-solid fa-download"></i> Download</a>
-            </div>
+            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: सामजिक_विज्ञान_के_750_रामबाण.pdf')">Download</a></div>
         </div>
 
-        <!-- Card 2 -->
-        <div class="note-card">
-            <div class="card-badges">
-                <span class="badge class-badge">Class 10</span>
-                <span class="badge sub-badge">Biology</span>
-            </div>
+        <div class="note-card" data-class="Class 10" data-subject="Biology" data-title="class 10 control and coordination notes">
+            <div class="card-badges"><span class="badge class-badge">Class 10</span><span class="badge sub-badge">Biology</span></div>
             <h3>class 10 control and coordination notes</h3>
-            <p class="card-desc">full chapter notes and all topic covered thoroughly with diagrams.</p>
-            <div class="card-footer">
-                <span class="file-type-tag"><i class="fa-solid fa-file-pdf"></i> PDF</span>
-                <a href="#" class="download-btn"><i class="fa-solid fa-download"></i> Download</a>
-            </div>
+            <p class="card-desc">Full chapter notes and all topic covered thoroughly with diagrams.</p>
+            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: Control and Coordination Notes.pdf')">Download</a></div>
         </div>
 
-        <!-- Card 3 -->
-        <div class="note-card">
-            <div class="card-badges">
-                <span class="badge class-badge">Class 10</span>
-                <span class="badge sub-badge">General</span>
-            </div>
-            <h3>rapid revision guide</h3>
-            <p class="card-desc">No additional description provided for this study material.</p>
-            <div class="card-footer">
-                <span class="file-type-tag"><i class="fa-solid fa-folder"></i> Drive Folder</span>
-                <a href="#" class="download-btn drive-btn"><i class="fa-solid fa-external-link"></i> Drive Link</a>
-            </div>
+        <div class="note-card" data-class="Class 12" data-subject="Physics" data-title="class 12 ray optics short notes">
+            <div class="card-badges"><span class="badge class-badge">Class 12</span><span class="badge sub-badge">Physics</span></div>
+            <h3>Class 12 Ray Optics Revision Notes</h3>
+            <p class="card-desc">Quick formula sheet and derivations for board examinations.</p>
+            <div class="card-footer"><span class="file-type-tag">PDF</span><a href="#" class="download-btn" onclick="alert('Downloading: Ray Optics Notes.pdf')">Download</a></div>
         </div>
+
+        <div class="no-results" id="noResults">No matching notes found. Try a different search or filter!</div>
     </main>
 
-    <!-- Floating AI Assistant Widget -->
+    <!-- AI Emotional Support & Answer Widget -->
     <div class="ai-widget-wrapper">
-        <!-- Chat Modal -->
         <div class="ai-chat-box hidden" id="aiChatBox">
             <div class="ai-chat-header">
                 <div class="ai-header-title">
                     <i class="fa-solid fa-robot"></i>
                     <div>
-                        <h4>AI Study Assistant</h4>
-                        <span>Ask notes, doubts & quizzes</span>
+                        <h4>AI Study & Emotional Mentor</h4>
+                        <span>Here for your studies & mental support</span>
                     </div>
                 </div>
-                <button class="close-ai" id="closeAiBtn"><i class="fa-solid fa-xmark"></i></button>
+                <button class="close-ai" id="closeAiBtn" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="ai-chat-body" id="aiChatBody">
-                <div class="ai-message bot-msg">
-                    Hello student! I am your AI Study Assistant. I can help you find notes, explain complex concepts, and generate quizzes. Ask me anything!
-                </div>
+                <div class="ai-message bot-msg">Hello! I am your AI Mentor. 💙 Padhai mein koi doubt ho ya kabhi stress feel ho raha ho, aap mujhse kuch bhi share kar sakte hain. Main hamesha aapke sath hoon!</div>
             </div>
             <div class="ai-chat-footer">
-                <input type="text" placeholder="Ask anything or search notes..." id="aiUserInput">
+                <input type="text" placeholder="Ask a question or share your feelings..." id="aiUserInput">
                 <button id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
-
-        <!-- Floating Trigger Button -->
-        <button class="ai-floating-trigger" id="aiTriggerBtn" title="Open AI Study Assistant">
-            <i class="fa-solid fa-robot"></i>
-        </button>
+        <button class="ai-floating-trigger" id="aiTriggerBtn"><i class="fa-solid fa-robot"></i></button>
     </div>
 
-    <!-- JavaScript Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Sidebar Toggle Logic
+            // Sidebar functionality
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const closeSidebar = document.getElementById('closeSidebar');
-
-            function toggleSidebar() {
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
+            
+            function toggleSidebar() { 
+                sidebar.classList.toggle('active'); 
+                sidebarOverlay.classList.toggle('active'); 
             }
-
             menuToggle.addEventListener('click', toggleSidebar);
             closeSidebar.addEventListener('click', toggleSidebar);
             sidebarOverlay.addEventListener('click', toggleSidebar);
 
-            // AI Chat Box Toggle
+            // Admin panel action
+            const adminPanelBtn = document.getElementById('adminPanelBtn');
+            adminPanelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert("🔒 Admin Panel Security Verification: Access Granted.");
+                toggleSidebar();
+            });
+
+            // Notes Search & Filter Logic
+            const searchInput = document.getElementById('searchInput');
+            const classFilter = document.getElementById('classFilter');
+            const subjectFilter = document.getElementById('subjectFilter');
+            const notesGrid = document.getElementById('notesGrid');
+            const noteCards = notesGrid.querySelectorAll('.note-card');
+            const noResults = document.getElementById('noResults');
+
+            function filterNotes() {
+                const query = searchInput.value.toLowerCase().trim();
+                const selectedClass = classFilter.value;
+                const selectedSubject = subjectFilter.value;
+                let visibleCount = 0;
+
+                noteCards.forEach(card => {
+                    const title = card.getAttribute('data-title').toLowerCase();
+                    const desc = card.querySelector('.card-desc').textContent.toLowerCase();
+                    const cardClass = card.getAttribute('data-class');
+                    const cardSubject = card.getAttribute('data-subject');
+
+                    const matchesSearch = title.includes(query) || desc.includes(query);
+                    const matchesClass = selectedClass === "" || cardClass === selectedClass;
+                    const matchesSubject = selectedSubject === "" || cardSubject === selectedSubject;
+
+                    if (matchesSearch && matchesClass && matchesSubject) {
+                        card.style.display = "flex";
+                        visibleCount++;
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+
+                if (visibleCount === 0) {
+                    noResults.style.display = "block";
+                } else {
+                    noResults.style.display = "none";
+                }
+            }
+
+            searchInput.addEventListener('input', filterNotes);
+            classFilter.addEventListener('change', filterNotes);
+            subjectFilter.addEventListener('change', filterNotes);
+
+            // AI Emotional Support & Chatbot Logic
             const aiTriggerBtn = document.getElementById('aiTriggerBtn');
             const aiChatBox = document.getElementById('aiChatBox');
             const closeAiBtn = document.getElementById('closeAiBtn');
-
-            aiTriggerBtn.addEventListener('click', () => {
-                aiChatBox.classList.toggle('hidden');
-            });
-
-            closeAiBtn.addEventListener('click', () => {
-                aiChatBox.classList.add('hidden');
-            });
-
-            // AI Engine Simulator
             const aiChatBody = document.getElementById('aiChatBody');
             const aiUserInput = document.getElementById('aiUserInput');
             const aiSendBtn = document.getElementById('aiSendBtn');
 
-            function handleUserMessage() {
+            aiTriggerBtn.addEventListener('click', () => aiChatBox.classList.toggle('hidden'));
+            closeAiBtn.addEventListener('click', () => aiChatBox.classList.add('hidden'));
+
+            function handleAiResponse() {
                 const text = aiUserInput.value.trim();
                 if (!text) return;
 
+                // Append User Message
                 const userMsgDiv = document.createElement('div');
                 userMsgDiv.className = 'ai-message user-msg';
                 userMsgDiv.textContent = text;
                 aiChatBody.appendChild(userMsgDiv);
-
                 aiUserInput.value = '';
                 aiChatBody.scrollTop = aiChatBody.scrollHeight;
 
+                // Generate Smart / Emotional Support Bot Response
                 setTimeout(() => {
                     const botMsgDiv = document.createElement('div');
                     botMsgDiv.className = 'ai-message bot-msg';
-                    botMsgDiv.textContent = `Maine aapka sawal ("${text}") analyze kar liya hai. Is topic ke best study resources hamare platform par available hain.`;
+                    
+                    const lowerText = text.toLowerCase();
+                    
+                    // Emotional / Stress Support Keywords
+                    if (lowerText.includes('stress') || lowerText.includes('sad') || lowerText.includes('tension') || lowerText.includes('tired') || lowerText.includes('dar') || lowerText.includes('fail') || lowerText.includes('rona') || lowerText.includes('akela') || lowerText.includes('depressed') || lowerText.includes('pareshan')) {
+                        botMsgDiv.textContent = "Main samajh sakta hoon ki kabhi-kabhi padhai aur exams ka pressure bahut zyada ho jata hai. 🫂 Par yaad rakhiye, aapki mehnat kabhi vyarth nahi jayegi. Thoda lamba saans lijiye, paani pijiye aur rest kariye. Aap strong hain aur aap sab kuch achieve kar sakte hain. Main hamesha aapke sath hoon!";
+                    } 
+                    // General greeting or help
+                    else if (lowerText.includes('hi') || lowerText.includes('hello') || lowerText.includes('hey')) {
+                        botMsgDiv.textContent = "Hello! Aaj padhai mein kis topic par help chahiye ya koi aur baat share karni hai?";
+                    }
+                    // Study / Notes query
+                    else {
+                        botMsgDiv.textContent = `Aapne pucha: "${text}". Yeh ek accha sawal hai! Padhai karte rahiye, aur agar kisi specific subject ya chapter ke notes chahiye toh aap upar search bar ya filter ka use kar sakte hain. Main aapke har doubt mein madad karne ke liye taiyar hoon! ✨`;
+                    }
+
                     aiChatBody.appendChild(botMsgDiv);
                     aiChatBody.scrollTop = aiChatBody.scrollHeight;
                 }, 600);
             }
 
-            aiSendBtn.addEventListener('click', handleUserMessage);
+            aiSendBtn.addEventListener('click', handleAiResponse);
             aiUserInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleUserMessage();
-            });
-
-            // Admin Panel inside 3-Lines Menu
-            const adminPanelBtn = document.getElementById('adminPanelBtn');
-            adminPanelBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                alert("🔒 Admin Panel Security Verification: Redirecting to secure management dashboard...");
-                toggleSidebar();
+                if (e.key === 'Enter') handleAiResponse();
             });
         });
     </script>
