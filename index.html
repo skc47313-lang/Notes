@@ -99,10 +99,11 @@ import { getDatabase, ref, get, set, push, remove, query, limitToLast, orderByCh
         let selectedFileBase64 = "";
         let selectedFileName = "";
 
-        window.loadCloudData = async function() {
+       window.loadCloudData = async function() {
             try {
                 const dataRef = ref(db, 'notes_bazar_data');
-                const limitedQuery = query(dataRef, orderByChild('createdAt'), limitToLast(15));
+                // Bina orderByChild ke sirf aakhri ke 15 items load honge
+                const limitedQuery = query(dataRef, limitToLast(15));
                 
                 const snapshot = await get(limitedQuery);
                 window.allItems = [];
