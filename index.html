@@ -79,8 +79,7 @@
     <!-- Firebase Realtime Database Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
+import { getDatabase, ref, get, set, push, remove, query, limitToLast, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         const firebaseConfig = {
             apiKey: "AIzaSyChG_jBGcieowmVVKHdwaiI1zvOwvvPag0",
             authDomain: "notes-market-d309b.firebaseapp.com",
@@ -103,7 +102,9 @@
         window.loadCloudData = async function() {
             try {
                 const dataRef = ref(db, 'notes_bazar_data');
-                const snapshot = await get(dataRef);
+                const limitedQuery = query(dataRef, orderByChild('createdAt'), limitToLast(15));
+                
+                const snapshot = await get(limitedQuery);
                 window.allItems = [];
                 if (snapshot.exists()) {
                     const data = snapshot.val();
