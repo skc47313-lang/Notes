@@ -5,8 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <meta name="google-site-verification" content="XPk4QlUB3ssGJVM0OzsiPBPSF9C7d4BJXbqXdJaF0YE" />
  <title>Notes Bazar - Professional Student Notes & Study Marketplace</title>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://notes-market-d309b-default-rtdb.firebaseio.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>tailwind.config = { darkMode: 'class' };</script>
+    <script>
+        /* apply saved dark mode / accent colour BEFORE first paint (no flash) */
+        (function () {
+            try {
+                var d = localStorage.getItem('nb_dark');
+                if (d === null) d = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? '1' : '0';
+                if (d === '1') document.documentElement.classList.add('dark');
+                var bg = JSON.parse(localStorage.getItem('nb_bg') || 'null');
+                if (bg && bg.v) {
+                    document.documentElement.style.setProperty('--custom-bg', bg.v);
+                    document.documentElement.classList.add('custom-bg');
+                }
+                var t = JSON.parse(localStorage.getItem('nb_theme') || 'null');
+                if (t) {
+                    document.documentElement.style.setProperty('--theme-primary', t.p);
+                    document.documentElement.style.setProperty('--theme-secondary', t.s);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     
     <style>
         :root {
@@ -71,16 +95,62 @@
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
 
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
+        /* light-weight transition only where needed (universal * transition was slow on phones) */
+        body, header, .dynamic-bg, button, a, input, select, textarea { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+
+        /* ===== Full dark mode ===== */
+        .dark { color-scheme: dark; }
+        .dark body { background-color: #020617; }
+        .dark input, .dark select, .dark textarea { color: #e2e8f0; }
+        .dark input::placeholder, .dark textarea::placeholder { color: #64748b; }
+        .dark select option { background: #1e293b; color: #e2e8f0; }
+        .dark .text-slate-800 { color: #f1f5f9; }
+        .dark .text-slate-700 { color: #e2e8f0; }
+        .dark .text-slate-600 { color: #cbd5e1; }
+        .dark .watermark-book { color: #94a3b8; }
+
+        /* custom page background (set from Theme > Background) */
+        html.custom-bg body { background: var(--custom-bg) center / cover fixed !important; }
+
+        /* ===== Bazar AI floating robot ===== */
+        .bot-svg { width: 100%; height: 100%; overflow: visible; transition: transform .2s ease; }
+        .ai-fab-btn:hover .bot-svg { transform: scale(1.08) rotate(-3deg); }
+        .bot-float { animation: botFloat 3s ease-in-out infinite; }
+        @keyframes botFloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
+        .bot-shadow { transform-box: fill-box; transform-origin: center; animation: botShadow 3s ease-in-out infinite; }
+        @keyframes botShadow { 0%,100% { transform: scaleX(1); opacity: .18 } 50% { transform: scaleX(.78); opacity: .08 } }
+        .bot-eye { transform-box: fill-box; transform-origin: center; animation: botBlink 4.5s infinite; }
+        @keyframes botBlink { 0%,92%,100% { transform: scaleY(1) } 95% { transform: scaleY(.08) } }
+        .bot-look { animation: botLook 7s ease-in-out infinite; }
+        @keyframes botLook { 0%,30%,100% { transform: translate(0,0) } 38%,52% { transform: translate(-2.5px,-1px) } 60%,72% { transform: translate(2.5px,0) } 80% { transform: translate(0,1.5px) } }
+        .bot-track { transform: translate(var(--lx, 0px), var(--ly, 0px)); transition: transform .12s linear; }
+        .bot-arm-r { transform-box: view-box; transform-origin: 88px 92px; animation: botWave 8s infinite; }
+        @keyframes botWave { 0%,86%,100% { transform: rotate(0) } 89% { transform: rotate(-55deg) } 92% { transform: rotate(-20deg) } 95% { transform: rotate(-55deg) } 98% { transform: rotate(0) } }
+        .bot-chest, .bot-ear { animation: botPulse 2s ease-in-out infinite; }
+        @keyframes botPulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+        #aiFab.thinking .bot-chest, #aiFab.thinking .bot-ear { animation-duration: .45s; }
+        #aiFab.thinking .bot-look { animation: none; transform: translate(0,-2px); }
+        .ai-fab-btn { position: relative; width: 76px; height: 88px; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .ai-fab-glow { position: absolute; inset: 10px 4px 14px; border-radius: 50%; background: radial-gradient(circle, rgba(34,211,238,.5), transparent 70%); animation: botGlow 2.6s ease-in-out infinite; pointer-events: none; }
+        @keyframes botGlow { 0%,100% { transform: scale(.9); opacity: .55 } 50% { transform: scale(1.18); opacity: 1 } }
+        .ai-fab-btn .bot-svg { position: relative; }
+        #aiFabBubble { opacity: 0; transform: translateY(6px) scale(.95); transition: opacity .3s ease, transform .3s ease; pointer-events: none; }
+        #aiFabBubble.show { opacity: 1; transform: none; pointer-events: auto; }
+        @media (max-width: 640px) { .ai-fab-btn { width: 62px; height: 74px; } }
+        @media (prefers-reduced-motion: reduce) { .bot-svg *, .ai-fab-glow { animation: none !important; } }
+
+        /* mobile tab bar */
+        .m-tab { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+        /* AI chat */
+        .ai-typing span { display:inline-block; width:6px; height:6px; margin:0 2px; border-radius:50%; background:#94a3b8; animation: aiDot 1s infinite ease-in-out; }
+        .ai-typing span:nth-child(2){ animation-delay:.15s } .ai-typing span:nth-child(3){ animation-delay:.3s }
+        @keyframes aiDot { 0%,80%,100%{ transform:scale(.6); opacity:.5 } 40%{ transform:scale(1); opacity:1 } }
     </style>
 
     <!-- Firebase Realtime Database Script -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-     const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyChG_jBGcieowmVVKHdwaiI1zvOwvvPag0",
             authDomain: "notes-market-d309b.firebaseapp.com",
             databaseURL: "https://notes-market-d309b-default-rtdb.firebaseio.com",
@@ -90,45 +160,170 @@ import { getDatabase, ref, get, set, push, remove } from "https://www.gstatic.co
             appId: "1:661796727875:web:f19697629ed298546138f6",
             measurementId: "G-9YM7BT3BM2"
         };
+        const DBURL = firebaseConfig.databaseURL;
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        // Firebase SDK is loaded LAZILY (only for admin / writes). Public browsing uses
+        // plain REST fetch, so first paint no longer waits for the SDK download.
+        let sdkPromise = null;
+        function loadSdk() {
+            if (!sdkPromise) {
+                sdkPromise = (async () => {
+                    const base = "https://www.gstatic.com/firebasejs/10.8.0/";
+                    const [a, d] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-database.js")]);
+                    const app = a.initializeApp(firebaseConfig);
+                    return { db: d.getDatabase(app), ...d };
+                })();
+                sdkPromise.catch(() => { sdkPromise = null; });
+            }
+            return sdkPromise;
+        }
+
+        async function restGet(path, params) {
+            const r = await fetch(DBURL + '/' + path + '.json' + (params || ''));
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
 
         window.allItems = [];
         window.messages = [];
         let selectedFileBase64 = "";
         let selectedFileName = "";
 
-window.loadCloudData = async function() {
+        const PAGE_SIZE = 3;          // 3 items at a time, next 3 load automatically on scroll
+        window.hasMore = false;
+        window.oldestKey = null;
+        window.loaded = false;
+        window.loadError = false;
+        window.loadFailed = false;
+        let loadingMore = false;
+
+        // beforeKey: only items older than this key. limit: how many (undefined = all)
+        async function fetchItems(beforeKey, limit) {
             try {
-                const dataRef = ref(db, 'notes_bazar_data');
-                const snapshot = await get(dataRef);
+                let p = '?orderBy=%22%24key%22';
+                if (beforeKey) p += '&endAt=' + encodeURIComponent('"' + beforeKey + '"');
+                if (limit) p += '&limitToLast=' + (limit + (beforeKey ? 1 : 0));
+                const data = (await restGet('notes_bazar_data', p)) || {};
+                if (beforeKey) delete data[beforeKey];
+                return data;
+            } catch (e) {
+                const { db, ref, get, query, orderByKey, limitToLast, endBefore } = await loadSdk();
+                const c = [orderByKey()];
+                if (beforeKey) c.push(endBefore(beforeKey));
+                if (limit) c.push(limitToLast(limit));
+                const snap = await get(query(ref(db, 'notes_bazar_data'), ...c));
+                return snap.exists() ? snap.val() : {};
+            }
+        }
+
+        function mergeData(data) {
+            let n = 0;
+            Object.keys(data || {}).forEach(key => {
+                if (!data[key] || typeof data[key] !== 'object') return;
+                n++;
+                if (!window.allItems.some(i => i.id === key)) window.allItems.push({ id: key, ...data[key] });
+                if (window.oldestKey === null || key < window.oldestKey) window.oldestKey = key;
+            });
+            window.allItems.sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0) || (y.id > x.id ? 1 : -1));
+            return n;
+        }
+
+        function saveCache() {
+            try {
+                const light = window.allItems.slice(0, PAGE_SIZE).map(i => { const c = { ...i }; delete c.fileData; return c; });
+                localStorage.setItem('nb_cache_v4', JSON.stringify({ items: light, hasMore: window.hasMore }));
+            } catch (e) {}
+        }
+
+        // First load: newest 5 only
+        window.loadCloudData = async function() {
+            try {
+                const data = await fetchItems(null, PAGE_SIZE);
                 window.allItems = [];
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    Object.keys(data).forEach(key => {
-                        window.allItems.push({ id: key, ...data[key] });
-                    });
-                }
+                window.oldestKey = null;
+                const n = mergeData(data);
+                window.hasMore = n >= PAGE_SIZE;
+                window.loadError = false;
+                window.loaded = true;
                 renderAllPages();
-                loadMessages();
                 renderNotifications();
+                saveCache();
             } catch (error) {
                 console.error("Error loading data: ", error);
+                window.loaded = true;
+                window.loadError = window.allItems.length === 0;
+                renderAllPages();
             }
         };
-     
+
+        // Auto-called when the user scrolls near the end of the list: next older 5
+        window.loadMoreItems = async function() {
+            if (loadingMore || !window.hasMore) return;
+            loadingMore = true;
+            window.loadFailed = false;
+            try {
+                const data = await fetchItems(window.oldestKey, PAGE_SIZE);
+                const n = mergeData(data);
+                window.hasMore = n >= PAGE_SIZE;
+            } catch (e) { console.error(e); window.loadFailed = true; }
+            loadingMore = false;
+            renderAllPages();
+        };
+        window.retryLoadMore = function() { window.loadFailed = false; window.loadMoreItems(); };
+
+        // Needed for search/filters and admin: get everything that is left
+        window.loadAllRemaining = async function() {
+            if (!window.hasMore || loadingMore) return;
+            loadingMore = true;
+            try {
+                const data = await fetchItems(window.oldestKey, null);
+                mergeData(data);
+                window.hasMore = false;
+            } catch (e) { console.error(e); window.loadFailed = true; }
+            loadingMore = false;
+            renderAllPages();
+        };
+
+        // Fetch a file only when needed (Preview / Download)
+        async function getFileData(item) {
+            if (item.fileData) return item.fileData;
+            let v = await restGet('notes_bazar_files/' + item.id);
+            if (!v) v = await restGet('notes_bazar_data/' + item.id + '/fileData'); // old items
+            if (v) { item.fileData = v; return v; }
+            return "";
+        }
+
+        // One-time: move big files out of the list node so the list loads fast
+        window.migrateOldFiles = async function() {
+            const old = window.allItems.filter(i => i.fileData);
+            if (old.length === 0) return;
+            if (!confirm(old.length + " purani file(s) list ke andar hain jisse site slow hoti hai. Abhi fast kar du? (1-2 minute lag sakte hain)")) return;
+            const { db, ref, get, set, remove } = await loadSdk();
+            let done = 0;
+            for (const it of old) {
+                try {
+                    await set(ref(db, 'notes_bazar_files/' + it.id), it.fileData);
+                    const check = await get(ref(db, 'notes_bazar_files/' + it.id));
+                    if (check.exists()) {
+                        await remove(ref(db, 'notes_bazar_data/' + it.id + '/fileData'));
+                        await set(ref(db, 'notes_bazar_data/' + it.id + '/hasFile'), true);
+                        done++;
+                    }
+                } catch (err) { console.error(err); alert("Error: Firebase Rules me 'notes_bazar_files' ka write allow karna padega."); break; }
+            }
+            alert(done + " file(s) fast kar di gayi.");
+            await window.loadCloudData();
+        };
+
+        // Only the admin needs messages, so this is no longer fetched for normal visitors
         async function loadMessages() {
             try {
-                const msgRef = ref(db, 'notes_bazar_messages');
-                const snapshot = await get(msgRef);
-                window.messages = [];
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    Object.keys(data).forEach(key => {
-                        window.messages.push({ id: key, ...data[key] });
-                    });
-                }
+                const data = await restGet('notes_bazar_messages');
+                window.messages = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
             } catch (err) {
                 console.error(err);
             }
@@ -140,44 +335,7 @@ window.loadCloudData = async function() {
             renderGrid('pyqGrid', 'pyqCount', 'pyq');
         };
 
-        function renderGrid(gridId, countId, typeFilter) {
-            const grid = document.getElementById(gridId);
-            const countSpan = document.getElementById(countId);
-            if (!grid) return;
-
-            const filtered = window.allItems.filter(item => (item.type || 'note') === typeFilter);
-            grid.innerHTML = '';
-            if (countSpan) countSpan.textContent = filtered.length;
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">No ${typeFilter}s found on cloud</h3></div>`;
-                return;
-            }
-
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between note-card-idle hover-rgb-glow";
-                
-                card.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-start gap-2 mb-3">
-                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${item.className || 'General'}</span>
-                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${item.subject || 'General'}</span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${item.title}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${item.description || ''}</p>
-                    </div>
-                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${item.fileName || 'Document'}</span>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="openPreview('${item.id}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">Preview</button>
-                            ${item.fileLink ? `<a href="${item.fileLink}" target="_blank" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadItem('${item.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
+        function renderGrid(gridId, countId, typeFilter) { window.filterItems(typeFilter); }
 
         function renderNotifications() {
             const list = document.getElementById('notificationList');
@@ -197,7 +355,7 @@ window.loadCloudData = async function() {
                     <div class="dynamic-bg text-white p-2 rounded-lg shrink-0"><i class="fa-solid fa-bell"></i></div>
                     <div>
                         <p class="font-bold text-slate-800 dark:text-slate-200">New ${item.type || 'note'} uploaded!</p>
-                        <p class="text-slate-500 dark:text-slate-400 mt-0.5">${item.title} (${item.subject || ''})</p>
+                        <p class="text-slate-500 dark:text-slate-400 mt-0.5">${esc(item.title)} (${esc(item.subject || '')})</p>
                     </div>
                 `;
                 list.appendChild(div);
@@ -208,14 +366,12 @@ window.loadCloudData = async function() {
             ['homeView', 'notesView', 'booksView', 'pyqView'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
+            const cap = viewName.charAt(0).toUpperCase() + viewName.slice(1);
             ['navHomeBtn', 'navNotesBtn', 'navBooksBtn', 'navPyqBtn'].forEach(id => {
-                const btn = document.getElementById(id);
-                if(btn) btn.classList.remove('nav-btn-active');
+                [id, id + 'M'].forEach(x => { const b = document.getElementById(x); if (b) b.classList.remove('nav-btn-active'); });
             });
-
             document.getElementById(viewName + 'View').classList.remove('hidden');
-            const activeBtn = document.getElementById('nav' + viewName.charAt(0).toUpperCase() + viewName.slice(1) + 'Btn');
-            if(activeBtn) activeBtn.classList.add('nav-btn-active');
+            ['nav' + cap + 'Btn', 'nav' + cap + 'BtnM'].forEach(x => { const b = document.getElementById(x); if (b) b.classList.add('nav-btn-active'); });
             closeModal('mobileMenuModal');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -237,69 +393,135 @@ window.loadCloudData = async function() {
                         <a href="${item.fileLink}" target="_blank" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-block shadow">Open Google Drive Link</a>
                     </div>
                 `;
-            } else if (item.fileData) {
-                container.innerHTML = `
-                    <div class="w-full h-80 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
-                        <iframe src="${item.fileData}" class="w-full h-full"></iframe>
-                    </div>
-                `;
+            } else if (item.fileData || item.hasFile || !item.fileLink) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Loading file...</p>`;
+                getFileData(item).then(data => {
+                    if (!data) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No direct file attached.</p>`; return; }
+                    container.innerHTML = `
+                        <div class="w-full h-80 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
+                            <iframe src="${data}" class="w-full h-full"></iframe>
+                        </div>`;
+                }).catch(() => { container.innerHTML = `<p class="text-xs text-red-500 text-center py-6">File load nahi ho payi.</p>`; });
             } else {
                 container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No direct file attached.</p>`;
             }
             openModal('previewModal');
         };
 
-        window.downloadItem = function(id) {
+        window.downloadItem = async function(id) {
             const item = window.allItems.find(i => i.id === id);
-            if (!item || !item.fileData) {
+            let data = "";
+            try { data = item ? await getFileData(item) : ""; } catch (e) {}
+            if (!item || !data) {
                 alert("File data not available.");
                 return;
             }
             const a = document.createElement('a');
-            a.href = item.fileData;
+            a.href = data;
             a.download = item.fileName || 'document.pdf';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         };
 
-        window.filterItems = function(type) {
-            const query = document.getElementById(type + 'SearchInput').value.toLowerCase();
-            const classVal = document.getElementById(type + 'ClassFilter').value;
-            const subjectVal = document.getElementById(type + 'SubjectFilter').value;
+        const TYPE_IDS = { note: 'notes', book: 'books', pyq: 'pyq' };
 
-            const filtered = window.allItems.filter(item => {
-                const matchesType = (item.type || 'note') === type;
-                const matchesQuery = item.title.toLowerCase().includes(query) || item.subject.toLowerCase().includes(query);
-                const matchesClass = classVal === "" || (item.className || '').toLowerCase() === classVal.toLowerCase();
-                const matchesSubject = subjectVal === "" || (item.subject || '').toLowerCase() === subjectVal.toLowerCase();
-                return matchesType && matchesQuery && matchesClass && matchesSubject;
-            });
-
-            const grid = document.getElementById(type + 'Grid');
-            grid.innerHTML = '';
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between note-card-idle hover-rgb-glow";
-                card.innerHTML = `
+        function makeCard(item) {
+            const card = document.createElement('div');
+            card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between hover-rgb-glow";
+            card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start gap-2 mb-3">
-                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${item.className || 'General'}</span>
-                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${item.subject || 'General'}</span>
+                            <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-lg">${esc(item.className || 'General')}</span>
+                            <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${esc(item.subject || 'General')}</span>
                         </div>
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${item.title}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${item.description || ''}</p>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${esc(item.title)}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">${esc(item.description || '')}</p>
                     </div>
                     <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${item.fileName || 'Document'}</span>
+                        <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${esc(item.fileName || 'Document')}</span>
                         <div class="flex items-center space-x-2">
                             <button onclick="openPreview('${item.id}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">Preview</button>
-                            ${item.fileLink ? `<a href="${item.fileLink}" target="_blank" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadItem('${item.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
+                            ${item.fileLink ? `<a href="${esc(item.fileLink)}" target="_blank" rel="noopener" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">Drive</a>` : `<button onclick="downloadItem('${item.id}')" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Download</button>`}
                         </div>
                     </div>
                 `;
-                grid.appendChild(card);
+            return card;
+        }
+
+        function skeletonCards(n) {
+            let h = '';
+            for (let i = 0; i < n; i++) {
+                h += `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow animate-pulse space-y-3">
+                    <div class="flex justify-between"><div class="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg"></div><div class="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div>
+                    <div class="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div class="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div class="h-3 w-2/3 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div class="h-9 w-full bg-slate-100 dark:bg-slate-800 rounded-xl mt-4"></div></div>`;
+            }
+            return h;
+        }
+
+        // Invisible-ish marker at the bottom of the list: when it scrolls into view -> load next 5
+        function makeSentinel() {
+            const s = document.createElement('div');
+            s.className = 'col-span-full text-center py-4 text-xs text-slate-400';
+            if (window.loadFailed) {
+                s.innerHTML = `<button onclick="retryLoadMore()" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">Load nahi hua, Retry</button>`;
+                return s;
+            }
+            s.innerHTML = `<div class="inline-block bg-white/85 dark:bg-slate-900/85 rounded-2xl px-4 py-2 shadow-sm"><span class="ai-typing"><span></span><span></span><span></span></span><div class="mt-1">Aur load ho raha hai...</div></div>`;
+            if ('IntersectionObserver' in window) {
+                const io = new IntersectionObserver(entries => {
+                    if (entries[0].isIntersecting) { io.disconnect(); window.loadMoreItems(); }
+                }, { rootMargin: '300px' });
+                io.observe(s);
+            } else {
+                s.innerHTML = `<button onclick="loadMoreItems()" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">Load More</button>`;
+            }
+            return s;
+        }
+
+        window.filterItems = function(type) {
+            const k = TYPE_IDS[type] || type;
+            const grid = document.getElementById(k + 'Grid');
+            if (!grid) return;
+            const qEl = document.getElementById(k + 'SearchInput');
+            const cEl = document.getElementById(k + 'ClassFilter');
+            const sEl = document.getElementById(k + 'SubjectFilter');
+            const query = qEl ? qEl.value.toLowerCase().trim() : '';
+            const classVal = cEl ? cEl.value : '';
+            const subjectVal = sEl ? sEl.value : '';
+            const filtering = !!(query || classVal || subjectVal);
+
+            // search/filter needs all items -> fetch the rest in background
+            if (filtering && window.hasMore) window.loadAllRemaining();
+
+            const filtered = window.allItems.filter(item => {
+                if ((item.type || 'note') !== type) return false;
+                const matchesQuery = !query || (item.title || '').toLowerCase().includes(query) || (item.subject || '').toLowerCase().includes(query);
+                const matchesClass = classVal === "" || (item.className || '').toLowerCase() === classVal.toLowerCase();
+                const matchesSubject = subjectVal === "" || (item.subject || '').toLowerCase() === subjectVal.toLowerCase();
+                return matchesQuery && matchesClass && matchesSubject;
             });
+
+            const countSpan = document.getElementById(k + 'Count');
+            if (countSpan) countSpan.textContent = filtered.length + (window.hasMore ? '+' : '');
+
+            grid.innerHTML = '';
+            if (!window.loaded && window.allItems.length === 0) { grid.innerHTML = skeletonCards(3); return; }
+            if (window.loadError) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800"><p class="text-sm font-semibold mb-3">Data load nahi ho paya. Internet check karo.</p><button onclick="loadCloudData()" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">Retry</button></div>`;
+                return;
+            }
+            if (filtered.length === 0 && (!window.hasMore || filtering)) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">${window.hasMore ? 'Searching...' : 'No ' + esc(type) + 's found'}</h3></div>`;
+                return;
+            }
+            const frag = document.createDocumentFragment();
+            filtered.forEach(item => frag.appendChild(makeCard(item)));
+            if (window.hasMore && !filtering) frag.appendChild(makeSentinel());
+            grid.appendChild(frag);
         };
 
         window.switchUploadType = function(type) {
@@ -335,38 +557,87 @@ window.loadCloudData = async function() {
             else customDiv.classList.add('hidden');
         };
 
-        // Theme Switcher Functions
-        window.setTheme = function(themeName) {
+        // Theme / dark mode
+        const ACCENTS = {
+            default: ['#6366f1', '#7c3aed'],
+            blue: ['#2563eb', '#1d4ed8'],
+            emerald: ['#059669', '#10b981'],
+            sunset: ['#ea580c', '#f97316']
+        };
+        function saveAccent(p, s) {
             const root = document.documentElement;
-            if (themeName === 'default') {
-                root.style.setProperty('--theme-primary', '#6366f1');
-                root.style.setProperty('--theme-secondary', '#7c3aed');
-            } else if (themeName === 'dark') {
-                root.style.setProperty('--theme-primary', '#334155');
-                root.style.setProperty('--theme-secondary', '#0f172a');
-            } else if (themeName === 'light') {
-                root.style.setProperty('--theme-primary', '#2563eb');
-                root.style.setProperty('--theme-secondary', '#1d4ed8');
-            } else if (themeName === 'emerald') {
-                root.style.setProperty('--theme-primary', '#059669');
-                root.style.setProperty('--theme-secondary', '#10b981');
-            } else if (themeName === 'sunset') {
-                root.style.setProperty('--theme-primary', '#ea580c');
-                root.style.setProperty('--theme-secondary', '#f97316');
-            }
+            root.style.setProperty('--theme-primary', p);
+            root.style.setProperty('--theme-secondary', s);
+            try { localStorage.setItem('nb_theme', JSON.stringify({ p, s })); } catch (e) {}
+        }
+        function updateModeButtons() {
+            const on = document.documentElement.classList.contains('dark');
+            const l = document.getElementById('modeLightBtn'), d = document.getElementById('modeDarkBtn');
+            ['ring-2', 'ring-indigo-500'].forEach(c => { if (l) l.classList.toggle(c, !on); if (d) d.classList.toggle(c, on); });
+        }
+        window.setMode = function(mode) {
+            const on = mode === 'dark';
+            document.documentElement.classList.toggle('dark', on);
+            try { localStorage.setItem('nb_dark', on ? '1' : '0'); } catch (e) {}
+            updateModeButtons();
+        };
+        window.setTheme = function(themeName) {
+            if (themeName === 'dark') { window.setMode('dark'); return; }
+            const a = ACCENTS[themeName] || ACCENTS.default;
+            saveAccent(a[0], a[1]);
             closeModal('themeModal');
         };
-
+        const BG_PRESETS = {
+            night: '#0f172a', navy: '#172554', forest: '#052e16', wine: '#4c0519',
+            sunrise: 'linear-gradient(135deg,#fde68a,#fca5a5,#c4b5fd)',
+            ocean: 'linear-gradient(135deg,#0ea5e9,#6366f1,#8b5cf6)',
+            mint: 'linear-gradient(135deg,#a7f3d0,#bae6fd)',
+            dusk: 'linear-gradient(160deg,#1e1b4b,#7c3aed 60%,#ec4899)'
+        };
+        function applyBgValue(v) {
+            const h = document.documentElement;
+            if (v) { h.style.setProperty('--custom-bg', v); h.classList.add('custom-bg'); }
+            else { h.style.removeProperty('--custom-bg'); h.classList.remove('custom-bg'); }
+        }
+        function setBg(v) {
+            applyBgValue(v);
+            try { localStorage.setItem('nb_bg', JSON.stringify({ v })); }
+            catch (e) { alert('Ye photo save nahi ho payi (bahut badi hai). Chhoti photo try karo. Abhi ke liye ye sirf is session me dikhegi.'); }
+        }
+        window.setBgPreset = function(key) { setBg(BG_PRESETS[key]); };
+        window.applyBgColor = function() { setBg(document.getElementById('customBgColor').value); };
+        window.resetBg = function() { applyBgValue(null); try { localStorage.removeItem('nb_bg'); } catch (e) {} };
+        window.handleBgImage = function(e) {
+            const f = e.target.files && e.target.files[0];
+            if (!f) return;
+            if (!f.type.startsWith('image/')) { alert('Sirf image file chuno.'); return; }
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => {   // shrink so it fits in browser storage and loads fast
+                    const sc = Math.min(1, 1280 / Math.max(img.width, img.height));
+                    const c = document.createElement('canvas');
+                    c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+                    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                    setBg('url("' + c.toDataURL('image/jpeg', 0.72) + '")');
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(f);
+            e.target.value = '';
+        };
         window.applyCustomTheme = function() {
-            const primary = document.getElementById('customPrimaryColor').value;
-            const secondary = document.getElementById('customSecondaryColor').value;
-            const root = document.documentElement;
-            root.style.setProperty('--theme-primary', primary);
-            root.style.setProperty('--theme-secondary', secondary);
+            saveAccent(document.getElementById('customPrimaryColor').value, document.getElementById('customSecondaryColor').value);
             closeModal('themeModal');
         };
 
         // Admin Auth
+        window.togglePass = function(id, btn) {
+            const inp = document.getElementById(id);
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            btn.innerHTML = show ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+        };
         window.openAdminLogin = function() { document.getElementById('adminLoginModal').classList.remove('hidden'); };
         window.closeAdminLogin = function() { document.getElementById('adminLoginModal').classList.add('hidden'); };
 
@@ -382,9 +653,11 @@ window.loadCloudData = async function() {
 
         window.openAdminDashboard = async function() {
             document.getElementById('adminDashboardModal').classList.remove('hidden');
+            renderAdmin();
             await loadMessages();
-            renderAdminTable();
-            renderAdminMessagesTable();
+            await window.loadAllRemaining();
+            renderAdmin();
+            window.migrateOldFiles();
         };
 
         window.closeAdminDashboard = function() { 
@@ -392,57 +665,144 @@ window.loadCloudData = async function() {
             window.loadCloudData(); 
         };
 
-        function renderAdminTable() {
-            const tbody = document.getElementById('adminItemsTableBody');
-            document.getElementById('adminTotalItems').textContent = window.allItems.length;
-            tbody.innerHTML = '';
-            if (window.allItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">No items found.</td></tr>`;
-                return;
+        // ---------- Admin dashboard (tabs: Overview / Uploads / Support / Complaints / Wishes) ----------
+        let adminTab = 'overview';
+        let adminType = 'all';
+        const ADMIN_TABS = [
+            { id: 'overview', label: 'Overview', icon: 'fa-chart-pie' },
+            { id: 'uploads', label: 'Uploads', icon: 'fa-cloud' },
+            { id: 'support', label: 'Support', icon: 'fa-headset' },
+            { id: 'complain', label: 'Complaints', icon: 'fa-circle-exclamation' },
+            { id: 'wish', label: 'User Requests', icon: 'fa-lightbulb' }
+        ];
+        const TYPE_STYLE = {
+            note: { cls: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300', label: 'Note' },
+            book: { cls: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300', label: 'Book' },
+            pyq: { cls: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-300', label: 'PYQ' }
+        };
+        const MSG_STYLE = {
+            support: { icon: 'fa-headset', color: 'bg-blue-500', label: 'Support' },
+            complain: { icon: 'fa-circle-exclamation', color: 'bg-rose-500', label: 'Complaint' },
+            wish: { icon: 'fa-lightbulb', color: 'bg-teal-500', label: 'User Request' }
+        };
+        const fmtDate = ts => ts ? new Date(ts).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+
+        window.adminSwitchTab = function(t) { adminTab = t; renderAdmin(); const b = document.querySelector('#adminDashboardModal .overflow-y-auto'); if (b) b.scrollTop = 0; };
+        window.adminSetType = function(t) { adminType = t; renderAdmin(); };
+        window.adminRender = function() { renderAdmin(); };
+
+        function msgCard(m) {
+            const st = MSG_STYLE[m.type] || MSG_STYLE.support;
+            let chips = '', body = String(m.message || '');
+            if (m.type === 'wish') {
+                const mt = body.match(/^\[([^\]]+)\]\s*([\s\S]*)$/);
+                if (mt) {
+                    chips = mt[1].split('|').map(x => `<span class="bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-[10px] font-bold px-2 py-0.5 rounded-lg">${esc(x.trim())}</span>`).join('');
+                    body = mt[2];
+                }
             }
-            window.allItems.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
-                tr.innerHTML = `
-                    <td class="p-4"><span class="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 rounded text-xs font-semibold uppercase">${item.type || 'note'}</span><div class="font-bold text-slate-800 dark:text-slate-200 mt-1">${item.title}</div></td>
-                    <td class="p-4 text-slate-600 dark:text-slate-300 text-xs">${item.subject}</td>
-                    <td class="p-4 text-slate-600 dark:text-slate-300 text-xs">${item.className}</td>
-                    <td class="p-4 text-right"><button onclick="deleteCloudItem('${item.id}')" class="bg-red-50 text-red-600 p-2 rounded-xl text-xs hover:bg-red-100 transition"><i class="fa-solid fa-trash"></i></button></td>
-                `;
-                tbody.appendChild(tr);
-            });
+            const contact = m.email && m.email !== '-' ? `<span class="text-[11px] text-slate-400"><i class="fa-solid fa-at mr-1"></i>${esc(m.email)}</span>` : '';
+            return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="${st.color} text-white w-10 h-10 rounded-xl flex items-center justify-center shrink-0"><i class="fa-solid ${st.icon}"></i></div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="font-bold text-sm">${esc(m.name || 'Anonymous')}</span>${contact}
+                            <span class="text-[10px] text-slate-400 ml-auto">${fmtDate(m.createdAt)}</span>
+                        </div>
+                        ${chips ? `<div class="flex flex-wrap gap-1 mt-1.5">${chips}</div>` : ''}
+                        <p class="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed break-words">${esc(body)}</p>
+                        ${m.reply ? `<div class="mt-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 rounded-xl px-3 py-2 text-xs text-emerald-800 dark:text-emerald-300"><b>Reply:</b> ${esc(m.reply)}</div>` : ''}
+                        <div class="flex items-center gap-2 mt-3">
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-lg ${m.reply ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${m.reply ? 'Replied' : 'Pending'}</span>
+                            <button onclick="openReplyModal('${m.id}')" class="ml-auto dynamic-btn text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow"><i class="fa-solid fa-reply mr-1"></i>${m.reply ? 'Edit reply' : 'Reply'}</button>
+                            <button onclick="deleteMessage('${m.id}')" class="bg-red-50 text-red-600 p-2 rounded-xl text-xs hover:bg-red-100" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div></div>`;
         }
 
-        function renderAdminMessagesTable() {
-            const tbody = document.getElementById('adminMessagesTableBody');
-            document.getElementById('adminTotalMessages').textContent = window.messages.length;
-            tbody.innerHTML = '';
-            if (window.messages.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">No messages yet.</td></tr>`;
-                return;
+        function itemCard(item) {
+            const ts = TYPE_STYLE[item.type || 'note'] || TYPE_STYLE.note;
+            return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col gap-3">
+                <div class="flex items-start justify-between gap-2">
+                    <span class="text-[10px] font-extrabold uppercase px-2 py-1 rounded-lg ${ts.cls}">${ts.label}</span>
+                    <span class="text-[10px] text-slate-400">${fmtDate(item.createdAt)}</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm leading-snug break-words">${esc(item.title)}</h4>
+                    <p class="text-[11px] text-slate-500 mt-0.5">${esc(item.className || '-')} • ${esc(item.subject || '-')}</p>
+                </div>
+                ${item.description ? `<p class="text-[11px] text-slate-500 line-clamp-2">${esc(item.description)}</p>` : ''}
+                <div class="text-[11px] text-slate-400 flex items-center gap-1.5 truncate"><i class="fa-solid ${item.fileLink ? 'fa-link text-blue-500' : 'fa-file-pdf text-red-500'}"></i><span class="truncate">${item.fileLink ? 'Google Drive link' : esc(item.fileName || 'Uploaded file')}</span></div>
+                <div class="flex gap-2 mt-auto">
+                    <button onclick="openPreview('${item.id}')" class="flex-1 dynamic-btn text-white py-2 rounded-xl text-xs font-semibold shadow"><i class="fa-solid fa-eye mr-1"></i>Preview</button>
+                    <button onclick="deleteCloudItem('${item.id}')" class="bg-red-50 text-red-600 px-3 rounded-xl text-xs hover:bg-red-100" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+                </div></div>`;
+        }
+
+        function renderAdmin() {
+            const items = window.allItems, msgs = window.messages;
+            const of = ty => msgs.filter(m => m.type === ty);
+            const pending = msgs.filter(m => !m.reply);
+            const count = { overview: 0, uploads: items.length, support: of('support').length, complain: of('complain').length, wish: of('wish').length };
+            const pend = { support: of('support').filter(m => !m.reply).length, complain: of('complain').filter(m => !m.reply).length, wish: of('wish').filter(m => !m.reply).length };
+
+            // tabs
+            document.getElementById('adminTabs').innerHTML = ADMIN_TABS.map(t => {
+                const active = t.id === adminTab;
+                const badge = t.id === 'overview' ? '' : `<span class="${active ? 'bg-white/25' : 'bg-slate-200 dark:bg-slate-700'} text-[10px] px-1.5 py-0.5 rounded-full">${count[t.id]}</span>${pend[t.id] ? `<span class="w-2 h-2 rounded-full bg-amber-400"></span>` : ''}`;
+                return `<button onclick="adminSwitchTab('${t.id}')" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${active ? 'dynamic-btn text-white shadow' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}"><i class="fa-solid ${t.icon}"></i>${t.label}${badge}</button>`;
+            }).join('');
+            ADMIN_TABS.forEach(t => { const el = document.getElementById('adminPanel-' + t.id); if (el) el.classList.toggle('hidden', t.id !== adminTab); });
+
+            if (adminTab === 'overview') {
+                const stat = (label, val, icon, color) => `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center gap-3"><div class="${color} text-white w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0"><i class="fa-solid ${icon}"></i></div><div><div class="text-2xl font-extrabold leading-none">${val}</div><div class="text-[11px] text-slate-500 mt-1">${label}</div></div></div>`;
+                document.getElementById('adminStats').innerHTML =
+                    stat('Total uploads', items.length, 'fa-cloud', 'bg-indigo-500') +
+                    stat('Notes / Books / PYQ', `${items.filter(i => (i.type || 'note') === 'note').length}/${items.filter(i => i.type === 'book').length}/${items.filter(i => i.type === 'pyq').length}`, 'fa-layer-group', 'bg-emerald-500') +
+                    stat('Support + Complaints', of('support').length + of('complain').length, 'fa-headset', 'bg-blue-500') +
+                    stat('User requests', of('wish').length, 'fa-lightbulb', 'bg-teal-500');
+                const pl = [...pending].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
+                document.getElementById('adminPending').innerHTML = pl.length ? pl.map(m => {
+                    const st = MSG_STYLE[m.type] || MSG_STYLE.support;
+                    return `<button onclick="adminSwitchTab('${m.type in MSG_STYLE ? m.type : 'support'}')" class="w-full text-left bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 flex items-start gap-3 hover:border-indigo-400"><span class="${st.color} text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0"><i class="fa-solid ${st.icon}"></i></span><span class="min-w-0"><span class="block text-xs font-bold">${esc(st.label)} • ${esc(m.name || 'Anonymous')}</span><span class="block text-[11px] text-slate-500 truncate">${esc(m.message)}</span></span></button>`;
+                }).join('') : `<p class="text-xs text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-center">Sab messages ka reply ho chuka hai 🎉</p>`;
+                const latest = [...items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
+                document.getElementById('adminLatest').innerHTML = latest.length ? latest.map(i => {
+                    const ts = TYPE_STYLE[i.type || 'note'] || TYPE_STYLE.note;
+                    return `<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 flex items-center gap-3"><span class="text-[10px] font-extrabold uppercase px-2 py-1 rounded-lg ${ts.cls}">${ts.label}</span><span class="min-w-0 flex-1"><span class="block text-xs font-bold truncate">${esc(i.title)}</span><span class="block text-[10px] text-slate-400">${esc(i.className || '')} • ${esc(i.subject || '')}</span></span><button onclick="openPreview('${i.id}')" class="text-indigo-600 text-xs font-semibold px-2"><i class="fa-solid fa-eye"></i></button></div>`;
+                }).join('') : `<p class="text-xs text-slate-400 text-center p-4">Abhi kuch upload nahi hai.</p>`;
             }
-            window.messages.forEach(msg => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
-                tr.innerHTML = `
-                    <td class="p-4"><span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded">${msg.type}</span><div class="text-xs text-slate-500 mt-1">${msg.name} (${msg.email})</div></td>
-                    <td class="p-4 text-slate-700 dark:text-slate-300 text-xs">${msg.message}</td>
-                    <td class="p-4 text-slate-500 text-xs">${msg.reply || '<span class="text-amber-500 italic">No reply yet</span>'}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="openReplyModal('${msg.id}', '${msg.type}', '${msg.email}')" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition">Reply</button>
-                        <button onclick="deleteMessage('${msg.id}')" class="bg-red-50 text-red-600 p-1.5 rounded-xl text-xs hover:bg-red-100 transition ml-1"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+
+            if (adminTab === 'uploads') {
+                const chips = [['all', 'All'], ['note', 'Notes'], ['book', 'Books'], ['pyq', 'PYQ']];
+                document.getElementById('adminTypeChips').innerHTML = chips.map(([v, l]) => `<button onclick="adminSetType('${v}')" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold ${adminType === v ? 'dynamic-btn text-white shadow' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}">${l}</button>`).join('');
+                const q = (document.getElementById('adminSearch').value || '').toLowerCase().trim();
+                const list = items.filter(i => (adminType === 'all' || (i.type || 'note') === adminType) && (!q || [i.title, i.subject, i.className].join(' ').toLowerCase().includes(q)));
+                document.getElementById('adminItemsGrid').innerHTML = list.length ? list.map(itemCard).join('') : `<div class="col-span-full text-center text-xs text-slate-400 py-12 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">Kuch nahi mila.</div>`;
+            }
+
+            ['support', 'complain', 'wish'].forEach(ty => {
+                if (adminTab !== ty) return;
+                const list = of(ty).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                const st = MSG_STYLE[ty];
+                document.getElementById('adminList-' + ty).innerHTML = list.length ? list.map(msgCard).join('') : `<div class="text-center text-xs text-slate-400 py-14 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700"><i class="fa-solid ${st.icon} text-2xl mb-2 block"></i>Abhi koi ${st.label.toLowerCase()} nahi aaya.</div>`;
             });
         }
+        // old names still used by the rest of the code
+        function renderAdminTable() { renderAdmin(); }
+        function renderAdminMessagesTable() { renderAdmin(); }
 
         window.deleteCloudItem = async function(id) {
             if (confirm("Delete this item from cloud?")) {
                 try {
+                    const { db, ref, remove } = await loadSdk();
                     await remove(ref(db, 'notes_bazar_data/' + id));
+                    try { await remove(ref(db, 'notes_bazar_files/' + id)); } catch (e) {}
                     alert("Deleted successfully!");
                     await window.loadCloudData();
+                    await window.loadAllRemaining();
                     renderAdminTable();
                 } catch (err) {
                     alert("Error deleting item.");
@@ -453,6 +813,7 @@ window.loadCloudData = async function() {
         window.deleteMessage = async function(id) {
             if (confirm("Delete this message?")) {
                 try {
+                    const { db, ref, remove } = await loadSdk();
                     await remove(ref(db, 'notes_bazar_messages/' + id));
                     alert("Deleted!");
                     await loadMessages();
@@ -464,9 +825,10 @@ window.loadCloudData = async function() {
         };
 
         let currentReplyId = null;
-        window.openReplyModal = function(id, type, email) {
+        window.openReplyModal = function(id) {
+            const m = window.messages.find(x => x.id === id) || {};
             currentReplyId = id;
-            document.getElementById('replyTargetInfo').textContent = `Replying to ${type} from ${email}`;
+            document.getElementById('replyTargetInfo').textContent = `Replying to ${m.type || ''} from ${m.name || ''}${m.email && m.email !== '-' ? ' (' + m.email + ')' : ''}`;
             document.getElementById('adminReplyText').value = '';
             document.getElementById('adminReplyModal').classList.remove('hidden');
         };
@@ -477,17 +839,12 @@ window.loadCloudData = async function() {
             const replyText = document.getElementById('adminReplyText').value.trim();
             if(!replyText || !currentReplyId) return;
             try {
-                const msgRef = ref(db, 'notes_bazar_messages/' + currentReplyId);
-                const snapshot = await get(msgRef);
-                if(snapshot.exists()) {
-                    const data = snapshot.val();
-                    data.reply = replyText;
-                    await set(msgRef, data);
-                    alert("Reply sent successfully!");
-                    closeReplyModal();
-                    await loadMessages();
-                    renderAdminMessagesTable();
-                }
+                const { db, ref, set } = await loadSdk();
+                await set(ref(db, 'notes_bazar_messages/' + currentReplyId + '/reply'), replyText);
+                alert("Reply sent successfully!");
+                closeReplyModal();
+                await loadMessages();
+                renderAdminMessagesTable();
             } catch(err) {
                 alert("Failed to send reply.");
             }
@@ -514,7 +871,7 @@ window.loadCloudData = async function() {
         window.handleUploadItem = async function(e) {
             e.preventDefault();
             const isLinkActive = !document.getElementById('linkUploadSection').classList.contains('hidden');
-            
+
             let classVal = document.getElementById('uploadClass').value;
             if (classVal === 'Other') classVal = document.getElementById('uploadCustomClass').value.trim();
 
@@ -534,16 +891,18 @@ window.loadCloudData = async function() {
                 newItem.fileLink = document.getElementById('uploadLink').value;
                 newItem.fileName = "Drive Folder / PDF";
             } else {
-                newItem.fileData = selectedFileBase64;
+                newItem.hasFile = true;
                 newItem.fileName = selectedFileName || "document.pdf";
             }
 
             try {
-                const dataRef = ref(db, 'notes_bazar_data');
-                const newItemRef = push(dataRef);
+                const { db, ref, set, push } = await loadSdk();
+                const newItemRef = push(ref(db, 'notes_bazar_data'));
+                if (!isLinkActive) await set(ref(db, 'notes_bazar_files/' + newItemRef.key), selectedFileBase64);
                 await set(newItemRef, newItem);
 
                 alert("Published to cloud successfully!");
+                selectedFileBase64 = ""; selectedFileName = "";
                 closeUploadModal();
                 document.getElementById('uploadForm').reset();
                 await window.loadCloudData();
@@ -554,16 +913,18 @@ window.loadCloudData = async function() {
             }
         };
 
+        async function pushMessage(m) {
+            const { db, ref, set, push } = await loadSdk();
+            await set(push(ref(db, 'notes_bazar_messages')), { ...m, createdAt: Date.now(), reply: "" });
+        }
+
         window.submitUserMessage = async function(e, type) {
             e.preventDefault();
             const name = document.getElementById(`${type}Name`).value;
             const email = document.getElementById(`${type}Email`).value;
             const message = document.getElementById(`${type}Msg`).value;
-
             try {
-                const msgRef = ref(db, 'notes_bazar_messages');
-                const newMsgRef = push(msgRef);
-                await set(newMsgRef, { type, name, email, message, createdAt: Date.now(), reply: "" });
+                await pushMessage({ type, name, email, message });
                 alert(`${type.charAt(0).toUpperCase() + type.slice(1)} submitted successfully!`);
                 closeAllModals();
                 document.getElementById(`${type}Form`).reset();
@@ -572,39 +933,285 @@ window.loadCloudData = async function() {
             }
         };
 
-        window.sendAiMessage = function() {
+        // "What if you want?" -> goes to admin as type "wish"
+        window.submitWish = async function(e) {
+            e.preventDefault();
+            const g = id => document.getElementById(id).value.trim();
+            const message = `[${g('wishType')} | ${g('wishClass')} | ${g('wishSubject')}] ${g('wishMsg')}`;
+            try {
+                await pushMessage({ type: 'wish', name: g('wishName') || 'Anonymous', email: g('wishContact') || '-', message });
+                alert("Request mil gayi! Hum jaldi upload karne ki koshish karenge. 🙏");
+                closeModal('wishModal');
+                document.getElementById('wishForm').reset();
+            } catch (err) {
+                alert("Submission failed. Internet check karo.");
+            }
+        };
+
+        // ================= BAZAR AI (all-in-one agent) =================
+        // Default uses a free, key-less OpenAI-compatible endpoint. To use a stronger model
+        // (Gemini / OpenAI / Claude via your own proxy) just change endpoint / model / apiKey here.
+        // Pollinations moved to a key/credit model, so a key-less call is no longer reliable.
+        // BEST FIX: get a free Gemini key (aistudio.google.com/apikey) and paste it in apiKey below.
+        // In Google AI Studio restrict that key to your website address (HTTP referrer) so others cannot reuse it.
+        // If a model name ever stops working, copy the current model name from AI Studio into `model`.
+        const AI_CONFIG = {
+            timeoutMs: 15000,
+            providers: [
+                { name: 'gemini', endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-2.5-flash', apiKey: '' },
+                { name: 'pollinations', endpoint: 'https://gen.pollinations.ai/v1/chat/completions', model: 'openai', apiKey: '', optionalKey: true },
+                { name: 'pollinations-legacy', endpoint: 'https://text.pollinations.ai/openai', model: 'openai', apiKey: '', optionalKey: true }
+            ]
+        };
+        const aiFailUntil = {};   // provider -> timestamp until which we skip it (avoids long waits)
+
+        const AI_BASE = `You are "Bazar AI", the built-in assistant of Notes Bazar, a study platform for Indian school students (Class 1-12; subjects Science, Math, Hindi, English, SST, Maithili) with Notes, Reference Books and PYQs.
+Language: reply in the same language/style the user writes in (Hindi, Hinglish, English or Maithili). Keep it simple, friendly and short unless the user asks for detail. Use short paragraphs and simple lists.
+You can do EVERYTHING a good assistant can: explain doubts step by step, solve maths, summarize chapters, make short notes / MCQs / quizzes, essays, letters, translations, study timetables, exam tips, career guidance, coding, general knowledge and everyday questions.
+Notes Bazar items: if "Matching items" are provided below, recommend them by title and tell the student to tap them. NEVER invent files, links or titles. If nothing matches, say it is not uploaded yet and suggest the "What if you want?" option on the home page.
+Be honest: if you are not sure, say so. Never claim to be human.
+Emotional safety: if the student sounds stressed, sad or lonely, listen first, be warm and practical. If they mention self-harm or suicide, respond with care, encourage them to talk to a trusted adult right now, and share the free 24x7 Tele-MANAS helpline in India: 14416 (or local emergency services). Never give methods.`;
+        const AI_MODE = {
+            auto: AI_BASE,
+            study: AI_BASE + '\nMODE: Study focus. Prefer clear step-by-step teaching, examples, and a quick practice question at the end.',
+            emotional: AI_BASE + '\nMODE: Support focus. Prioritise empathy, calm tone and small practical steps. Not a doctor; do not diagnose.'
+        };
+        let aiHistory = [];
+        let aiBusy = false;
+
+        const AI_SYN = { maths: 'math', ganit: 'math', 'गणित': 'math', vigyan: 'science', 'विज्ञान': 'science', angrezi: 'english', 'हिंदी': 'hindi', kitab: 'book', kitaab: 'book', books: 'book', 'किताब': 'book', notes: 'note', pyqs: 'pyq', paper: 'pyq', papers: 'pyq' };
+        const AI_STOP = new Set(['the','is','are','me','mujhe','mere','mera','meri','hai','hain','ka','ki','ke','ko','kya','aur','for','of','to','a','an','in','on','please','pls','chahiye','chahiy','do','de','dena','dedo','bhai','class','kaise','how','what','and','i','my','you','se','par','hi','ho','h','want','need','send','dikhao','dhundo','find','search','koi','kuch','wala','wali','chapter']);
+        const AI_TYPEW = ['note', 'book', 'pyq'];
+
+        function aiTokens(s) {
+            return String(s || '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).map(w => AI_SYN[w] || w);
+        }
+
+        // Look for matching items inside Notes Bazar (only when the user is asking for material)
+        async function findRelated(text) {
+            const toks = aiTokens(text);
+            const wantTypes = toks.filter(t => AI_TYPEW.includes(t));
+            const intent = wantTypes.length > 0 || toks.some(t => ['pdf', 'material', 'download'].includes(t));
+            if (!intent) return { intent: false, list: [] };
+            if (window.hasMore) { try { await window.loadAllRemaining(); } catch (e) {} }
+            const content = toks.filter(t => !AI_TYPEW.includes(t) && !AI_STOP.has(t) && !['pdf', 'material', 'download'].includes(t) && (t.length > 1 || /\d/.test(t)));
+            const scored = [];
+            window.allItems.forEach(it => {
+                if (wantTypes.length && !wantTypes.includes(it.type || 'note')) return;
+                const hay = new Set(aiTokens([it.title, it.subject, it.className, it.description].join(' ')));
+                let sc = 0;
+                content.forEach(t => { if (hay.has(t)) sc++; else if (t.length >= 4 && [...hay].some(w => w.length >= 4 && (w.startsWith(t) || t.startsWith(w)))) sc += 0.5; });
+                if (content.length === 0 || sc > 0) scored.push({ it, sc });
+            });
+            scored.sort((a, b) => b.sc - a.sc || (b.it.createdAt || 0) - (a.it.createdAt || 0));
+            return { intent: true, list: scored.slice(0, 4).map(x => x.it) };
+        }
+
+        function aiFmt(t) {
+            return esc(t).replace(/^#{1,6}\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/^\s*[-*]\s+/gm, '• ').replace(/\n/g, '<br>');
+        }
+
+        function aiRelatedHtml(list) {
+            if (!list.length) return '';
+            return `<div class="mt-2 space-y-1.5">` + list.map(i => `
+                <button onclick="closeModal('aiModal');openPreview('${i.id}')" class="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs hover:border-indigo-400">
+                    <span class="font-bold block">${esc(i.title)}</span>
+                    <span class="block text-[10px] text-slate-400">${esc(i.type || 'note')} • ${esc(i.className || '')} • ${esc(i.subject || '')}</span>
+                </button>`).join('') + `</div>`;
+        }
+
+        async function callAi(messages) {
+            let lastErr = new Error('no provider available');
+            for (const p of AI_CONFIG.providers) {
+                if (!p.optionalKey && !p.apiKey) continue;                 // needs a key but none set
+                if ((aiFailUntil[p.name] || 0) > Date.now()) continue;     // failed recently
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), AI_CONFIG.timeoutMs);
+                try {
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (p.apiKey) headers['Authorization'] = 'Bearer ' + p.apiKey;
+                    const r = await fetch(p.endpoint, { method: 'POST', headers, signal: ctrl.signal, body: JSON.stringify({ model: p.model, messages, temperature: 0.7 }) });
+                    if (!r.ok) throw new Error(p.name + ' HTTP ' + r.status);
+                    const j = await r.json();
+                    const out = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+                    if (!out) throw new Error(p.name + ' empty reply');
+                    return String(out).trim();
+                } catch (e) {
+                    console.warn('AI provider failed:', p.name, e);
+                    aiFailUntil[p.name] = Date.now() + 120000;
+                    lastErr = e;
+                } finally { clearTimeout(timer); }
+            }
+            throw lastErr;
+        }
+
+        // ----- offline brain: works even when no AI server is reachable -----
+        function aiIsCrisis(t) {
+            return /(suicide|sucide|khud ?kushi|khudkushi|kill myself|end my life|end it all|want to die|wanna die|don'?t want to live|marna (hai|chah)|mar (jana|jaana|jau|jaun|jaaun)|jeena nahi|jina nahi|jeene ka (man|mann)|zindagi (khatam|se thak)|jaan de|self[- ]?harm|aatmhatya|आत्महत्या|मरना (है|चाह)|मर (जाना|जाऊं|जाऊँ)|जीना नहीं|जीने का मन)/i.test(t);
+        }
+        const AI_CRISIS_MSG = "Aap jo mehsoos kar rahe ho wo bahut bhaari hai, aur aap akele nahi ho. 💙\nAbhi kisi bharose ke insaan (mummy-papa, dost, teacher) ko bata do ya unke paas baith jao.\nFree aur 24x7 madad: **Tele-MANAS 14416** (India). Agar turant khatra ho to **112** par call karo.\nMain yahin hoon. Chaho to bata sakte ho kya hua.";
+
+        function aiQuickLocal(text) {
+            const t = text.trim();
+            if (/^(hi+|hello+|hey+|namaste|namaskar|salam|good (morning|afternoon|evening))\W*$/i.test(t)) return 'Namaste! 👋 Main Bazar AI hoon. Doubt, notes/PYQ, study plan ya koi bhi baat, puchho!';
+            if (/^(thanks|thank you|thx|shukriya|dhanyavaad|dhanyawad)\W*$/i.test(t)) return 'Koi baat nahi! 😊 Aur kuch puchna ho to batao.';
+            const expr = t.replace(/[?=]/g, '').replace(/\b(calculate|solve|kitna|kitne|hota|hai|what|is|equals?)\b/gi, '').replace(/[x×]/gi, '*').replace(/÷/g, '/').replace(/\^/g, '**').trim();
+            if (/^[\d\s+\-*/().%]+$/.test(expr) && /\d/.test(expr) && /[+\-*/%]/.test(expr)) {
+                try { const v = Function('"use strict";return (' + expr + ')')(); if (isFinite(v)) return `**${expr.replace(/\*\*/g, '^')}** = **${+Number(v).toFixed(6)}**`; } catch (e) {}
+            }
+            return null;
+        }
+
+        function aiLocalReply(text, related) {
+            const t = text.toLowerCase();
+            if (related.intent) return related.list.length ? 'Ye items Notes Bazar par mile, tap karke dekho:' : 'Abhi is topic ka kuch upload nahi hai. Home page par "What if you want?" me bata do, hum upload kar denge. 🙏';
+            if (/(study plan|timetable|time table|routine|plan bana)/.test(t)) return '**7 din ka simple plan:**\n- Din 1-2: sabse kamzor chapter ke short notes banao\n- Din 3-4: formulas / important points ka revision + 20 practice sawal\n- Din 5: PYQ (pichhle saal ke paper) ek baar poora solve karo\n- Din 6: galtiyan dekho aur unhe dobara practice karo\n- Din 7: halka revision + achhi neend\n\nRoz 45 min padho, 10 min break lo. 📚';
+            if (/(motivat|mann nahi|man nahi|tension|stress|dar lag|ghabra|udaas|sad|akela|akeli|pareshan)/.test(t)) return 'Samajh sakta hoon, kabhi kabhi sab bhaari lagta hai. 💙\nChhota sa step lo: abhi sirf **10 minute** ek chhota topic padho, phir paani pi lo. Chhote steps hi bade result banate hain.\nAgar mann bahut bhaari ho to kisi apne se baat kar lo.';
+            if (/(exam|pariksha|yaad|याद|revision|tips)/.test(t)) return '**Exam tips:**\n- Pehle PYQ dekho, pattern samajh aata hai\n- Padhne ke baad bina dekhe likh ke yaad karo\n- Formulas ki alag chhoti copy banao\n- Raat ko jaldi sao, subah revise karo';
+            if (/(tum kaun|who are you|aap kaun|your name|naam kya)/.test(t)) return 'Main **Bazar AI** hoon, Notes Bazar ka study assistant. 🤖';
+            return 'Abhi live AI server se connect nahi ho pa raha, isliye main sirf basic madad kar sakta hoon: notes/PYQ dhundna, study plan, motivation, calculation. Thodi der baad dobara try karo. 🙏';
+        }
+
+        // ----- Robot mascot (inline SVG, animated eyes / arm / glow with CSS) -----
+        function botSvg() {
+            return `<svg viewBox="0 0 120 130" class="bot-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <ellipse class="bot-shadow" cx="60" cy="125" rx="24" ry="4" fill="#000" opacity=".18"/>
+              <g class="bot-float">
+                <path d="M21 56 C21 6, 99 6, 99 56" fill="none" stroke="#7c3aed" stroke-width="7" stroke-linecap="round"/>
+                <rect x="38" y="84" width="44" height="31" rx="14" fill="#8b5cf6" stroke="#4c1d95" stroke-width="2.2"/>
+                <circle cx="60" cy="100" r="8" fill="#fff"/>
+                <circle class="bot-chest" cx="60" cy="100" r="4" fill="#22d3ee"/>
+                <ellipse cx="31" cy="98" rx="7" ry="10" fill="#a78bfa" stroke="#4c1d95" stroke-width="2.2"/>
+                <g class="bot-arm-r"><ellipse cx="89" cy="98" rx="7" ry="10" fill="#a78bfa" stroke="#4c1d95" stroke-width="2.2"/></g>
+                <ellipse cx="50" cy="117" rx="9" ry="5" fill="#fff" stroke="#4c1d95" stroke-width="2.2"/>
+                <ellipse cx="70" cy="117" rx="9" ry="5" fill="#fff" stroke="#4c1d95" stroke-width="2.2"/>
+                <rect x="22" y="26" width="76" height="62" rx="27" fill="#fff" stroke="#4c1d95" stroke-width="2.4"/>
+                <rect x="29" y="34" width="62" height="46" rx="20" fill="#1e1b4b"/>
+                <g class="bot-look"><g class="bot-track">
+                  <g class="bot-eye"><ellipse cx="47" cy="55" rx="6.5" ry="8.5" fill="#22d3ee"/><circle cx="49.2" cy="51.5" r="2.2" fill="#fff"/></g>
+                  <g class="bot-eye"><ellipse cx="73" cy="55" rx="6.5" ry="8.5" fill="#22d3ee"/><circle cx="75.2" cy="51.5" r="2.2" fill="#fff"/></g>
+                  <path d="M54 68 Q60 74 66 68" fill="none" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round"/>
+                  <ellipse cx="39" cy="66" rx="4" ry="2.6" fill="#f472b6" opacity=".55"/>
+                  <ellipse cx="81" cy="66" rx="4" ry="2.6" fill="#f472b6" opacity=".55"/>
+                </g></g>
+                <circle cx="20" cy="58" r="11" fill="#7c3aed" stroke="#4c1d95" stroke-width="2.2"/>
+                <circle class="bot-ear" cx="20" cy="58" r="5.5" fill="none" stroke="#22d3ee" stroke-width="2.4"/>
+                <circle cx="100" cy="58" r="11" fill="#7c3aed" stroke="#4c1d95" stroke-width="2.2"/>
+                <circle class="bot-ear" cx="100" cy="58" r="5.5" fill="none" stroke="#22d3ee" stroke-width="2.4"/>
+              </g>
+            </svg>`;
+        }
+
+        function mountBot() {
+            const btn = document.getElementById('aiFabBtn');
+            if (btn) btn.insertAdjacentHTML('beforeend', botSvg());
+            const hb = document.getElementById('aiHeadBot');
+            if (hb) hb.innerHTML = botSvg();
+            const bots = document.querySelectorAll('.bot-svg');
+            let raf = 0, px = 0, py = 0;
+            document.addEventListener('pointermove', e => {   // eyes follow the finger / mouse
+                px = e.clientX; py = e.clientY;
+                if (raf) return;
+                raf = requestAnimationFrame(() => {
+                    raf = 0;
+                    bots.forEach(b => {
+                        const r = b.getBoundingClientRect();
+                        if (!r.width) return;
+                        const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2);
+                        b.style.setProperty('--lx', Math.max(-3, Math.min(3, dx / 50)).toFixed(2) + 'px');
+                        b.style.setProperty('--ly', Math.max(-2, Math.min(2, dy / 70)).toFixed(2) + 'px');
+                    });
+                });
+            }, { passive: true });
+            const bub = document.getElementById('aiFabBubble');
+            const hints = ['Namaste! Doubt hai? 👋', 'Notes dhundna hai? Mujhse pucho 📚', 'Study plan banau? 🗓️', 'Main yahin hoon 🤖'];
+            let hi = 0;
+            const showHint = () => {
+                if (!bub || document.querySelector('[id$="Modal"]:not(.hidden)')) return;
+                bub.textContent = hints[hi++ % hints.length];
+                bub.classList.add('show');
+                setTimeout(() => bub.classList.remove('show'), 4500);
+            };
+            setTimeout(showHint, 2500);
+            setInterval(showHint, 14000);
+        }
+
+        window.clearAiChat = function() {
+            aiHistory = [];
+            document.getElementById('aiChatHistory').innerHTML = `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">👋 Naya chat shuru! Kya puchna hai?</div></div>`;
+        };
+
+        window.sendAiMessage = async function(preset) {
             const input = document.getElementById('aiInput');
-            const chatHistory = document.getElementById('aiChatHistory');
-            const category = document.getElementById('aiCategory').value;
-            const userText = input.value.trim();
-            if (!userText) return;
-
-            chatHistory.innerHTML += `
-                <div class="flex justify-end mb-3">
-                    <div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${userText}</div>
-                </div>
-            `;
+            const chat = document.getElementById('aiChatHistory');
+            const mode = document.getElementById('aiCategory').value;
+            const fab = document.getElementById('aiFab');
+            const userText = (typeof preset === 'string' ? preset : input.value).trim();
+            if (!userText || aiBusy) return;
+            aiBusy = true;
+            document.getElementById('aiSendBtn').disabled = true;
             input.value = '';
-            chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            setTimeout(() => {
-                let aiReply = category === 'study' ? `📚 <strong>Study AI:</strong> Break your topics into smaller segments and revise daily!` : `💙 <strong>Support AI:</strong> Take deep breaths, you are doing great!`;
-                chatHistory.innerHTML += `
-                    <div class="flex justify-start mb-3">
-                        <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">${aiReply}</div>
-                    </div>
-                `;
-                chatHistory.scrollTop = chatHistory.scrollHeight;
-            }, 600);
+            const botBubble = (html, extra) => chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed">${html}${extra || ''}</div></div>`);
+            chat.insertAdjacentHTML('beforeend', `<div class="flex justify-end mb-3"><div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${esc(userText)}</div></div>`);
+            chat.scrollTop = chat.scrollHeight;
+
+            const finish = () => { aiBusy = false; document.getElementById('aiSendBtn').disabled = false; if (fab) fab.classList.remove('thinking'); chat.scrollTop = chat.scrollHeight; input.focus(); };
+
+            // 1) safety first: never depends on the network
+            if (aiIsCrisis(userText)) { botBubble(aiFmt(AI_CRISIS_MSG)); finish(); return; }
+            // 2) instant local answers (greetings, thanks, calculator)
+            const quick = aiQuickLocal(userText);
+            if (quick) { botBubble(aiFmt(quick)); finish(); return; }
+
+            const typing = document.createElement('div');
+            typing.className = 'flex justify-start mb-3';
+            typing.innerHTML = `<div class="bg-slate-100 dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-tl-none"><span class="ai-typing"><span></span><span></span><span></span></span></div>`;
+            chat.appendChild(typing);
+            chat.scrollTop = chat.scrollHeight;
+            if (fab) fab.classList.add('thinking');
+
+            let reply = '', related = { intent: false, list: [] }, offline = false;
+            try { related = await findRelated(userText); } catch (e) {}
+            try {
+                let sys = AI_MODE[mode] || AI_MODE.auto;
+                if (related.intent) {
+                    sys += related.list.length
+                        ? '\n\nMatching items on Notes Bazar for this request:\n' + related.list.map((i, n) => `${n + 1}. ${i.title} (${i.type || 'note'}, ${i.className || ''}, ${i.subject || ''})`).join('\n')
+                        : '\n\nNo matching item is uploaded on Notes Bazar for this request right now.';
+                }
+                reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), { role: 'user', content: userText }]);
+                aiHistory.push({ role: 'user', content: userText }, { role: 'assistant', content: reply });
+            } catch (err) {
+                console.error(err);
+                offline = true;
+                reply = aiLocalReply(userText, related);
+            }
+            typing.remove();
+            botBubble(aiFmt(reply) + (offline ? '<div class="mt-2 text-[10px] text-amber-600">⚠️ Live AI abhi available nahi, offline mode me jawab diya.</div>' : ''), aiRelatedHtml(related.list));
+            finish();
         };
 
         window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); };
         window.closeAllModals = function() {
-            document.querySelectorAll('.fixed').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.fixed[id$="Modal"]').forEach(el => el.classList.add('hidden'));
         };
 
         window.addEventListener('DOMContentLoaded', () => {
+            updateModeButtons();
+            mountBot();
+            try {
+                const cached = JSON.parse(localStorage.getItem('nb_cache_v4') || 'null');
+                if (cached && cached.items && cached.items.length) {
+                    window.allItems = cached.items;
+                    window.hasMore = !!cached.hasMore;
+                    window.oldestKey = cached.items.reduce((m, i) => (m === null || i.id < m ? i.id : m), null);
+                    window.loaded = true;
+                    renderAllPages();
+                    renderNotifications();
+                }
+            } catch (e) {}
             window.loadCloudData();
         });
     </script>
@@ -655,14 +1262,18 @@ window.loadCloudData = async function() {
                 <button onclick="openModal('notificationModal')" class="relative p-2 sm:p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition hover-rgb-glow shadow-sm" title="Notifications">
                     <i class="fa-solid fa-bell text-sm"></i>
                 </button>
-
-                <!-- Admin Login Button -->
-                <button onclick="openAdminLogin()" class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 px-3 sm:px-4 py-2 rounded-xl font-medium text-sm transition border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <i class="fa-solid fa-lock text-xs"></i>
-                    <span class="hidden sm:inline">Admin</span>
-                </button>
             </div>
         </div>
+
+        <!-- Mobile / Tablet tabs (Home Notes PYQ Books) -->
+        <nav class="lg:hidden border-t border-slate-200 dark:border-slate-800">
+            <div class="flex items-stretch gap-1 px-2 py-1.5 max-w-7xl mx-auto">
+                <button id="navHomeBtnM" onclick="switchView('home')" class="m-tab nav-btn-active"><i class="fa-solid fa-house text-sm"></i>Home</button>
+                <button id="navNotesBtnM" onclick="switchView('notes')" class="m-tab text-slate-600 dark:text-slate-300"><i class="fa-solid fa-book text-sm"></i>Notes</button>
+                <button id="navPyqBtnM" onclick="switchView('pyq')" class="m-tab text-slate-600 dark:text-slate-300"><i class="fa-solid fa-file-lines text-sm"></i>PYQ</button>
+                <button id="navBooksBtnM" onclick="switchView('books')" class="m-tab text-slate-600 dark:text-slate-300"><i class="fa-solid fa-book-bookmark text-sm"></i>Books</button>
+            </div>
+        </nav>
     </header>
 
     <!-- ================= VIEW 1: HOME PAGE ================= -->
@@ -679,7 +1290,7 @@ window.loadCloudData = async function() {
         </div>
 
         <div>
-            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center"><i class="fa-solid fa-compass dynamic-text mr-2"></i> Quick Options</h3>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 inline-flex items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 py-2 rounded-2xl shadow-sm"><i class="fa-solid fa-compass dynamic-text mr-2"></i> Quick Options</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div onclick="switchView('notes')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
                     <div class="dynamic-bg text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-book"></i></div>
@@ -704,6 +1315,10 @@ window.loadCloudData = async function() {
                 <div onclick="openModal('complainModal')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
                     <div class="bg-rose-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-circle-exclamation"></i></div>
                     <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">Complain</h4><p class="text-xs text-slate-500 mt-1">Report issues & feedback</p></div>
+                </div>
+                <div onclick="openModal('wishModal')" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer hover-rgb-glow transition flex items-center space-x-4">
+                    <div class="bg-teal-500 text-white p-4 rounded-2xl text-xl shadow"><i class="fa-solid fa-lightbulb"></i></div>
+                    <div><h4 class="font-bold text-base text-slate-800 dark:text-slate-100">What if you want?</h4><p class="text-xs text-slate-500 mt-1">Batao aapko kya chahiye</p></div>
                 </div>
             </div>
         </div>
@@ -795,8 +1410,8 @@ window.loadCloudData = async function() {
     <!-- ================= MODALS & DRAWERS ================= -->
 
     <!-- Mobile / 3-Line Menu Modal -->
-    <div id="mobileMenuModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-start">
-        <div class="bg-white dark:bg-slate-900 w-80 h-full p-6 shadow-2xl border-r border-slate-200 dark:border-slate-800 space-y-6 flex flex-col justify-between">
+    <div id="mobileMenuModal" onclick="if(event.target===this)closeModal('mobileMenuModal')" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-start">
+        <div class="bg-white dark:bg-slate-900 w-80 h-full p-6 shadow-2xl border-r border-slate-200 dark:border-slate-800 space-y-6 flex flex-col justify-between overflow-y-auto max-w-[85vw]">
             <div>
                 <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                     <div class="flex items-center space-x-3">
@@ -814,6 +1429,10 @@ window.loadCloudData = async function() {
                     <button onclick="closeModal('mobileMenuModal'); openModal('aiModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-robot text-purple-500"></i><span>Help & AI</span></button>
                     <button onclick="closeModal('mobileMenuModal'); openModal('supportModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-headset text-blue-500"></i><span>Support</span></button>
                     <button onclick="closeModal('mobileMenuModal'); openModal('complainModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-circle-exclamation text-rose-500"></i><span>Complain</span></button>
+                    <button onclick="closeModal('mobileMenuModal'); openModal('wishModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-lightbulb text-teal-500"></i><span>What if you want?</span></button>
+                    <button onclick="closeModal('mobileMenuModal'); openModal('themeModal')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-palette dynamic-text"></i><span>Theme / Dark Mode</span></button>
+                    <hr class="border-slate-100 dark:border-slate-800 my-2">
+                    <button onclick="closeModal('mobileMenuModal'); openAdminLogin()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center space-x-3"><i class="fa-solid fa-lock text-slate-500"></i><span>Admin Login</span></button>
                 </nav>
             </div>
             <div class="text-[10px] text-slate-400 text-center">Notes Bazar v2.5</div>
@@ -822,19 +1441,45 @@ window.loadCloudData = async function() {
 
     <!-- Theme Customizer Modal -->
     <div id="themeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-base flex items-center"><i class="fa-solid fa-palette dynamic-text mr-2"></i> Theme Customizer</h3>
                 <button onclick="closeModal('themeModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div class="space-y-3 text-xs">
-                <p class="text-slate-500">Choose from preset themes or pick your own custom colors:</p>
+                <p class="text-slate-500 font-semibold">Mode (poora background badlega)</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="modeLightBtn" onclick="setMode('light')" class="p-3 rounded-xl bg-slate-100 !text-slate-800 font-bold shadow border border-slate-200"><i class="fa-solid fa-sun mr-1"></i> Light</button>
+                    <button id="modeDarkBtn" onclick="setMode('dark')" class="p-3 rounded-xl bg-slate-800 text-white font-bold shadow border border-slate-700"><i class="fa-solid fa-moon mr-1"></i> Full Dark</button>
+                </div>
+                <p class="text-slate-500 font-semibold pt-1">Accent colour</p>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="setTheme('default')" class="p-3 rounded-xl bg-indigo-600 text-white font-bold shadow">Default Indigo</button>
-                    <button onclick="setTheme('dark')" class="p-3 rounded-xl bg-slate-800 text-white font-bold shadow">Dark Mode</button>
+                    <button onclick="setTheme('blue')" class="p-3 rounded-xl bg-blue-600 text-white font-bold shadow">Ocean Blue</button>
                     <button onclick="setTheme('emerald')" class="p-3 rounded-xl bg-emerald-600 text-white font-bold shadow">Emerald Green</button>
                     <button onclick="setTheme('sunset')" class="p-3 rounded-xl bg-orange-600 text-white font-bold shadow">Sunset Orange</button>
                 </div>
+                <hr class="border-slate-100 dark:border-slate-800 my-2">
+                <p class="text-slate-500 font-semibold">Background (page ka background)</p>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="setBgPreset('night')" title="Night" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:#0f172a"></button>
+                    <button onclick="setBgPreset('navy')" title="Navy" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:#172554"></button>
+                    <button onclick="setBgPreset('forest')" title="Forest" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:#052e16"></button>
+                    <button onclick="setBgPreset('wine')" title="Wine" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:#4c0519"></button>
+                    <button onclick="setBgPreset('sunrise')" title="Sunrise" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:linear-gradient(135deg,#fde68a,#fca5a5,#c4b5fd)"></button>
+                    <button onclick="setBgPreset('ocean')" title="Ocean" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:linear-gradient(135deg,#0ea5e9,#6366f1,#8b5cf6)"></button>
+                    <button onclick="setBgPreset('mint')" title="Mint" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:linear-gradient(135deg,#a7f3d0,#bae6fd)"></button>
+                    <button onclick="setBgPreset('dusk')" title="Dusk" class="h-10 rounded-xl border border-slate-300 dark:border-slate-600" style="background:linear-gradient(160deg,#1e1b4b,#7c3aed 60%,#ec4899)"></button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="color" id="customBgColor" value="#1e293b" class="w-10 h-10 rounded-lg cursor-pointer shrink-0">
+                    <button onclick="applyBgColor()" class="flex-1 dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Apply Background Color</button>
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Ya apni photo lagao</label>
+                    <input type="file" accept="image/*" onchange="handleBgImage(event)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs">
+                </div>
+                <button onclick="resetBg()" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2 rounded-xl font-semibold"><i class="fa-solid fa-rotate-left mr-1"></i> Reset Background</button>
                 <hr class="border-slate-100 dark:border-slate-800 my-2">
                 <div>
                     <label class="block font-medium mb-1">Custom Color Picker</label>
@@ -864,7 +1509,7 @@ window.loadCloudData = async function() {
     </div>
 
     <!-- Preview Modal -->
-    <div id="previewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="previewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-start">
                 <div>
@@ -887,7 +1532,7 @@ window.loadCloudData = async function() {
             </div>
             <form onsubmit="handleAdminLogin(event)" class="space-y-3 text-xs">
                 <div><label class="block font-medium mb-1">Username</label><input type="text" id="adminUser" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></div>
-                <div><label class="block font-medium mb-1">Password</label><input type="password" id="adminPass" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></div>
+                <div><label class="block font-medium mb-1">Password</label><div class="relative"><input type="password" id="adminPass" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-3 pr-10 py-2 focus:outline-none"><button type="button" onclick="togglePass('adminPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label="Show or hide password"><i class="fa-solid fa-eye"></i></button></div></div>
                 <p id="loginError" class="text-red-500 hidden">Invalid username or password.</p>
                 <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Login to Dashboard</button>
             </form>
@@ -895,51 +1540,49 @@ window.loadCloudData = async function() {
     </div>
 
     <!-- Admin Dashboard Modal -->
-    <div id="adminDashboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div>
-                    <h3 class="font-bold text-lg"><i class="fa-solid fa-gauge dynamic-text mr-2"></i> Admin Dashboard</h3>
-                    <p class="text-xs text-slate-500">Manage uploaded items and user messages.</p>
+    <div id="adminDashboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-slate-50 dark:bg-slate-950 rounded-3xl max-w-6xl w-full h-[94vh] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
+            <div class="dynamic-bg text-white px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="bg-white/20 p-2.5 rounded-xl shrink-0"><i class="fa-solid fa-gauge"></i></div>
+                    <div class="min-w-0">
+                        <h3 class="font-extrabold text-base leading-tight">Admin Dashboard</h3>
+                        <p class="text-[11px] text-white/80 truncate">Uploads, support, complaints aur user requests ek jagah</p>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="openUploadModal()" class="dynamic-btn text-white px-4 py-2 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-plus mr-1"></i> Upload New Item</button>
-                    <button onclick="closeAdminDashboard()" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold">Close</button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="openUploadModal()" class="bg-white text-indigo-600 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-plus sm:mr-1"></i><span class="hidden sm:inline">Upload New</span></button>
+                    <button onclick="closeAdminDashboard()" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-xs font-bold" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-            <div class="space-y-6">
-                <div>
-                    <h4 class="font-bold text-sm mb-3">All Cloud Items (<span id="adminTotalItems">0</span>)</h4>
-                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-                                    <th class="p-3 font-bold">Title & Type</th>
-                                    <th class="p-3 font-bold">Subject</th>
-                                    <th class="p-3 font-bold">Class</th>
-                                    <th class="p-3 font-bold text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminItemsTableBody"></tbody>
-                        </table>
+            <div id="adminTabs" class="flex gap-1.5 overflow-x-auto px-3 sm:px-5 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800" style="scrollbar-width:none"></div>
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                <div id="adminPanel-overview" class="space-y-6">
+                    <div id="adminStats" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div>
+                            <h4 class="font-bold text-sm mb-3 flex items-center"><i class="fa-solid fa-bell text-amber-500 mr-2"></i> Reply ka intezaar</h4>
+                            <div id="adminPending" class="space-y-2"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm mb-3 flex items-center"><i class="fa-solid fa-clock-rotate-left dynamic-text mr-2"></i> Latest uploads</h4>
+                            <div id="adminLatest" class="space-y-2"></div>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <h4 class="font-bold text-sm mb-3">User Messages & Complaints (<span id="adminTotalMessages">0</span>)</h4>
-                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-                                    <th class="p-3 font-bold">Type & User</th>
-                                    <th class="p-3 font-bold">Message</th>
-                                    <th class="p-3 font-bold">Reply Status</th>
-                                    <th class="p-3 font-bold text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminMessagesTableBody"></tbody>
-                        </table>
+                <div id="adminPanel-uploads" class="hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="adminSearch" oninput="adminRender()" placeholder="Title, subject ya class search karo..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none">
+                        </div>
+                        <div id="adminTypeChips" class="flex gap-1.5 overflow-x-auto" style="scrollbar-width:none"></div>
                     </div>
+                    <div id="adminItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
+                <div id="adminPanel-support" class="hidden"><div id="adminList-support" class="space-y-3"></div></div>
+                <div id="adminPanel-complain" class="hidden"><div id="adminList-complain" class="space-y-3"></div></div>
+                <div id="adminPanel-wish" class="hidden"><div id="adminList-wish" class="space-y-3"></div></div>
             </div>
         </div>
     </div>
@@ -948,7 +1591,7 @@ window.loadCloudData = async function() {
     <div id="uploadModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-base"><i class="fa-solid fa-cloud-arrow-up dynamic-text mr-2"></i> Upload Study Material</h3>
+                <div><h3 class="font-extrabold text-lg"><i class="fa-solid fa-cloud-arrow-up dynamic-text mr-2"></i> Upload Study Material</h3><p class="text-[11px] text-slate-500 mt-0.5">Notes, Books ya PYQ cloud par publish karo</p></div>
                 <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="uploadForm" onsubmit="handleUploadItem(event)" class="space-y-3 text-xs">
@@ -1027,32 +1670,72 @@ window.loadCloudData = async function() {
     </div>
 
     <!-- AI Chat Modal -->
-    <div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[500px]">
+    <div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[88vh] max-h-[640px]">
             <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
                 <div class="flex items-center space-x-2">
-                    <div class="dynamic-bg text-white p-2 rounded-xl"><i class="fa-solid fa-robot"></i></div>
-                    <h3 class="font-bold text-sm">Study & AI Support</h3>
+                    <div id="aiHeadBot" class="w-11 h-12 shrink-0"></div>
+                    <div>
+                        <h3 class="font-bold text-sm leading-tight">Bazar AI</h3>
+                        <p class="text-[10px] text-slate-400">Study • Notes finder • Support • Sab kuch</p>
+                    </div>
                 </div>
-                <button onclick="closeModal('aiModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <div class="flex items-center space-x-3">
+                    <button onclick="clearAiChat()" title="New chat" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button onclick="closeModal('aiModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-2">
                 <select id="aiCategory" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold">
-                    <option value="study">📚 Study Support AI</option>
-                    <option value="emotional">💙 Emotional Support AI</option>
+                    <option value="auto">🤖 All-in-One (Auto)</option>
+                    <option value="study">📚 Study Mode</option>
+                    <option value="emotional">💙 Support Mode</option>
                 </select>
+            </div>
+            <div class="flex gap-1.5 overflow-x-auto pb-2 mb-1 text-[11px] font-semibold" style="scrollbar-width:none">
+                <button onclick="sendAiMessage('Mera ek doubt hai, step by step samjhao')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">🧠 Doubt solve</button>
+                <button onclick="sendAiMessage('Class 10 science notes chahiye')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">📄 Notes dhundo</button>
+                <button onclick="sendAiMessage('Mere exam ke liye 7 din ka study plan banao')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">🗓️ Study plan</button>
+                <button onclick="sendAiMessage('Mujhe padhai me mann nahi lag raha, motivate karo')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">💪 Motivation</button>
             </div>
             <div id="aiChatHistory" class="flex-grow overflow-y-auto space-y-2 pr-1 text-xs">
                 <div class="flex justify-start mb-3">
                     <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">
-                        👋 Hello! How can I assist you with your studies today?
+                        👋 Namaste! Main Bazar AI hoon. Padhai ke doubts, notes/PYQ dhundna, study plan, ya koi bhi baat, sab puch sakte ho.
                     </div>
                 </div>
             </div>
             <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
                 <input type="text" id="aiInput" placeholder="Type your question..." onkeypress="if(event.key==='Enter') sendAiMessage()" class="flex-grow bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none">
-                <button onclick="sendAiMessage()" class="dynamic-bg text-white px-4 py-2 rounded-xl text-xs font-bold shadow">Send</button>
+                <button id="aiSendBtn" onclick="sendAiMessage()" class="dynamic-bg text-white px-4 py-2 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
+        </div>
+    </div>
+
+    <!-- What if you want? Modal -->
+    <div id="wishModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-lightbulb text-teal-500 mr-2"></i> What if you want?</h3>
+                <button onclick="closeModal('wishModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p class="text-xs text-slate-500">Jo notes, book ya PYQ chahiye wo bata do, hum upload karne ki koshish karenge.</p>
+            <form id="wishForm" onsubmit="submitWish(event)" class="space-y-3 text-xs">
+                <div class="grid grid-cols-3 gap-2">
+                    <div><label class="block font-medium mb-1">Type</label>
+                        <select id="wishType" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2"><option>Notes</option><option>Book</option><option>PYQ</option><option>Other</option></select></div>
+                    <div><label class="block font-medium mb-1">Class</label>
+                        <select id="wishClass" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2"><option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option selected>Class 10</option><option>Class 11</option><option>Class 12</option><option>Other</option></select></div>
+                    <div><label class="block font-medium mb-1">Subject</label>
+                        <select id="wishSubject" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2"><option>Science</option><option>Math</option><option>Hindi</option><option>English</option><option>SST</option><option>Maithili</option><option>Other</option></select></div>
+                </div>
+                <div><label class="block font-medium mb-1">Aapko kya chahiye? *</label><textarea id="wishMsg" rows="3" required placeholder="e.g. Class 10 Science Chapter 3 ke short notes" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></textarea></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block font-medium mb-1">Name (optional)</label><input type="text" id="wishName" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
+                    <div><label class="block font-medium mb-1">Email/Phone (optional)</label><input type="text" id="wishContact" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
+                </div>
+                <button type="submit" class="w-full dynamic-btn text-white py-2.5 rounded-xl font-bold shadow">Send Request</button>
+            </form>
         </div>
     </div>
 
@@ -1103,5 +1786,12 @@ window.loadCloudData = async function() {
         </div>
     </div>
 
+<!-- Floating AI robot (bottom right) -->
+    <div id="aiFab" class="fixed bottom-3 right-2 sm:bottom-5 sm:right-5 z-40 flex flex-col items-end select-none">
+        <div id="aiFabBubble" onclick="openModal('aiModal')" class="mb-1 mr-2 max-w-[190px] bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold px-3 py-2 rounded-2xl rounded-br-sm shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer"></div>
+        <button id="aiFabBtn" onclick="openModal('aiModal')" class="ai-fab-btn" aria-label="Open Bazar AI assistant" title="Bazar AI se pucho">
+            <span class="ai-fab-glow"></span>
+        </button>
+    </div>
 </body>
 </html>
