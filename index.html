@@ -79,8 +79,8 @@
     <!-- Firebase Realtime Database Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get, set, push, remove, query, limitToLast, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        const firebaseConfig = {
+import { getDatabase, ref, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+     const firebaseConfig = {
             apiKey: "AIzaSyChG_jBGcieowmVVKHdwaiI1zvOwvvPag0",
             authDomain: "notes-market-d309b.firebaseapp.com",
             databaseURL: "https://notes-market-d309b-default-rtdb.firebaseio.com",
@@ -102,10 +102,7 @@ import { getDatabase, ref, get, set, push, remove, query, limitToLast, orderByCh
 window.loadCloudData = async function() {
             try {
                 const dataRef = ref(db, 'notes_bazar_data');
-                // Sirf aakhri ke 15 notes load honge taaki mobile par turant khule
-                const limitedQuery = query(dataRef, orderByChild('createdAt'), limitToLast(15));
-                
-                const snapshot = await get(limitedQuery);
+                const snapshot = await get(dataRef);
                 window.allItems = [];
                 if (snapshot.exists()) {
                     const data = snapshot.val();
@@ -120,6 +117,7 @@ window.loadCloudData = async function() {
                 console.error("Error loading data: ", error);
             }
         };
+     
         async function loadMessages() {
             try {
                 const msgRef = ref(db, 'notes_bazar_messages');
