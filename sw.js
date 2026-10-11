@@ -1,10 +1,10 @@
 /* Notes Bazar service worker – app shell + offline support */
-const VER = 'v1';
+const VER = 'v2';
 const SHELL = 'nb-shell-' + VER;      // index.html, manifest, icons
 const STATIC = 'nb-static-' + VER;    // font-awesome, firebase sdk, fonts
 const DATA = 'nb-data-' + VER;        // lists + opened files (so they open offline)
 const FILE_LIMIT = 25;                // max opened files kept offline
-const SHELL_FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const SHELL_FILES = ['./', './index.html', './manifest.json', './style.css', './app.js', './icon-192.png', './icon-512.png'];
 const STATIC_HOSTS = ['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com'];
 
 self.addEventListener('install', e => {
@@ -47,6 +47,11 @@ self.addEventListener('fetch', e => {
   // 1) the page itself
   if (req.mode === 'navigate' && url.origin === location.origin) {
     e.respondWith(networkFirst(req, SHELL, 3500, './index.html').catch(() => caches.match('./index.html')));
+    return;
+  }
+  // 2a) own code (css/js): network-first so a new deploy is picked up immediately
+  if (url.origin === location.origin && /\.(css|js)$/.test(url.pathname) && !url.pathname.endsWith('/sw.js')) {
+    e.respondWith(networkFirst(req, SHELL, 3500));
     return;
   }
   // 2) own static files (icons, manifest)
