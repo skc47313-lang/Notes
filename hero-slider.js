@@ -195,7 +195,7 @@
       clone.style.setProperty("z-index", "99999", "important");
       clone.style.setProperty("transform", "translateX(0)", "important");
       clone.style.setProperty("opacity", "1", "important");
-      clone.style.setProperty("background-image", gradient(slides[index]), "important");
+      
 
       document.body.appendChild(clone);
 
