@@ -1,17 +1,19 @@
 
-/* Notes Bazar — Smooth Responsive Hero Slider v3 */
+/* Notes Bazar — Premium Responsive Hero Slider */
 (function () {
   "use strict";
 
   function initHeroSlider() {
     var hero = document.querySelector("#homeView > .dynamic-bg");
-    if (!hero || hero.dataset.premiumSlider === "3") return;
+
+    if (!hero || hero.dataset.premiumSlider === "4") return;
 
     var heading = hero.querySelector("h2");
     var description = hero.querySelector("p");
+
     if (!heading || !description) return;
 
-    hero.dataset.premiumSlider = "3";
+    hero.dataset.premiumSlider = "4";
 
     var originalTitle = heading.textContent.trim();
     var originalDescription = description.textContent.trim();
@@ -65,28 +67,36 @@
     ];
 
     var index = 0;
-    var timer;
-    var resizeTimer;
-    var reduceMotion = window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var timer = null;
+    var resizeTimer = null;
+
+    var motionPreference = window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : null;
+
+    function prefersReducedMotion() {
+      return motionPreference && motionPreference.matches;
+    }
 
     var style = document.createElement("style");
+
     style.textContent = `
-      #homeView > .dynamic-bg[data-premium-slider="3"] {
+      #homeView > .dynamic-bg[data-premium-slider="4"] {
         box-sizing: border-box;
         width: 100%;
         max-width: 100%;
         overflow: hidden;
         border-radius: 26px;
         padding: clamp(30px, 4vw, 52px) 24px;
-        color: white;
+        color: #fff;
         box-shadow: 0 16px 42px rgba(15, 23, 42, .18);
         will-change: transform;
+        backface-visibility: hidden;
       }
 
-      #homeView > .dynamic-bg[data-premium-slider="3"] h2,
-      #homeView > .dynamic-bg[data-premium-slider="3"] p {
-        color: white !important;
+      #homeView > .dynamic-bg[data-premium-slider="4"] h2,
+      #homeView > .dynamic-bg[data-premium-slider="4"] p {
+        color: #fff !important;
       }
 
       .nb-hero-slider-clone {
@@ -96,28 +106,38 @@
         pointer-events: none !important;
         box-sizing: border-box !important;
         max-width: none !important;
+        overflow: hidden !important;
+        backface-visibility: hidden !important;
+        will-change: transform !important;
       }
 
       @media (max-width: 640px) {
-        #homeView > .dynamic-bg[data-premium-slider="3"] {
+        #homeView > .dynamic-bg[data-premium-slider="4"] {
           padding: 28px 18px;
           min-height: 215px;
           border-radius: 22px;
         }
 
-        #homeView > .dynamic-bg[data-premium-slider="3"] h2 {
+        #homeView > .dynamic-bg[data-premium-slider="4"] h2 {
           font-size: clamp(25px, 6.5vw, 32px);
           line-height: 1.2;
           margin-bottom: 14px;
         }
 
-        #homeView > .dynamic-bg[data-premium-slider="3"] p {
+        #homeView > .dynamic-bg[data-premium-slider="4"] p {
           font-size: 13px;
           line-height: 1.5;
           margin-bottom: 0;
         }
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        .nb-hero-slider-clone {
+          display: none !important;
+        }
+      }
     `;
+
     document.head.appendChild(style);
 
     function gradient(slide) {
@@ -135,57 +155,69 @@
               : slide.subtitle)
           : slide.subtitle;
 
-      /* Override older background declarations too */
       hero.style.setProperty(
         "background-image",
         gradient(slide),
         "important"
       );
-      hero.style.setProperty("background-color", slide.colors[0], "important");
+
+      hero.style.setProperty(
+        "background-color",
+        slide.colors[0],
+        "important"
+      );
     }
 
     function removeIds(element) {
       element.removeAttribute("id");
+
       element.querySelectorAll("[id]").forEach(function (node) {
         node.removeAttribute("id");
       });
     }
 
+    function scheduleNext(delay) {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(showNext, delay);
+    }
+
     function showNext() {
       index = (index + 1) % slides.length;
 
-      if (reduceMotion || !hero.animate) {
+      if (prefersReducedMotion() || !hero.animate) {
         setSlide(slides[index], index);
-        timer = window.setTimeout(showNext, 8000);
+        scheduleNext(6000);
         return;
       }
 
       var rect = hero.getBoundingClientRect();
 
-      /* If hidden or not laid out, skip animation safely */
       if (!rect.width || !rect.height) {
         setSlide(slides[index], index);
-        timer = window.setTimeout(showNext, 8000);
+        scheduleNext(6000);
         return;
       }
 
-      /* Snapshot the old card before changing its content */
+      /*
+       * Capture the complete old card, including its current
+       * gradient and text, before updating the main card.
+       */
       var clone = hero.cloneNode(true);
       var computed = window.getComputedStyle(hero);
 
       for (var i = 0; i < computed.length; i++) {
         var property = computed[i];
-        try {
-          clone.style.setProperty(
-            property,
-            computed.getPropertyValue(property),
-            computed.getPropertyPriority(property)
-          );
-        } catch (e) {}
+
+        clone.style.setProperty(
+          property,
+          computed.getPropertyValue(property),
+          computed.getPropertyPriority(property)
+        );
       }
 
       removeIds(clone);
       clone.classList.add("nb-hero-slider-clone");
+
       clone.style.setProperty("position", "fixed", "important");
       clone.style.setProperty("left", rect.left + "px", "important");
       clone.style.setProperty("top", rect.top + "px", "important");
@@ -195,33 +227,40 @@
       clone.style.setProperty("z-index", "99999", "important");
       clone.style.setProperty("transform", "translateX(0)", "important");
       clone.style.setProperty("opacity", "1", "important");
-      
+      clone.style.setProperty("pointer-events", "none", "important");
 
       document.body.appendChild(clone);
 
+      /* Apply the new slide and its own distinct gradient. */
       setSlide(slides[index], index);
 
-      /* Both cards travel together, so no empty white interval */
+      /*
+       * Both cards use the same duration and easing:
+       * old card exits left while new card enters from right.
+       */
+      var duration = 1000;
+      var easing = "cubic-bezier(.45, 0, .25, 1)";
+
       var oldAnimation = clone.animate(
         [
           { transform: "translateX(0)" },
-          { transform: "translateX(-105%)" }
+          { transform: "translateX(-100%)" }
         ],
         {
-          duration: 700,
-          easing: "cubic-bezier(.65, 0, .35, 1)",
+          duration: duration,
+          easing: easing,
           fill: "forwards"
         }
       );
 
       var newAnimation = hero.animate(
         [
-          { transform: "translateX(105%)" },
+          { transform: "translateX(100%)" },
           { transform: "translateX(0)" }
         ],
         {
-          duration: 700,
-          easing: "cubic-bezier(.22, 1, .36, 1)",
+          duration: duration,
+          easing: easing,
           fill: "none"
         }
       );
@@ -230,25 +269,34 @@
         clone.remove();
       };
 
+      oldAnimation.oncancel = function () {
+        clone.remove();
+      };
+
       newAnimation.onfinish = function () {
         hero.style.removeProperty("transform");
       };
 
-      /* 8 seconds reading time after the transition */
-      timer = window.setTimeout(showNext, 8700);
+      newAnimation.oncancel = function () {
+        hero.style.removeProperty("transform");
+      };
+
+      /* 6 seconds to read the new slide, after its transition. */
+      scheduleNext(7000);
     }
 
     setSlide(slides[0], 0);
 
     window.addEventListener("resize", function () {
       window.clearTimeout(resizeTimer);
+
       resizeTimer = window.setTimeout(function () {
         setSlide(slides[index], index);
       }, 200);
     });
 
-    /* Keep the first slide visible for 8 seconds */
-    timer = window.setTimeout(showNext, 8000);
+    /* Keep the original hero visible for 6 seconds first. */
+    scheduleNext(6000);
   }
 
   if (document.readyState === "loading") {
