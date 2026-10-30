@@ -304,3 +304,8 @@ header .max-w-7xl{min-width:0}
   .nbs{padding:12px;border-radius:22px}
   .nbs-in{padding:12px}
 }
+
+
+.hero {
+  background: linear-gradient(135deg, #6366f1, #7c3aed) !important;
+}
