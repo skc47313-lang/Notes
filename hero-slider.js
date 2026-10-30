@@ -69,6 +69,7 @@
     var index = 0;
     var timer = null;
     var resizeTimer = null;
+    var isTransitioning = false;
 
     var motionPreference = window.matchMedia
       ? window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -90,25 +91,12 @@
         padding: clamp(30px, 4vw, 52px) 24px;
         color: #fff;
         box-shadow: 0 16px 42px rgba(15, 23, 42, .18);
-        will-change: transform;
         backface-visibility: hidden;
       }
 
       #homeView > .dynamic-bg[data-premium-slider="4"] h2,
       #homeView > .dynamic-bg[data-premium-slider="4"] p {
         color: #fff !important;
-      }
-
-      .nb-hero-slider-clone {
-        position: fixed !important;
-        z-index: 99999 !important;
-        margin: 0 !important;
-        pointer-events: none !important;
-        box-sizing: border-box !important;
-        max-width: none !important;
-        overflow: hidden !important;
-        backface-visibility: hidden !important;
-        will-change: transform !important;
       }
 
       @media (max-width: 640px) {
@@ -132,8 +120,8 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .nb-hero-slider-clone {
-          display: none !important;
+        #homeView > .dynamic-bg[data-premium-slider="4"] {
+          scroll-behavior: auto;
         }
       }
     `;
@@ -168,121 +156,76 @@
       );
     }
 
-    function removeIds(element) {
-      element.removeAttribute("id");
-
-      element.querySelectorAll("[id]").forEach(function (node) {
-        node.removeAttribute("id");
-      });
-    }
-
     function scheduleNext(delay) {
       window.clearTimeout(timer);
       timer = window.setTimeout(showNext, delay);
     }
 
     function showNext() {
-      index = (index + 1) % slides.length;
+      if (isTransitioning) return;
+
+      var nextIndex = (index + 1) % slides.length;
 
       if (prefersReducedMotion() || !hero.animate) {
+        index = nextIndex;
         setSlide(slides[index], index);
         scheduleNext(6000);
         return;
       }
 
-      var rect = hero.getBoundingClientRect();
-
-      if (!rect.width || !rect.height) {
-        setSlide(slides[index], index);
-        scheduleNext(6000);
-        return;
-      }
+      isTransitioning = true;
 
       /*
-       * Capture the complete old card, including its current
-       * gradient and text, before updating the main card.
+       * First exit the current slide.
+       * Do not use fixed-position clones or a high z-index.
        */
-      var clone = hero.cloneNode(true);
-      var computed = window.getComputedStyle(hero);
-
-      for (var i = 0; i < computed.length; i++) {
-        var property = computed[i];
-
-        clone.style.setProperty(
-          property,
-          computed.getPropertyValue(property),
-          computed.getPropertyPriority(property)
-        );
-      }
-
-      removeIds(clone);
-      clone.classList.add("nb-hero-slider-clone");
-
-      clone.style.setProperty("position", "fixed", "important");
-      clone.style.setProperty("left", rect.left + "px", "important");
-      clone.style.setProperty("top", rect.top + "px", "important");
-      clone.style.setProperty("width", rect.width + "px", "important");
-      clone.style.setProperty("height", rect.height + "px", "important");
-      clone.style.setProperty("margin", "0", "important");
-      clone.style.setProperty("z-index", "99999", "important");
-      clone.style.setProperty("transform", "translateX(0)", "important");
-      clone.style.setProperty("opacity", "1", "important");
-      clone.style.setProperty("pointer-events", "none", "important");
-
-      document.body.appendChild(clone);
-
-      /* Apply the new slide and its own distinct gradient. */
-      setSlide(slides[index], index);
-
-      /*
-       * Both cards use the same duration and easing:
-       * old card exits left while new card enters from right.
-       */
-      var duration = 1000;
-      var easing = "cubic-bezier(.45, 0, .25, 1)";
-
-      var oldAnimation = clone.animate(
+      var exitAnimation = hero.animate(
         [
-          { transform: "translateX(0)" },
-          { transform: "translateX(-100%)" }
+          { opacity: 1, transform: "translateX(0)" },
+          { opacity: 0, transform: "translateX(-24px)" }
         ],
         {
-          duration: duration,
-          easing: easing,
+          duration: 420,
+          easing: "cubic-bezier(.45, 0, .25, 1)",
           fill: "forwards"
         }
       );
 
-      var newAnimation = hero.animate(
-        [
-          { transform: "translateX(100%)" },
-          { transform: "translateX(0)" }
-        ],
-        {
-          duration: duration,
-          easing: easing,
-          fill: "none"
-        }
-      );
+      exitAnimation.onfinish = function () {
+        index = nextIndex;
+        setSlide(slides[index], index);
 
-      oldAnimation.onfinish = function () {
-        clone.remove();
+        /*
+         * Only update the content after the old slide has exited.
+         * Then animate the new slide into place.
+         */
+        var enterAnimation = hero.animate(
+          [
+            { opacity: 0, transform: "translateX(24px)" },
+            { opacity: 1, transform: "translateX(0)" }
+          ],
+          {
+            duration: 520,
+            easing: "cubic-bezier(.22, 1, .36, 1)",
+            fill: "none"
+          }
+        );
+
+        enterAnimation.onfinish = function () {
+          isTransitioning = false;
+          scheduleNext(6000);
+        };
+
+        enterAnimation.oncancel = function () {
+          isTransitioning = false;
+          scheduleNext(6000);
+        };
       };
 
-      oldAnimation.oncancel = function () {
-        clone.remove();
+      exitAnimation.oncancel = function () {
+        isTransitioning = false;
+        scheduleNext(6000);
       };
-
-      newAnimation.onfinish = function () {
-        hero.style.removeProperty("transform");
-      };
-
-      newAnimation.oncancel = function () {
-        hero.style.removeProperty("transform");
-      };
-
-      /* 6 seconds to read the new slide, after its transition. */
-      scheduleNext(7000);
     }
 
     setSlide(slides[0], 0);
@@ -291,11 +234,13 @@
       window.clearTimeout(resizeTimer);
 
       resizeTimer = window.setTimeout(function () {
-        setSlide(slides[index], index);
+        if (!isTransitioning) {
+          setSlide(slides[index], index);
+        }
       }, 200);
     });
 
-    /* Keep the original hero visible for 6 seconds first. */
+    /* Show the initial slide for six seconds. */
     scheduleNext(6000);
   }
 
