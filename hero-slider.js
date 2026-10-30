@@ -1,17 +1,17 @@
 
-/* Notes Bazar — Smooth Premium Hero Carousel */
+/* Notes Bazar — Smooth Responsive Hero Slider v3 */
 (function () {
   "use strict";
 
   function initHeroSlider() {
     var hero = document.querySelector("#homeView > .dynamic-bg");
-    if (!hero || hero.dataset.premiumSlider === "2") return;
+    if (!hero || hero.dataset.premiumSlider === "3") return;
 
     var heading = hero.querySelector("h2");
     var description = hero.querySelector("p");
     if (!heading || !description) return;
 
-    hero.dataset.premiumSlider = "2";
+    hero.dataset.premiumSlider = "3";
 
     var originalTitle = heading.textContent.trim();
     var originalDescription = description.textContent.trim();
@@ -24,7 +24,7 @@
       },
       {
         title: "Small Steps. Big Success.",
-        subtitle: "Every page you study brings you closer to your goal.",
+        subtitle: "Every page brings you closer to your goal.",
         colors: ["#9A3412", "#F97316", "#FDBA74"]
       },
       {
@@ -34,94 +34,84 @@
       },
       {
         title: "Your Dreams Deserve Effort.",
-        subtitle: "Learn something today. Grow stronger tomorrow.",
+        subtitle: "Learn today. Grow stronger tomorrow.",
         colors: ["#581C87", "#9333EA", "#D8B4FE"]
       },
       {
         title: "Study Today. Shine Tomorrow.",
-        subtitle: "Your future begins with the effort you make now.",
+        subtitle: "Your future begins with today's effort.",
         colors: ["#164E63", "#0891B2", "#67E8F9"]
       },
       {
         title: "Consistency Wins.",
-        subtitle: "A little progress every day adds up to a lot.",
+        subtitle: "Small progress every day adds up.",
         colors: ["#881337", "#E11D48", "#FDA4AF"]
       },
       {
         title: "Progress, Not Perfection.",
-        subtitle: "Keep learning. You do not need to be perfect.",
+        subtitle: "Keep learning. Keep moving forward.",
         colors: ["#713F12", "#CA8A04", "#FDE047"]
       },
       {
         title: "Make Yourself Proud.",
-        subtitle: "Your effort today can shape your tomorrow.",
+        subtitle: "Your effort today shapes your tomorrow.",
         colors: ["#312E81", "#4F46E5", "#A5B4FC"]
       },
       {
         title: "Keep Learning. Keep Growing.",
-        subtitle: "Your next big achievement starts right here.",
+        subtitle: "Your next achievement starts right here.",
         colors: ["#134E4A", "#0D9488", "#5EEAD4"]
-      },
-      {
-        title: "One Goal. One Step at a Time.",
-        subtitle: "Stay focused and trust your hard work.",
-        colors: ["#374151", "#4B5563", "#9CA3AF"]
       }
     ];
 
     var index = 0;
-    var timer = null;
-    var resizeTimer = null;
+    var timer;
+    var resizeTimer;
     var reduceMotion = window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     var style = document.createElement("style");
     style.textContent = `
-      #homeView > .dynamic-bg[data-premium-slider="2"] {
+      #homeView > .dynamic-bg[data-premium-slider="3"] {
         box-sizing: border-box;
         width: 100%;
         max-width: 100%;
         overflow: hidden;
         border-radius: 26px;
         padding: clamp(30px, 4vw, 52px) 24px;
-        background-image: linear-gradient(120deg, #173B73, #2563EB, #06B6D4);
         color: white;
         box-shadow: 0 16px 42px rgba(15, 23, 42, .18);
-        position: relative;
+        will-change: transform;
       }
 
-      #homeView > .dynamic-bg[data-premium-slider="2"] h2 {
-        color: white;
-        line-height: 1.2;
-        overflow-wrap: anywhere;
+      #homeView > .dynamic-bg[data-premium-slider="3"] h2,
+      #homeView > .dynamic-bg[data-premium-slider="3"] p {
+        color: white !important;
       }
 
-      #homeView > .dynamic-bg[data-premium-slider="2"] p {
-        color: rgba(255,255,255,.94);
-      }
-
-      .nb-hero-outgoing {
+      .nb-hero-slider-clone {
         position: fixed !important;
-        z-index: 9999 !important;
+        z-index: 99999 !important;
         margin: 0 !important;
         pointer-events: none !important;
         box-sizing: border-box !important;
+        max-width: none !important;
       }
 
       @media (max-width: 640px) {
-        #homeView > .dynamic-bg[data-premium-slider="2"] {
+        #homeView > .dynamic-bg[data-premium-slider="3"] {
           padding: 28px 18px;
           min-height: 215px;
           border-radius: 22px;
         }
 
-        #homeView > .dynamic-bg[data-premium-slider="2"] h2 {
+        #homeView > .dynamic-bg[data-premium-slider="3"] h2 {
           font-size: clamp(25px, 6.5vw, 32px);
           line-height: 1.2;
           margin-bottom: 14px;
         }
 
-        #homeView > .dynamic-bg[data-premium-slider="2"] p {
+        #homeView > .dynamic-bg[data-premium-slider="3"] p {
           font-size: 13px;
           line-height: 1.5;
           margin-bottom: 0;
@@ -130,25 +120,35 @@
     `;
     document.head.appendChild(style);
 
-    function isMobile() {
-      return window.matchMedia("(max-width: 640px)").matches;
+    function gradient(slide) {
+      return "linear-gradient(120deg, " +
+        slide.colors.join(", ") + ")";
     }
 
     function setSlide(slide, slideIndex) {
       heading.textContent = slide.title;
-      description.textContent = isMobile()
-        ? (slideIndex === 0
-          ? "Learn, revise and grow every day."
-          : slide.subtitle)
-        : slide.subtitle;
 
-      hero.style.backgroundImage =
-        "linear-gradient(120deg, " + slide.colors.join(", ") + ")";
+      description.textContent =
+        window.matchMedia("(max-width: 640px)").matches
+          ? (slideIndex === 0
+              ? "Learn, revise and grow every day."
+              : slide.subtitle)
+          : slide.subtitle;
+
+      /* Override older background declarations too */
+      hero.style.setProperty(
+        "background-image",
+        gradient(slide),
+        "important"
+      );
+      hero.style.setProperty("background-color", slide.colors[0], "important");
     }
 
-    function scheduleNext(delay) {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(showNext, delay);
+    function removeIds(element) {
+      element.removeAttribute("id");
+      element.querySelectorAll("[id]").forEach(function (node) {
+        node.removeAttribute("id");
+      });
     }
 
     function showNext() {
@@ -156,58 +156,86 @@
 
       if (reduceMotion || !hero.animate) {
         setSlide(slides[index], index);
-        scheduleNext(8000);
+        timer = window.setTimeout(showNext, 8000);
         return;
       }
 
-      /* Keep the outgoing card visible while the next card enters */
       var rect = hero.getBoundingClientRect();
-      var outgoing = hero.cloneNode(true);
 
-      outgoing.removeAttribute("id");
-      outgoing.classList.add("nb-hero-outgoing");
-      outgoing.style.left = rect.left + "px";
-      outgoing.style.top = rect.top + "px";
-      outgoing.style.width = rect.width + "px";
-      outgoing.style.height = rect.height + "px";
-      outgoing.style.backgroundImage = hero.style.backgroundImage;
-      outgoing.style.borderRadius = getComputedStyle(hero).borderRadius;
-      outgoing.style.padding = getComputedStyle(hero).padding;
-      outgoing.style.transform = "translateX(0)";
-      document.body.appendChild(outgoing);
+      /* If hidden or not laid out, skip animation safely */
+      if (!rect.width || !rect.height) {
+        setSlide(slides[index], index);
+        timer = window.setTimeout(showNext, 8000);
+        return;
+      }
+
+      /* Snapshot the old card before changing its content */
+      var clone = hero.cloneNode(true);
+      var computed = window.getComputedStyle(hero);
+
+      for (var i = 0; i < computed.length; i++) {
+        var property = computed[i];
+        try {
+          clone.style.setProperty(
+            property,
+            computed.getPropertyValue(property),
+            computed.getPropertyPriority(property)
+          );
+        } catch (e) {}
+      }
+
+      removeIds(clone);
+      clone.classList.add("nb-hero-slider-clone");
+      clone.style.setProperty("position", "fixed", "important");
+      clone.style.setProperty("left", rect.left + "px", "important");
+      clone.style.setProperty("top", rect.top + "px", "important");
+      clone.style.setProperty("width", rect.width + "px", "important");
+      clone.style.setProperty("height", rect.height + "px", "important");
+      clone.style.setProperty("margin", "0", "important");
+      clone.style.setProperty("z-index", "99999", "important");
+      clone.style.setProperty("transform", "translateX(0)", "important");
+      clone.style.setProperty("opacity", "1", "important");
+      clone.style.setProperty("background-image", gradient(slides[index]), "important");
+
+      document.body.appendChild(clone);
 
       setSlide(slides[index], index);
 
-      /* Both cards move at the same time — no blank white gap */
-      var outgoingAnimation = outgoing.animate(
+      /* Both cards travel together, so no empty white interval */
+      var oldAnimation = clone.animate(
         [
-          { transform: "translateX(0)", opacity: 1 },
-          { transform: "translateX(-100%)", opacity: 1 }
+          { transform: "translateX(0)" },
+          { transform: "translateX(-105%)" }
         ],
         {
-          duration: 650,
+          duration: 700,
           easing: "cubic-bezier(.65, 0, .35, 1)",
           fill: "forwards"
         }
       );
 
-      hero.animate(
+      var newAnimation = hero.animate(
         [
-          { transform: "translateX(100%)", opacity: 1 },
-          { transform: "translateX(0)", opacity: 1 }
+          { transform: "translateX(105%)" },
+          { transform: "translateX(0)" }
         ],
         {
-          duration: 650,
+          duration: 700,
           easing: "cubic-bezier(.22, 1, .36, 1)",
           fill: "none"
         }
       );
 
-      outgoingAnimation.onfinish = function () {
-        outgoing.remove();
+      oldAnimation.onfinish = function () {
+        clone.remove();
       };
 
-      scheduleNext(8650);
+      newAnimation.onfinish = function () {
+        hero.style.removeProperty("transform");
+      };
+
+      /* 8 seconds reading time after the transition */
+      timer = window.setTimeout(showNext, 8700);
     }
 
     setSlide(slides[0], 0);
@@ -216,11 +244,11 @@
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(function () {
         setSlide(slides[index], index);
-      }, 150);
+      }, 200);
     });
 
-    /* Original hero stays for 8 seconds before the first change */
-    scheduleNext(8000);
+    /* Keep the first slide visible for 8 seconds */
+    timer = window.setTimeout(showNext, 8000);
   }
 
   if (document.readyState === "loading") {
