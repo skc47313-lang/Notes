@@ -537,7 +537,16 @@
             const frag = document.createDocumentFragment();
             items.forEach(it => frag.appendChild(makeCard(it)));
             g.appendChild(frag);
+            const sec = g.closest('section');
+            if (sec && g.classList.contains('hm-grid')) { sec.classList.toggle('hm-m', items.length > 2); sec.classList.toggle('hm-d', items.length > 3); }
         }
+        // Trending / Latest: 2 cards on phone & tablet, 3 on desktop; the arrow button shows the rest below (pushes the next section down)
+        window.toggleHomeMore = function(id) {
+            const g = $h(id), b = $h(id + 'More'); if (!g || !b) return;
+            const on = !g.classList.contains('open');
+            g.classList.toggle('open', on); b.setAttribute('aria-expanded', on ? 'true' : 'false');
+            const t = b.querySelector('.hm-more-t'); if (t) t.textContent = on ? 'See less' : 'See more';
+        };
         async function loadStats() {
             try { const s = await restGet('notes_bazar_stats'); homeStats = (s && typeof s === 'object') ? s : {}; }
             catch (e) { homeStats = {}; }
@@ -621,17 +630,34 @@
             if (!findAnyItem(id)) { toast('This item is no longer available.', 3000); return; }
             window.downloadItem(id);
         };
+        // remove entries from the download history (also removes the green "Downloaded" mark) and sync the account
+        function dropHist(ids) {
+            const m = dlHist(); let n = 0;
+            ids.forEach(id => { if (m[id]) { delete m[id]; n++; } });
+            if (n) LS.set('nb_dlhist', m);
+            paintMarks();
+            try { if (window.NB && NB.ui && NB.ui.refreshAll) NB.ui.refreshAll(); } catch (e) {}
+            return n;
+        }
+        window.nbHistDelete = function(id) { dropHist([id]); renderDlModal(); toast('Removed from history'); };
+        window.nbHistClear = function() {
+            const have = new Set(dlItems.map(x => x.id));
+            const ids = Object.keys(dlHist()).filter(id => !have.has(id));
+            if (!ids.length || !confirm('Clear the whole download history? (Files saved on this device are not removed.)')) return;
+            dropHist(ids); renderDlModal(); toast('History cleared');
+        };
         function renderDlHist() {
             const box = document.getElementById('dlHist'); if (!box) return;
             const q = ((document.getElementById('dlSearch') || {}).value || '').toLowerCase().trim();
             const have = new Set(dlItems.map(x => x.id)), h = dlHist();
             const ids = Object.keys(h).filter(id => !have.has(id) && (!q || [h[id].title, h[id].subject, h[id].className].join(' ').toLowerCase().includes(q)))
                 .sort((a, b) => (h[b].ts || 0) - (h[a].ts || 0)).slice(0, 40);
-            box.innerHTML = ids.length ? '<div class="nb-hist-h">Download history (not stored on this device)</div>' + ids.map(id => {
+            box.innerHTML = ids.length ? '<div class="nb-hist-h flex items-center justify-between gap-2"><span>Download history (not stored on this device)</span><button type="button" class="nb-hist-clear" onclick="nbHistClear()"><i class="fa-regular fa-trash-can"></i> Clear all</button></div>' + ids.map(id => {
                 const r = h[id], meta = [r.className, r.subject, 'Downloaded ' + shortDate(r.ts)].filter(Boolean).join(' \u2022 ');
                 return `<div class="dl-row"><div class="dl-ic"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div class="min-w-0 flex-1"><div class="dl-t" title="${esc(r.title)}">${esc(r.title)}</div><div class="dl-m">${esc(meta)}</div></div>
-                    <div class="flex items-center gap-1.5 shrink-0"><button type="button" class="dl-b go" onclick="nbRedownload(${jsArg(id)})" title="Download again" aria-label="Download again"><i class="fa-solid fa-download"></i></button></div></div>`;
+                    <div class="flex items-center gap-1.5 shrink-0"><button type="button" class="dl-b go" onclick="nbRedownload(${jsArg(id)})" title="Download again" aria-label="Download again"><i class="fa-solid fa-download"></i></button>
+                    <button type="button" class="dl-b del" onclick="nbHistDelete(${jsArg(id)})" title="Delete from history" aria-label="Delete from history"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('') : '';
         }
 
@@ -937,11 +963,11 @@
         };
         window.dlDelete = async function(id) {
             if (!confirm('Remove this file from Downloads? (You can download it again when online.)')) return;
-            try { await dlTx('readwrite', st => st.delete(id)); await dlRefresh(); toast('Removed.'); } catch (e) { toast('Could not remove it.'); }
+            try { await dlTx('readwrite', st => st.delete(id)); dropHist([id]); await dlRefresh(); toast('Removed.'); } catch (e) { toast('Could not remove it.'); }
         };
         window.dlDeleteAll = async function() {
             if (!dlItems.length || !confirm('Remove all downloaded files?')) return;
-            try { await dlTx('readwrite', st => st.clear()); await dlRefresh(); toast('All removed.'); } catch (e) { toast('Could not remove it.'); }
+            try { const ids = dlItems.map(x => x.id); await dlTx('readwrite', st => st.clear()); dropHist(ids); await dlRefresh(); toast('All removed.'); } catch (e) { toast('Could not remove it.'); }
         };
 
         window.switchUploadType = function(type) {

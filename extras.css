@@ -736,18 +736,25 @@ html,body{overflow-x:clip!important}
 }
 
 /* ============================================================
-   Profile photo editor (resize / move / rotate)
+   Profile photo editor (move / zoom / pinch / rotate) + photo viewer
+   (own class names: .nbc is the calculator)
    ============================================================ */
-.nbc{z-index:90}
-.nbc-card{max-width:340px;text-align:center}
-.nbc-stage{position:relative;margin:6px auto 12px;border-radius:18px;overflow:hidden;background:#e2e8f0;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
-.nbc-stage:active{cursor:grabbing}
-.nbc-stage canvas{display:block;width:100%;height:100%}
-.nbc-frame{position:absolute;inset:0;border-radius:18px;pointer-events:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
-.nbc-ctl{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.nbc-ctl input[type=range]{flex:1;min-width:0;accent-color:var(--theme-primary,#6366f1);height:28px}
-.nbc-ib{flex:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--nb-border);background:var(--nb-surface-2);color:inherit;cursor:pointer;font-size:13px}
-.nbc-ib:active{transform:scale(.94)}
+.nbcr{z-index:90}
+.nbcr-card{max-width:360px;text-align:center}
+.nbcr-stage{position:relative;margin:6px auto 12px;border-radius:18px;overflow:hidden;background:#e2e8f0;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.nbcr-stage:active{cursor:grabbing}
+.nbcr-stage canvas{display:block;width:100%;height:100%}
+.nbcr-frame{position:absolute;inset:0;border-radius:18px;pointer-events:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.85),inset 0 0 0 3px rgba(15,23,42,.18)}
+.nbcr-ctl{display:flex;align-items:center;gap:6px;margin-bottom:14px}
+.nbcr-ctl input[type=range]{flex:1;min-width:0;accent-color:var(--theme-primary,#6366f1);height:28px}
+.nbcr-ib{flex:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--nb-border);background:var(--nb-surface-2);color:inherit;cursor:pointer;font-size:13px}
+.nbcr-ib:active{transform:scale(.94)}
+.nbph{z-index:80}
+.nbph-card{max-width:340px;text-align:center;padding-top:28px}
+.nbph-big{width:min(240px,64vw);aspect-ratio:1;margin:0 auto 12px;border-radius:32px;display:flex;align-items:center;justify-content:center;font-size:84px;font-weight:800;color:#fff;background:var(--nb-grad);background-size:cover;background-position:center;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+.nbph-big.has-photo{color:transparent}
+.nbph-n{display:block;font-size:16px;margin-bottom:14px}
+.nbph-rm{width:100%;padding:11px;margin-top:8px;border-radius:14px;border:1px solid rgba(220,38,38,.35);background:transparent;color:var(--nb-danger,#dc2626);font-size:13.5px;font-weight:700;cursor:pointer}
 
 /* ============================================================
    My Downloads: full-screen panel (mobile + desktop)
@@ -797,3 +804,30 @@ html body #downloadsModal>div{max-width:none!important;width:100%!important;heig
 
 .adm-count{margin-left:8px;min-width:22px;height:22px;padding:0 7px;border-radius:999px;display:inline-grid;place-items:center;font-size:11px;font-weight:800;background:var(--nb-hover);color:var(--nb-muted)}
 .adm-count.hidden{display:none}
+
+/* download history: clear-all button */
+.nb-hist-clear{flex:none;display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid rgba(220,38,38,.3);background:transparent;color:var(--nb-danger,#dc2626);font-size:10.5px;font-weight:800;letter-spacing:0;text-transform:none;cursor:pointer}
+
+/* header study streak chip: next to search on phones, first icon on desktop */
+.nbh-ib.nbh-st{width:auto;min-width:40px;padding:0 10px;gap:5px;font-size:14px}
+.nbh-st i{color:#9ca3af;font-size:15px}
+.nbh-st.on i{color:#f97316}
+.nbh-st b{font-size:13px;font-weight:800;line-height:1;min-width:1ch;text-align:left}
+@media (min-width:1024px){ .nbh-ib.nbh-st{height:42px;min-width:42px} }
+@media (max-width:359px){ .nbh-ib.nbh-st{padding:0 8px;min-width:36px} }
+
+/* Home: Trending + Latest show 2 cards (phone/tablet) or 3 (desktop); "See more" reveals the rest in normal flow */
+.hm-more{display:none;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:10px 12px;border-radius:16px;border:1px solid var(--nb-border,#e2e8f0);background:var(--nb-surface,#fff);color:var(--nb-text,#0f172a);box-shadow:0 4px 12px rgba(15,23,42,.08);cursor:pointer;font-size:13px;font-weight:700;box-sizing:border-box}
+.hm-more-ar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--nb-hover,#f1f5f9);font-size:12px;transition:transform .3s}
+.hm-more[aria-expanded="true"] .hm-more-ar{transform:rotate(180deg)}
+@keyframes hmIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (max-width:1023px){
+  .hm-grid:not(.open)>:nth-child(n+3){display:none}
+  .hm-grid.open>:nth-child(n+3){animation:hmIn .35s ease both}
+  .hm-m .hm-more{display:flex}
+}
+@media (min-width:1024px){
+  .hm-grid:not(.open)>:nth-child(n+4){display:none}
+  .hm-grid.open>:nth-child(n+4){animation:hmIn .35s ease both}
+  .hm-d .hm-more{display:flex}
+}

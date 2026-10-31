@@ -89,25 +89,29 @@
             rd.readAsDataURL(file);
         });
     };
-    /* rejects with an empty message when the person cancels (callers ignore empty messages) */
+    /* rejects with an empty message when the person cancels (callers ignore empty messages).
+       Editor: drag to move, slider / +- / mouse wheel / two-finger pinch to resize (zoom out far enough to fit the whole photo), rotate, fit. */
     NB.cropPhoto = function (img) {
         return new Promise(function (res, rej) {
             var old = document.getElementById('nbCrop'); if (old) { NB.close('nbCrop'); }
-            var V = Math.max(200, Math.min(280, window.innerWidth - 72)), OUT = 240, done = false;
+            var V = Math.max(200, Math.min(300, window.innerWidth - 72)), OUT = 256, done = false, MAXZ = 5;
             var src = document.createElement('canvas'); src.width = img.naturalWidth || img.width; src.height = img.naturalHeight || img.height;
             src.getContext('2d').drawImage(img, 0, 0);
-            var zoom = 1, cx = 0, cy = 0;
-            var m = NB.mk('<div class="nbo nbc" id="nbCrop" aria-hidden="true"><div class="nbo-card nbc-card" role="dialog" aria-modal="true" aria-label="Adjust profile photo">' +
-                '<h3 class="nbo-h">Adjust your photo</h3><p class="nbo-sub">Drag to move, use the slider to resize</p>' +
-                '<div class="nbc-stage" id="nbcStage" style="width:' + V + 'px;height:' + V + 'px"><canvas id="nbcCv" width="' + V + '" height="' + V + '"></canvas><div class="nbc-frame"></div></div>' +
-                '<div class="nbc-ctl"><button type="button" class="nbc-ib" id="nbcMinus" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>' +
-                '<input type="range" id="nbcZoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom">' +
-                '<button type="button" class="nbc-ib" id="nbcPlus" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>' +
-                '<button type="button" class="nbc-ib" id="nbcRot" aria-label="Rotate"><i class="fa-solid fa-rotate-right"></i></button></div>' +
-                '<button type="button" class="nbo-save" id="nbcOk">Use this photo</button><button type="button" class="nbo-skip" id="nbcNo">Cancel</button>' +
+            var zoom = 1, cx = 0, cy = 0, minZ = 1;
+            function calcMin() { minZ = Math.max(0.2, Math.min(1, Math.min(src.width, src.height) / Math.max(src.width, src.height))); }
+            calcMin();
+            var m = NB.mk('<div class="nbo nbcr" id="nbCrop" aria-hidden="true"><div class="nbo-card nbcr-card" role="dialog" aria-modal="true" aria-label="Adjust profile photo">' +
+                '<h3 class="nbo-h">Adjust your photo</h3><p class="nbo-sub">Drag to move. Pinch, scroll or use the slider to zoom.</p>' +
+                '<div class="nbcr-stage" id="nbcrStage" style="width:' + V + 'px;height:' + V + 'px"><canvas id="nbcrCv" width="' + V + '" height="' + V + '"></canvas><div class="nbcr-frame"></div></div>' +
+                '<div class="nbcr-ctl"><button type="button" class="nbcr-ib" id="nbcrMinus" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>' +
+                '<input type="range" id="nbcrZoom" min="' + minZ + '" max="' + MAXZ + '" step="0.01" value="1" aria-label="Zoom">' +
+                '<button type="button" class="nbcr-ib" id="nbcrPlus" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>' +
+                '<button type="button" class="nbcr-ib" id="nbcrFit" aria-label="Reset size and position" title="Reset"><i class="fa-solid fa-expand"></i></button>' +
+                '<button type="button" class="nbcr-ib" id="nbcrRot" aria-label="Rotate"><i class="fa-solid fa-rotate-right"></i></button></div>' +
+                '<button type="button" class="nbo-save" id="nbcrOk">Use this photo</button><button type="button" class="nbo-skip" id="nbcrNo">Cancel</button>' +
                 '</div></div>');
             document.body.appendChild(m);
-            var cv = document.getElementById('nbcCv'), zr = document.getElementById('nbcZoom');
+            var cv = document.getElementById('nbcrCv'), zr = document.getElementById('nbcrZoom');
             function scale() { return (V / Math.min(src.width, src.height)) * zoom; }
             function clamp() {
                 var s = scale(), mx = Math.max(0, src.width * s / 2 - V / 2), my = Math.max(0, src.height * s / 2 - V / 2);
@@ -120,28 +124,44 @@
                 x.drawImage(src, (V / 2 + cx - src.width * s / 2) * k, (V / 2 + cy - src.height * s / 2) * k, src.width * s * k, src.height * s * k);
             }
             function draw() { clamp(); paint(cv, V); }
-            function setZoom(z) { zoom = Math.max(1, Math.min(4, z)); zr.value = zoom; draw(); }
+            function setZoom(z) { zoom = Math.max(minZ, Math.min(MAXZ, z)); zr.value = zoom; draw(); }
             zr.addEventListener('input', function () { setZoom(+this.value); });
-            document.getElementById('nbcMinus').addEventListener('click', function () { setZoom(zoom - 0.25); });
-            document.getElementById('nbcPlus').addEventListener('click', function () { setZoom(zoom + 0.25); });
-            document.getElementById('nbcRot').addEventListener('click', function () {
+            document.getElementById('nbcrMinus').addEventListener('click', function () { setZoom(zoom - 0.2); });
+            document.getElementById('nbcrPlus').addEventListener('click', function () { setZoom(zoom + 0.2); });
+            document.getElementById('nbcrFit').addEventListener('click', function () { cx = 0; cy = 0; setZoom(1); });
+            document.getElementById('nbcrRot').addEventListener('click', function () {
                 var r = document.createElement('canvas'); r.width = src.height; r.height = src.width;
                 var x = r.getContext('2d'); x.translate(r.width / 2, r.height / 2); x.rotate(Math.PI / 2); x.drawImage(src, -src.width / 2, -src.height / 2);
-                src = r; cx = 0; cy = 0; draw();
+                src = r; cx = 0; cy = 0; calcMin(); zr.min = minZ; setZoom(1);
             });
-            var st = document.getElementById('nbcStage'), drag = null;
-            st.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY }; try { st.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
-            st.addEventListener('pointermove', function (e) { if (!drag) return; cx += e.clientX - drag.x; cy += e.clientY - drag.y; drag = { x: e.clientX, y: e.clientY }; draw(); });
-            function endDrag() { drag = null; }
-            st.addEventListener('pointerup', endDrag); st.addEventListener('pointercancel', endDrag);
+            /* one finger / mouse = move, two fingers = pinch zoom */
+            var st = document.getElementById('nbcrStage'), ptrs = {}, pinch0 = 0, zoom0 = 1;
+            function ids() { return Object.keys(ptrs); }
+            function dist() { var k = ids(), a = ptrs[k[0]], b = ptrs[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; }
+            st.addEventListener('pointerdown', function (e) {
+                ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+                try { st.setPointerCapture(e.pointerId); } catch (er) {}
+                if (ids().length === 2) { pinch0 = dist(); zoom0 = zoom; }
+                e.preventDefault();
+            });
+            st.addEventListener('pointermove', function (e) {
+                var p = ptrs[e.pointerId]; if (!p) return;
+                if (ids().length >= 2) {
+                    p.x = e.clientX; p.y = e.clientY; setZoom(zoom0 * dist() / pinch0);
+                } else {
+                    cx += e.clientX - p.x; cy += e.clientY - p.y; p.x = e.clientX; p.y = e.clientY; draw();
+                }
+            });
+            function endPtr(e) { delete ptrs[e.pointerId]; if (ids().length === 1) { var q = ptrs[ids()[0]]; if (q) { /* keep remaining finger as a mover */ } } }
+            st.addEventListener('pointerup', endPtr); st.addEventListener('pointercancel', endPtr); st.addEventListener('lostpointercapture', endPtr);
             st.addEventListener('wheel', function (e) { e.preventDefault(); setZoom(zoom - e.deltaY * 0.002); }, { passive: false });
             NB.onClose.nbCrop = function () {
                 if (!done) { done = true; rej(new Error('')); }
                 var n = document.getElementById('nbCrop'); if (n && n.parentNode) n.parentNode.removeChild(n);
                 delete NB.onClose.nbCrop;
             };
-            document.getElementById('nbcNo').addEventListener('click', function () { NB.close('nbCrop'); });
-            document.getElementById('nbcOk').addEventListener('click', function () {
+            document.getElementById('nbcrNo').addEventListener('click', function () { NB.close('nbCrop'); });
+            document.getElementById('nbcrOk').addEventListener('click', function () {
                 var o = document.createElement('canvas'); o.width = o.height = OUT; paint(o, OUT);
                 var url = o.toDataURL('image/jpeg', 0.85);
                 done = true; res(url); NB.close('nbCrop');
@@ -150,11 +170,44 @@
         });
     };
 
+    /* ---------- view / change / remove the profile photo ---------- */
+    NB.photoSheet = function () {
+        var p = NB.profile(); if (!p) return;
+        var has = !!(p.photo && PHOTO_RE.test(p.photo));
+        var old = $('nbPhoto'); if (old && old.parentNode) old.parentNode.removeChild(old);
+        var letter = Array.from(p.name || '')[0] || '👤';
+        var m = NB.mk('<div class="nbo nbph" id="nbPhoto" aria-hidden="true"><div class="nbo-card nbph-card" role="dialog" aria-modal="true" aria-label="Profile photo">' +
+            '<button type="button" class="nbo-x" id="nbphX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
+            '<div class="nbph-big' + (has ? ' has-photo' : '') + '" id="nbphBig" role="img" aria-label="' + NB.esc(p.name) + '">' + (has ? '' : NB.esc(letter.toUpperCase())) + '</div>' +
+            '<b class="nbph-n">' + NB.esc(p.name) + '</b>' +
+            '<button type="button" class="nbo-save" id="nbphChange"><i class="fa-solid fa-camera"></i> ' + (has ? 'Change photo' : 'Add photo') + '</button>' +
+            (has ? '<button type="button" class="nbph-rm" id="nbphRemove"><i class="fa-regular fa-trash-can"></i> Remove photo</button>' : '') +
+            '</div></div>');
+        document.body.appendChild(m);
+        if (has) $('nbphBig').style.backgroundImage = 'url("' + p.photo + '")';
+        function gone() { NB.close('nbPhoto'); }
+        NB.onClose.nbPhoto = function () { var n = $('nbPhoto'); if (n && n.parentNode) n.parentNode.removeChild(n); delete NB.onClose.nbPhoto; };
+        $('nbphX').addEventListener('click', gone);
+        $('nbphChange').addEventListener('click', function () { gone(); var f = $('nbpFile'); if (f) f.click(); });
+        var rm = $('nbphRemove');
+        if (rm) rm.addEventListener('click', function () {
+            var q = NB.profile(); if (!q) return; q.photo = ''; NB.setProfile(q); gone(); ui.refreshAll(); NB.toast('Profile photo removed');
+        });
+        NB.open('nbPhoto');
+    };
+
     /* ---------- activity days + streak (for the study plan) ---------- */
     NB.days = function () { var d = LSX.get('nb_days', []); return Array.isArray(d) ? d : []; };
     NB.markDay = function () {
         var k = NB.dayKey(), d = NB.days();
         if (d.indexOf(k) < 0) { d.push(k); d.sort(); LSX.set('nb_days', d.slice(-400)); }
+        NB.paintStreak();
+    };
+    /* header streak chip (phone + desktop) */
+    NB.paintStreak = function () {
+        var n = NB.streak(), b = document.getElementById('nbhStreakN'), c = document.getElementById('nbhStreak');
+        if (b) b.textContent = n;
+        if (c) { c.setAttribute('aria-label', 'Study streak: ' + n + (n === 1 ? ' day' : ' days')); c.title = 'Study streak: ' + n + (n === 1 ? ' day' : ' days'); c.classList.toggle('on', n > 0); }
     };
     NB.streak = function () {
         var set = {}; NB.days().forEach(function (k) { set[k] = 1; });
@@ -475,7 +528,7 @@
         document.body.appendChild(m);
         classChips($('nbpCls'), function (c) { PF.cls = c; $('nbpErr').textContent = ''; });
         $('nbpX').addEventListener('click', function () { NB.close('nbPf'); });
-        $('nbpAv').addEventListener('click', function () { $('nbpFile').click(); });
+        $('nbpAv').addEventListener('click', function () { NB.photoSheet(); });
         $('nbpFile').addEventListener('change', function () {
             var f = this.files && this.files[0]; this.value = '';
             NB.readPhoto(f).then(function (d) { var p = NB.profile(); if (!p) return; p.photo = d; NB.setProfile(p); ui.refreshAll(); NB.toast('Profile photo updated'); })
@@ -632,7 +685,7 @@
             var q = asArr(LSX.get('nb_quiz', [])); $('nbpQuiz').textContent = q.length ? 'Last score: ' + q[0].score + '/' + q[0].total + ' · ' + q.length + ' tests taken' : 'Practice quizzes and timed tests';
             $('nbpNotif').textContent = NB.notif ? NB.notif.label() : '';
         }
-        renderPlan();
+        renderPlan(); NB.paintStreak();
         if (NB.notif) NB.notif.render();
         if (NB.classes && window.__nbReady) NB.classes.apply(false);
     };
