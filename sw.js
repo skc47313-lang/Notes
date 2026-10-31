@@ -1,5 +1,5 @@
 /* Notes Bazar service worker – app shell + offline support */
-const VER = 'v10';
+const VER = 'v11';
 const SHELL = 'nb-shell-' + VER;      // index.html, manifest, icons
 const STATIC = 'nb-static-' + VER;    // font-awesome, firebase sdk, fonts
 const DATA = 'nb-data-' + VER;        // lists + opened files (so they open offline)

@@ -282,7 +282,7 @@
     }
 
     /* ---------- what gets synced ---------- */
-    var SYNC = { favs: 'nb_favs', recent: 'nb_recent', seen: 'nb_seen', dl: 'nb_dlhist', days: 'nb_days', exam: 'nb_exam', quiz: 'nb_quiz' };
+    var SYNC = { favs: 'nb_favs', recent: 'nb_recent', seen: 'nb_seen', dl: 'nb_dlhist', days: 'nb_days', exam: 'nb_exam', quiz: 'nb_quiz', todo: 'nb_todo' };
     var applying = false, pushT = 0;
     function asArr(x) { return Array.isArray(x) ? x : (x && typeof x === 'object' ? Object.keys(x).map(function (k) { return x[k]; }) : []); }
     function unionArr(a, b) { var s = {}, o = []; asArr(a).concat(asArr(b)).forEach(function (x) { if (!s[x]) { s[x] = 1; o.push(x); } }); return o; }
@@ -329,6 +329,11 @@
             LSX.set('nb_seen', mode === 'cloud' ? (c.seen || {}) : mergeObj(LSX.get('nb_seen', {}), c.seen));
             LSX.set('nb_dlhist', mode === 'cloud' ? (c.dl || {}) : mergeObj(LSX.get('nb_dlhist', {}), c.dl));
             var days = mode === 'cloud' ? asArr(c.days) : unionArr(NB.days(), c.days); days.sort(); LSX.set('nb_days', days.slice(-400));
+            if (c.todo && Array.isArray(c.todo.items) || c.todo && c.todo.w) {
+                var lt = LSX.get('nb_todo', null), ct = { w: c.todo.w, items: asArr(c.todo.items) };
+                if (mode === 'cloud' || !lt || !lt.w || lt.w < ct.w) LSX.set('nb_todo', ct);
+                else if (lt.w === ct.w) { var ids = {}; lt.items = asArr(lt.items); lt.items.forEach(function (x) { ids[x.id] = 1; }); ct.items.forEach(function (x) { if (!ids[x.id]) lt.items.push(x); }); LSX.set('nb_todo', lt); }
+            } else if (mode === 'cloud') LSX.del('nb_todo');
             if (c.exam) LSX.set('nb_exam', c.exam); else if (mode === 'cloud') LSX.del('nb_exam');
             var q = asArr(c.quiz).concat(mode === 'cloud' ? [] : asArr(LSX.get('nb_quiz', [])));
             var sq = {}; q = q.filter(function (x) { if (!x || sq[x.t]) return false; sq[x.t] = 1; return true; }).sort(function (a, b) { return b.t - a.t; });
@@ -377,7 +382,7 @@
         await NB.pushNow();
         return cred.user;
     };
-    var PERSONAL = ['nb_profile', 'nb_acct', 'nb_favs', 'nb_recent', 'nb_seen', 'nb_dlhist', 'nb_days', 'nb_exam', 'nb_quiz', 'nb_sync_ts', 'nb_filters_v1', 'nb_recent_q', 'nb_reported'];
+    var PERSONAL = ['nb_profile', 'nb_acct', 'nb_favs', 'nb_recent', 'nb_seen', 'nb_dlhist', 'nb_days', 'nb_exam', 'nb_quiz', 'nb_todo', 'nb_sync_ts', 'nb_filters_v1', 'nb_recent_q', 'nb_reported'];
     NB.logout = async function () {
         try { await NB.pushNow(); } catch (e) {}
         try { var s = await authSdk(); await s.au.signOut(s.auth); } catch (e) {}
@@ -417,12 +422,12 @@
     function setPressed(box, cls) { Array.prototype.forEach.call(box.children, function (b) { b.setAttribute('aria-pressed', b.dataset.cls === cls ? 'true' : 'false'); }); }
 
     /* ---------- account dialog (create account / log in) ---------- */
-    var A = { mode: 'signup', cls: '', photo: '' };
+    var A = { mode: 'login', cls: '', photo: '' };
     function buildAuth() {
         var m = NB.mk('<div class="nbo" id="nbAuth" aria-hidden="true"><div class="nbo-card" role="dialog" aria-modal="true" aria-labelledby="nbaTitle">' +
             '<button type="button" class="nbo-x" id="nbaX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
             '<div class="nba-brand"><svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><use href="#nbLogo"/></svg><b id="nbaTitle">Notes Bazar</b></div>' +
-            '<div class="nba-tabs" role="tablist"><button type="button" role="tab" data-m="signup" aria-selected="true">Create account</button><button type="button" role="tab" data-m="login" aria-selected="false">Log in</button></div>' +
+            '<div class="nba-tabs" role="tablist"><button type="button" role="tab" data-m="login" aria-selected="true">Log in</button><button type="button" role="tab" data-m="signup" aria-selected="false">Create account</button></div>' +
             '<p class="nbo-sub" id="nbaSub"></p>' +
             '<form id="nbaForm" novalidate autocomplete="on">' +
             '<div class="nba-photo" data-only="signup"><button type="button" class="nb-av nb-av-lg" id="nbaAv" aria-label="Add profile photo"><i class="fa-solid fa-camera"></i></button><small>Profile photo<br>(optional)</small><input type="file" id="nbaFile" accept="image/*" class="nb-hide"></div>' +
@@ -432,7 +437,7 @@
             '<div class="nba-hint" data-only="signup">4–20 characters: letters, numbers, dot or underscore.</div>' +
             '<label class="nbo-l" for="nbaPw">Password</label><div class="nba-pw"><input id="nbaPw" class="nbo-in" type="password" maxlength="64" autocomplete="new-password" placeholder="At least 6 characters"><button type="button" id="nbaEye" aria-label="Show or hide password"><i class="fa-solid fa-eye"></i></button></div>' +
             '<div id="nbaErr" class="nbo-err" role="alert"></div>' +
-            '<button type="submit" id="nbaGo" class="nbo-save">Create account</button>' +
+            '<button type="submit" id="nbaGo" class="nbo-save">Log in</button>' +
             '</form>' +
             '<button type="button" class="nbo-skip" id="nbaSkip">Continue without an account</button>' +
             '<p class="nbo-note"><i class="fa-solid fa-cloud"></i> Your saved items, download history, exam date and test scores are stored in your account, so you can see them on any phone after logging in. Never share your password.</p>' +
@@ -466,7 +471,7 @@
     }
     ui.openAuth = function (mode, firstRun) {
         if (!$('nbAuth')) buildAuth();
-        authMode(mode || 'signup');
+        authMode(mode || 'login');
         NB.noClose.nbAuth = false;
         $('nbaX').style.display = '';
         NB.open('nbAuth');
@@ -642,6 +647,7 @@
             var hero = home.firstElementChild;
             if (hero && hero.nextSibling) home.insertBefore(s, hero.nextSibling); else home.appendChild(s);
             $('nbPlanChip').addEventListener('click', NB.openExam);
+            $('nbPlanWeek').addEventListener('click', function (ev) { var b = ev.target.closest('[data-day]'); if (b && NB.openTodo) NB.openTodo(b.dataset.day); });
         }
         var e = NB.exam(), chip = $('nbPlanChip'), txt;
         if (!e) txt = '<i class="fa-regular fa-calendar-plus"></i> Set exam date';
@@ -656,11 +662,15 @@
         ['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach(function (L, i) {
             var d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i), k = NB.dayKey(d);
             var cls = k === tk ? 'today' : (set[k] && k < tk ? 'done' : '');
-            h += '<div><span>' + L + '</span><span class="nbs-d ' + cls + '">' + (cls === 'done' ? '<i class="fa-solid fa-check"></i>' : d.getDate()) + '</span></div>';
+            var tc = NB.todoCount ? NB.todoCount(k) : { n: 0, done: 0 };
+            h += '<button type="button" class="nbs-dc" data-day="' + k + '" aria-label="Plan ' + d.toDateString() + (tc.n ? ' (' + tc.n + ' to-do)' : '') + '"><span>' + L + '</span><span class="nbs-d ' + cls + '">' + (cls === 'done' ? '<i class="fa-solid fa-check"></i>' : d.getDate()) + (tc.n ? '<i class="nbs-td' + (tc.done === tc.n ? ' all' : '') + '"></i>' : '') + '</span></button>';
         });
         wk.innerHTML = h;
         var st = NB.streak(), total = NB.days().length;
         $('nbPlanFoot').textContent = st > 1 ? st + '-day streak · ' + total + ' study days so far' : 'Open Notes Bazar every day to build your streak';
+        var hint = $('nbPlanHint');
+        if (!hint) { hint = document.createElement('div'); hint.id = 'nbPlanHint'; hint.className = 'nbs-hint'; $('nbPlanFoot').parentNode.appendChild(hint); }
+        hint.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Tap a day to plan your study, set targets and reminders';
     }
 
     /* ---------- refresh everything that shows profile data ---------- */
@@ -1250,7 +1260,7 @@
                     else notif.maybeAsk(3600);
                 });
             } else if (adminMode) { /* admin is opening the dashboard: no student sign-up prompt */ }
-            else if (Date.now() - (+LSX.raw('nb_auth_skip') || 0) > DAY) ui.openAuth('signup');
+            else if (Date.now() - (+LSX.raw('nb_auth_skip') || 0) > DAY) ui.openAuth('login');
             else notif.maybeAsk(1200);
         });
     }
@@ -1789,6 +1799,8 @@
             case 'plan':
                 call('switchView', 'home');
                 setTimeout(function () { var s = $('nbPlan'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); break;
+            case 'todo': if (NB.openTodo) NB.openTodo(); break;
+            case 'sounds': if (NB.openSounds) NB.openSounds(); break;
             case 'help': call('openModal', 'supportModal'); break;
             case 'report': call('openModal', 'complainModal'); break;
             case 'about': call('openModal', 'aboutModal'); break;
@@ -1813,4 +1825,291 @@
         x.classList.toggle('open', on); b.setAttribute('aria-expanded', on ? 'true' : 'false');
         var t = b.querySelector('.qo-more-t'); if (t) t.textContent = on ? 'See less' : 'See more';
     };
+})();
+
+/* =====================================================================
+   To-Do list (7-day study planner) + reminders + notification / reminder tones
+   - tasks are kept for the current Mon-Sun week only; a new week starts with a fresh list
+   - tones are synthesised with the Web Audio API (no audio files needed)
+   ===================================================================== */
+(function () {
+    'use strict';
+    var NB = window.NB = window.NB || {};
+    var LSX = NB.ls, $ = function (id) { return document.getElementById(id); }, esc = NB.esc, pad = NB.pad;
+    var KEY = 'nb_todo', SKEY = 'nb_snd', SNOOZE = 5 * 60 * 1000, LATE = 3 * 3600 * 1000;
+
+    /* ---------- tones ---------- */
+    /* note = [frequency Hz, start s, length s, wave, volume] */
+    var NT = {
+        chime:   { n: 'Chime',       notes: [[880, 0, .5, 'sine', .5], [1318.5, .12, .7, 'sine', .4]] },
+        bell:    { n: 'Bell',        notes: [[1046.5, 0, 1.1, 'sine', .5], [2093, 0, .8, 'sine', .14], [1568, 0, .9, 'sine', .12]] },
+        pop:     { n: 'Pop',         notes: [[700, 0, .12, 'sine', .6], [1100, .08, .16, 'sine', .5]] },
+        dingdong:{ n: 'Ding-dong',   notes: [[784, 0, .45, 'sine', .5], [587.3, .35, .8, 'sine', .5]] },
+        sparkle: { n: 'Sparkle',     notes: [[1318.5, 0, .18, 'triangle', .35], [1568, .1, .18, 'triangle', .35], [2093, .2, .35, 'triangle', .35]] },
+        soft:    { n: 'Soft note',   notes: [[392, 0, .6, 'sine', .4], [523.3, .2, .9, 'sine', .35]] }
+    };
+    var RT = {
+        melody:  { n: 'Morning melody', p: 2.6, notes: [[523.3, 0, .22, 'triangle', .45], [659.3, .25, .22, 'triangle', .45], [784, .5, .22, 'triangle', .45], [659.3, .75, .22, 'triangle', .45], [523.3, 1, .22, 'triangle', .45], [659.3, 1.25, .22, 'triangle', .45], [784, 1.5, .22, 'triangle', .45], [1046.5, 1.8, .6, 'triangle', .5]] },
+        alarm:   { n: 'Classic alarm',  p: 1.6, notes: [[1000, 0, .14, 'square', .2], [1000, .24, .14, 'square', .2], [1000, .48, .14, 'square', .2], [1000, .72, .14, 'square', .2]] },
+        rise:    { n: 'Rising tone',    p: 1.9, notes: [[440, 0, .22, 'sine', .5], [554.4, .24, .22, 'sine', .5], [659.3, .48, .22, 'sine', .5], [880, .72, .6, 'sine', .55]] },
+        digital: { n: 'Digital beep',   p: 1.2, notes: [[1400, 0, .1, 'square', .16], [1400, .17, .1, 'square', .16], [1400, .34, .1, 'square', .16], [1900, .6, .25, 'square', .16]] },
+        gentle:  { n: 'Gentle wake-up', p: 3.2, notes: [[523.3, 0, 1, 'sine', .45], [659.3, .55, 1, 'sine', .45], [784, 1.1, 1.5, 'sine', .45]] },
+        temple:  { n: 'Temple bells',   p: 3.4, notes: [[1046.5, 0, 1.6, 'sine', .42], [1568, 0, 1.2, 'sine', .1], [880, .9, 1.7, 'sine', .42], [1318.5, .9, 1.2, 'sine', .1]] }
+    };
+    var AC = null;
+    function ctx() {
+        if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; try { AC = new C(); } catch (e) { return null; } }
+        if (AC.state === 'suspended') { try { AC.resume(); } catch (e) {} }
+        return AC;
+    }
+    /* browsers only allow sound after a tap: unlock on the first touch / click / key press */
+    ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, function () { ctx(); }, { once: true, passive: true }); });
+
+    function snd() {
+        var s = LSX.get(SKEY, null) || {};
+        return { on: s.on !== false, n: NT[s.n] ? s.n : 'chime', r: RT[s.r] ? s.r : 'melody', v: typeof s.v === 'number' ? Math.max(.1, Math.min(1, s.v)) : .8 };
+    }
+    function saveSnd(patch) { var s = snd(); for (var k in patch) s[k] = patch[k]; LSX.set(SKEY, s); }
+
+    /* kind 'n' = notification tone (plays once), 'r' = reminder ringtone (repeats until stopped); force = ignore the on/off switch (preview) */
+    function play(kind, key, loopMs, force) {
+        var S = snd(); if (!S.on && !force) return null;
+        var c = ctx(); if (!c) return null;
+        var def = (kind === 'n' ? NT : RT)[key] || (kind === 'n' ? NT.chime : RT.melody);
+        var master = c.createGain(); master.gain.value = 1; master.connect(c.destination);
+        var iv = 0, tm = 0, stopped = false;
+        function once() {
+            var t0 = c.currentTime + .03;
+            def.notes.forEach(function (n) {
+                var o = c.createOscillator(), g = c.createGain(), s = t0 + n[1], e = s + n[2];
+                o.type = n[3] || 'sine'; o.frequency.value = n[0];
+                g.gain.setValueAtTime(.0001, s);
+                g.gain.exponentialRampToValueAtTime(Math.max(.001, (n[4] || .4) * S.v), s + .02);
+                g.gain.exponentialRampToValueAtTime(.0001, e);
+                o.connect(g); g.connect(master); o.start(s); o.stop(e + .05);
+            });
+        }
+        function stop() {
+            if (stopped) return; stopped = true; clearInterval(iv); clearTimeout(tm);
+            try { master.gain.cancelScheduledValues(c.currentTime); master.gain.setTargetAtTime(0, c.currentTime, .03); } catch (e) {}
+            setTimeout(function () { try { master.disconnect(); } catch (e) {} }, 400);
+        }
+        once();
+        if (loopMs) { iv = setInterval(once, (def.p || 2) * 1000); tm = setTimeout(stop, loopMs); }
+        else setTimeout(stop, 2500);
+        return { stop: stop };
+    }
+    var pv = null;
+    function preview(kind, key) { if (pv) pv.stop(); pv = play(kind, key, kind === 'r' ? 4200 : 0, true); }
+    NB.playNotifTone = function () { play('n', snd().n); };
+
+    /* every in-page notification the site raises also plays the chosen notification tone */
+    var origNotify = window.nbNotify;
+    window.nbNotify = function (title, body, url) {
+        NB.playNotifTone();
+        return origNotify ? origNotify(title, body, url) : Promise.resolve(false);
+    };
+
+    /* ---------- data ---------- */
+    function mondayKey() { var n = new Date(), dow = (n.getDay() + 6) % 7; return NB.dayKey(new Date(n.getFullYear(), n.getMonth(), n.getDate() - dow)); }
+    function weekKeys() { var n = new Date(), dow = (n.getDay() + 6) % 7, a = [], i; for (i = 0; i < 7; i++) a.push(NB.dayKey(new Date(n.getFullYear(), n.getMonth(), n.getDate() - dow + i))); return a; }
+    function load() {
+        var o = LSX.get(KEY, null), w = mondayKey();
+        if (!o || o.w !== w || !Array.isArray(o.items)) {
+            var had = o && Array.isArray(o.items) && o.items.length;
+            o = { w: w, items: [] };
+            if (had) LSX.set(KEY, o);            // a new 7-day week began: last week's list is dropped
+        }
+        return o;
+    }
+    function save(o) { LSX.set(KEY, o); if (NB.ui && NB.ui.refreshAll) NB.ui.refreshAll(); }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function parseKey(k) { var p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+    function atOf(it) { var p = it.d.split('-'), t = it.t.split(':'); return new Date(+p[0], +p[1] - 1, +p[2], +t[0], +t[1]).getTime(); }
+    function fmtT(t) { if (!t) return ''; var h = +t.split(':')[0], m = t.split(':')[1]; return (h % 12 || 12) + ':' + m + ' ' + (h < 12 ? 'AM' : 'PM'); }
+    function dayName(k, long) { return parseKey(k).toLocaleDateString('en-IN', long ? { weekday: 'long', day: 'numeric', month: 'short' } : { weekday: 'short' }); }
+    NB.todoCount = function (k) {
+        var n = 0, d = 0; load().items.forEach(function (it) { if (it.d === k) { n++; if (it.done) d++; } });
+        return { n: n, done: d };
+    };
+
+    /* ---------- to-do dialog ---------- */
+    var sel = '', editing = null;
+    function ensureTd() {
+        if ($('nbTd')) return;
+        var opts = '<option value="">Default tone</option>' + Object.keys(RT).map(function (k) { return '<option value="' + k + '">' + RT[k].n + '</option>'; }).join('');
+        var m = NB.mk('<div class="nbo" id="nbTd" aria-hidden="true"><div class="nbo-card nbtd-card" role="dialog" aria-modal="true" aria-labelledby="nbTdT">' +
+            '<button type="button" class="nbo-x" id="nbTdX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
+            '<h3 class="nbo-h" id="nbTdT">To-Do List</h3><p class="nbo-sub">Pick a day, then set what to study and when.</p>' +
+            '<div class="nbtd-days" id="nbTdDays" role="group" aria-label="This week"></div>' +
+            '<div class="nbtd-dh"><b id="nbTdDate"></b><span id="nbTdCnt"></span></div>' +
+            '<div class="nbtd-list" id="nbTdList"></div>' +
+            '<form id="nbTdForm" class="nbtd-form" novalidate>' +
+            '<label class="nbo-l" for="nbTdTxt" id="nbTdFormL">Add a target</label>' +
+            '<input id="nbTdTxt" class="nbo-in" maxlength="80" placeholder="e.g. Physics: Newton\'s laws" autocomplete="off">' +
+            '<div class="nbtd-2"><div><label class="nbo-l" for="nbTdTime">Time</label><input id="nbTdTime" class="nbo-in" type="time"></div>' +
+            '<div><label class="nbo-l" for="nbTdTone">Reminder tone</label><div class="nbtd-tw"><select id="nbTdTone" class="nbo-in">' + opts + '</select>' +
+            '<button type="button" id="nbTdPrev" class="nbtd-pv" aria-label="Play this tone"><i class="fa-solid fa-play"></i></button></div></div></div>' +
+            '<label class="nbtd-chk"><input type="checkbox" id="nbTdRem" checked><span>Remind me at this time</span></label>' +
+            '<div class="nbo-err" id="nbTdErr" role="alert"></div>' +
+            '<button type="submit" class="nbo-save" id="nbTdGo">Add to to-do list</button>' +
+            '<button type="button" class="nbo-skip nb-hide" id="nbTdCancel">Cancel editing</button>' +
+            '</form>' +
+            '<p class="nbo-note"><i class="fa-regular fa-clock"></i> This list is kept for the current 7 days (Mon–Sun) and a fresh list starts with the new week. Reminders ring while Notes Bazar is open. <button type="button" class="nbtd-lnk" id="nbTdSnd">Change tones</button></p>' +
+            '</div></div>');
+        document.body.appendChild(m);
+        $('nbTdX').addEventListener('click', function () { NB.close('nbTd'); });
+        $('nbTdSnd').addEventListener('click', function () { NB.close('nbTd'); NB.openSounds(); });
+        $('nbTdPrev').addEventListener('click', function () { var v = $('nbTdTone').value || snd().r; preview('r', v); });
+        $('nbTdDays').addEventListener('click', function (e) { var b = e.target.closest('[data-d]'); if (b) { sel = b.dataset.d; resetForm(); renderTd(); } });
+        $('nbTdForm').addEventListener('submit', submitTd);
+        $('nbTdCancel').addEventListener('click', function () { resetForm(); renderTd(); });
+        $('nbTdRem').addEventListener('change', function () { $('nbTdTone').disabled = !this.checked; });
+        $('nbTdList').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-a]'); if (!b) return;
+            var row = b.closest('[data-id]'), id = row && row.dataset.id, o = load(), it = o.items.filter(function (x) { return x.id === id; })[0];
+            if (!it) return;
+            if (b.dataset.a === 'tg') { it.done = !it.done; save(o); renderTd(); }
+            else if (b.dataset.a === 'rm') { o.items = o.items.filter(function (x) { return x.id !== id; }); if (editing === id) resetForm(); save(o); renderTd(); }
+            else if (b.dataset.a === 'ed') {
+                editing = id; $('nbTdTxt').value = it.x; $('nbTdTime').value = it.t || ''; $('nbTdRem').checked = !!it.r; $('nbTdTone').value = it.tn || ''; $('nbTdTone').disabled = !it.r;
+                $('nbTdGo').textContent = 'Save changes'; $('nbTdFormL').textContent = 'Edit target'; $('nbTdCancel').classList.remove('nb-hide'); $('nbTdErr').textContent = '';
+                $('nbTdTxt').focus(); renderTd();
+            }
+        });
+    }
+    function defTime() {
+        var n = new Date();
+        if (sel === NB.dayKey()) { var h = Math.min(23, n.getHours() + 1); return pad(h) + ':00'; }
+        return '18:00';
+    }
+    function resetForm() {
+        editing = null; $('nbTdTxt').value = ''; $('nbTdTime').value = defTime(); $('nbTdRem').checked = true; $('nbTdTone').value = ''; $('nbTdTone').disabled = false;
+        $('nbTdGo').textContent = 'Add to to-do list'; $('nbTdFormL').textContent = 'Add a target'; $('nbTdCancel').classList.add('nb-hide'); $('nbTdErr').textContent = '';
+    }
+    function renderTd() {
+        var o = load(), keys = weekKeys(), today = NB.dayKey(), h = '';
+        if (keys.indexOf(sel) < 0) sel = keys.indexOf(today) >= 0 ? today : keys[0];
+        keys.forEach(function (k) {
+            var c = NB.todoCount(k), cls = (k === sel ? ' sel' : '') + (k === today ? ' today' : '');
+            h += '<button type="button" class="nbtd-day' + cls + '" data-d="' + k + '" aria-pressed="' + (k === sel) + '" aria-label="' + dayName(k, true) + (c.n ? ', ' + c.n + ' tasks' : '') + '"><small>' + dayName(k) + '</small><b>' + parseKey(k).getDate() + '</b><i class="nbtd-dot' + (c.n ? (c.done === c.n ? ' all' : ' on') : '') + '"></i></button>';
+        });
+        $('nbTdDays').innerHTML = h;
+        $('nbTdDate').textContent = (sel === today ? 'Today · ' : '') + dayName(sel, true);
+        var c = NB.todoCount(sel); $('nbTdCnt').textContent = c.n ? c.done + ' of ' + c.n + ' done' : '';
+        var items = o.items.filter(function (x) { return x.d === sel; }).sort(function (a, b) { return (a.t || '99:99') < (b.t || '99:99') ? -1 : (a.t || '99:99') > (b.t || '99:99') ? 1 : 0; });
+        $('nbTdList').innerHTML = items.length ? items.map(function (it) {
+            return '<div class="nbtd-it' + (it.done ? ' done' : '') + (editing === it.id ? ' editing' : '') + '" data-id="' + it.id + '">' +
+                '<button type="button" class="nbtd-ck" data-a="tg" role="checkbox" aria-checked="' + (!!it.done) + '" aria-label="Mark as done"><i class="fa-solid fa-check"></i></button>' +
+                '<div class="nbtd-tx"><b>' + esc(it.x) + '</b><small>' + (it.t ? '<i class="fa-regular fa-clock"></i> ' + fmtT(it.t) : 'Any time') + (it.r && it.t ? ' · <i class="fa-solid fa-bell"></i> Reminder' : '') + '</small></div>' +
+                '<button type="button" class="nbtd-ib" data-a="ed" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" class="nbtd-ib del" data-a="rm" aria-label="Delete"><i class="fa-solid fa-trash"></i></button></div>';
+        }).join('') : '<div class="nbtd-empty"><i class="fa-regular fa-clipboard"></i><span>Nothing planned for this day yet.<br>Add your first target below.</span></div>';
+    }
+    function submitTd(e) {
+        e.preventDefault();
+        var err = $('nbTdErr'), x = String($('nbTdTxt').value).replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80), t = $('nbTdTime').value, r = $('nbTdRem').checked;
+        err.textContent = '';
+        if (x.length < 2) { err.textContent = 'Write what you want to study (subject or topic).'; $('nbTdTxt').focus(); return; }
+        if (r && !t) { err.textContent = 'Choose a time to get a reminder, or turn the reminder off.'; $('nbTdTime').focus(); return; }
+        if (r && atOf({ d: sel, t: t }) <= Date.now()) { err.textContent = 'That time has already passed. Pick a later time or turn the reminder off.'; $('nbTdTime').focus(); return; }
+        var o = load(), tn = r ? $('nbTdTone').value : '', it = editing ? o.items.filter(function (z) { return z.id === editing; })[0] : null;
+        if (it) { it.x = x; it.t = t; it.r = r; it.tn = tn; it.n = 0; it.sn = 0; }
+        else o.items.push({ id: uid(), d: sel, x: x, t: t, r: r, tn: tn, done: false, n: 0, sn: 0 });
+        var wasEdit = !!it;
+        save(o); resetForm(); renderTd();
+        NB.toast(wasEdit ? 'Target updated' : 'Added to your to-do list' + (r ? ' · reminder set for ' + fmtT(t) : ''), 2600);
+        if (r && NB.notif && window.Notification && Notification.permission === 'default' && NB.notif.request) NB.notif.request();
+        ctx();
+    }
+    NB.openTodo = function (day) {
+        NB.closeSiteMenu();
+        ensureTd();
+        var keys = weekKeys(), today = NB.dayKey();
+        sel = day && keys.indexOf(day) >= 0 ? day : (keys.indexOf(sel) >= 0 && !day ? sel : today);
+        resetForm(); renderTd(); NB.open('nbTd');
+    };
+
+    /* ---------- tones dialog (menu, settings and the bell panel all open this) ---------- */
+    function ensureSnd() {
+        if ($('nbSnd')) return;
+        var m = NB.mk('<div class="nbo" id="nbSnd" aria-hidden="true"><div class="nbo-card nbsn-card" role="dialog" aria-modal="true" aria-labelledby="nbSnT">' +
+            '<button type="button" class="nbo-x" id="nbSnX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
+            '<h3 class="nbo-h" id="nbSnT">Reminder &amp; notification tones</h3><p class="nbo-sub">Tap a tone to select it and hear it.</p>' +
+            '<label class="nbtd-chk nbsn-on"><input type="checkbox" id="nbSnOn"><span>Play sounds</span></label>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-bell"></i> Notification tone</div><div class="nbsn-list" id="nbSnN" role="radiogroup" aria-label="Notification tone"></div>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-clock"></i> Reminder ringtone</div><div class="nbsn-list" id="nbSnR" role="radiogroup" aria-label="Reminder ringtone"></div>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-volume-high"></i> Volume</div><input type="range" id="nbSnV" min="10" max="100" step="5" aria-label="Volume" class="nbsn-v">' +
+            '<p class="nbo-note">Tones play while Notes Bazar is open. Your phone\'s own notification sound is controlled by your phone settings.</p>' +
+            '</div></div>');
+        document.body.appendChild(m);
+        $('nbSnX').addEventListener('click', function () { NB.close('nbSnd'); });
+        $('nbSnOn').addEventListener('change', function () { saveSnd({ on: this.checked }); });
+        $('nbSnV').addEventListener('input', function () { saveSnd({ v: this.value / 100 }); });
+        $('nbSnV').addEventListener('change', function () { preview('n', snd().n); });
+        ['N', 'R'].forEach(function (K) {
+            $('nbSn' + K).addEventListener('click', function (e) {
+                var b = e.target.closest('[data-k]'); if (!b) return;
+                var kind = K === 'N' ? 'n' : 'r'; saveSnd(kind === 'n' ? { n: b.dataset.k } : { r: b.dataset.k });
+                paintSnd(); preview(kind, b.dataset.k);
+            });
+        });
+    }
+    function paintSnd() {
+        var S = snd();
+        $('nbSnOn').checked = S.on; $('nbSnV').value = Math.round(S.v * 100);
+        function rows(map, cur) { return Object.keys(map).map(function (k) { return '<button type="button" role="radio" class="nbsn-r" data-k="' + k + '" aria-checked="' + (k === cur) + '"><i class="fa-solid fa-circle-play"></i><span>' + map[k].n + '</span><i class="fa-solid fa-check nbsn-ok"></i></button>'; }).join(''); }
+        $('nbSnN').innerHTML = rows(NT, S.n); $('nbSnR').innerHTML = rows(RT, S.r);
+    }
+    NB.openSounds = function () { NB.closeSiteMenu(); ensureSnd(); paintSnd(); NB.open('nbSnd'); };
+
+    /* ---------- reminders ---------- */
+    var rings = {}, ringH = null;
+    function stopRing() { if (ringH) { ringH.stop(); ringH = null; } }
+    function ensureRem() {
+        var c = $('nbRem');
+        if (!c) {
+            c = NB.mk('<div id="nbRem" class="nbrm" aria-live="assertive"></div>'); document.body.appendChild(c);
+            c.addEventListener('click', function (e) {
+                var b = e.target.closest('[data-a]'); if (!b) return;
+                var card = b.closest('[data-id]'), id = card.dataset.id, o = load(), it = o.items.filter(function (x) { return x.id === id; })[0];
+                if (b.dataset.a === 'dn' && it) { it.done = true; save(o); }
+                if (b.dataset.a === 'sn' && it) { it.sn = Date.now() + SNOOZE; it.n = 0; save(o); NB.toast('Snoozed for 5 minutes', 2200); }
+                card.remove(); delete rings[id];
+                if (!c.children.length) stopRing();
+                if (NB.isOpen('nbTd')) renderTd();
+            });
+        }
+        return c;
+    }
+    function fire(it, late) {
+        var c = ensureRem();
+        if (!c.querySelector('[data-id="' + it.id + '"]')) {
+            c.appendChild(NB.mk('<div class="nbrm-c" data-id="' + it.id + '" role="alert"><div class="nbrm-i"><i class="fa-solid fa-bell"></i></div>' +
+                '<div class="nbrm-t"><b>Time to study!</b><span>' + esc(it.x) + '</span><small>' + fmtT(it.t) + (late ? ' · missed while the app was closed' : '') + '</small></div>' +
+                '<div class="nbrm-b"><button type="button" data-a="dn">Done</button><button type="button" data-a="sn">Snooze 5 min</button><button type="button" data-a="x" class="ghost">Dismiss</button></div></div>'));
+        }
+        rings[it.id] = 1;
+        stopRing();
+        ringH = play('r', it.tn && RT[it.tn] ? it.tn : snd().r, late ? 6000 : 40000);
+        try { if (origNotify) origNotify('Time to study: ' + it.x, fmtT(it.t) + ' · Notes Bazar'); } catch (e) {}
+    }
+    var lastW = mondayKey();
+    function tick() {
+        var w = mondayKey();
+        if (w !== lastW) { lastW = w; load(); if (NB.ui && NB.ui.refreshAll) NB.ui.refreshAll(); if (NB.isOpen('nbTd')) renderTd(); }
+        var o = load(), now = Date.now(), changed = false;
+        o.items.forEach(function (it) {
+            if (!it.r || it.done || !it.t || it.n) return;
+            var at = it.sn || atOf(it);
+            if (now < at) return;
+            it.n = now; changed = true;
+            if (now - at > LATE) return;                   // far too old: just mark it as handled
+            fire(it, now - at > 120000);
+        });
+        if (changed) { LSX.set(KEY, o); }
+    }
+    setInterval(tick, 15000);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') tick(); });
+    setTimeout(tick, 2500);
 })();

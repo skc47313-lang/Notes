@@ -605,10 +605,27 @@
         const dlHist = () => LS.get('nb_dlhist', {});
         function marksHtml(id) {
             const d = dlHist()[id], v = seenMap()[id];
-            return (d ? '<span class="nb-mk dl" title="You downloaded this"><i class="fa-solid fa-circle-check"></i>Downloaded</span>' : '') +
-                   (v ? '<span class="nb-mk seen" title="You viewed this"><i class="fa-solid fa-eye"></i>Viewed</span>' : '');
+            return (d ? '<span class="nb-mk dl" role="button" tabindex="0" title="Tap to remove the Downloaded mark" aria-label="Downloaded. Tap to remove this mark"><i class="fa-solid fa-circle-check"></i>Downloaded</span>' : '') +
+                   (v ? '<span class="nb-mk seen" role="button" tabindex="0" title="Tap to mark as not viewed" aria-label="Viewed. Tap to mark as not viewed"><i class="fa-solid fa-eye"></i>Viewed</span>' : '');
         }
         function paintMarks() { document.querySelectorAll('[data-marks]').forEach(el => { el.innerHTML = marksHtml(el.dataset.marks); }); }
+        // tap a "Viewed" / "Downloaded" mark again to remove it (capture phase: the card underneath must not open)
+        function toggleMark(e) {
+            const b = e.target.closest && e.target.closest('.nb-mk'); if (!b) return;
+            const host = b.closest('[data-marks]'); if (!host) return;
+            if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault(); e.stopPropagation();
+            const id = host.dataset.marks;
+            if (b.classList.contains('seen')) {
+                const m = seenMap(); delete m[id]; LS.set('nb_seen', m); paintMarks();
+                try { if (window.NB && NB.ui && NB.ui.refreshAll) NB.ui.refreshAll(); } catch (er) {}
+                toast('Marked as not viewed', 1800);
+            } else if (b.classList.contains('dl')) {
+                dropHist([id]); toast('Downloaded mark removed', 1800);
+            }
+        }
+        document.addEventListener('click', toggleMark, true);
+        document.addEventListener('keydown', toggleMark, true);
         function markSeen(id) { const m = seenMap(); if (!m[id]) { m[id] = Date.now(); LS.set('nb_seen', m); } paintMarks(); }
         function markDownloaded(item) {
             const m = dlHist();
