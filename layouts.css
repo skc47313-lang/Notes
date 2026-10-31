@@ -1,0 +1,100 @@
+/* =====================================================================
+   Notes Bazar - layouts.css
+   Admin picks one layout (Admin > Appearance > Website layout); it is saved to
+   Firebase "notes_bazar_layout" and every visitor gets <html data-layout="...">.
+   "classic" = your original design (no overrides). Each layout restyles the
+   header (.nbh), the footer (#nbFooter) and the page background / accent.
+   ===================================================================== */
+html[data-layout]:not([data-layout="classic"]) body{background:var(--lx-bg)!important;background-attachment:fixed!important;color:var(--lx-fg)}
+html[data-layout]:not([data-layout="classic"]) .nbh-brand b{letter-spacing:.01em}
+
+/* ---------- 1. Apple Glassmorphism ---------- */
+html[data-layout="glass"]{--lx-bg:linear-gradient(135deg,#dfe7ff 0%,#f3e8ff 55%,#dff3ff 100%);--lx-fg:#1c1c3a;--theme-primary:#3b6cff!important;--theme-secondary:#7c5cff!important}
+html[data-layout="glass"] .nbh{background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;padding-top:10px}
+html[data-layout="glass"] .nbh-in{border-radius:999px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.95);box-shadow:0 10px 34px rgba(91,108,255,.22);padding-left:14px;padding-right:14px}
+html[data-layout="glass"] .nbh-tab{border-radius:999px}
+html[data-layout="glass"] .nbh-tab.nav-btn-active{background:var(--theme-primary)!important;color:#fff!important}
+html[data-layout="glass"] #nbFooter{margin:28px 14px 14px;border-radius:26px;background:rgba(255,255,255,.6)!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid #fff!important;box-shadow:0 10px 34px rgba(91,108,255,.16);color:#2a2a55;text-align:left}
+
+/* ---------- 2. Dark Modern ---------- */
+html[data-layout="dark"]{--lx-bg:radial-gradient(1200px 600px at 80% -10%,#251a5e 0%,#0b0d1c 55%);--lx-fg:#eef0ff;--theme-primary:#7c5cff!important;--theme-secondary:#3b82f6!important}
+html[data-layout="dark"] .nbh{background:#10132b!important;border-bottom:1px solid #2a2f5a!important;box-shadow:0 2px 28px rgba(124,92,255,.38)!important}
+html[data-layout="dark"] .nbh-tab,html[data-layout="dark"] .nbh-ib,html[data-layout="dark"] .nbh-brand b{color:#e8eaff!important}
+html[data-layout="dark"] .nbh-tab{border-radius:10px}
+html[data-layout="dark"] .nbh-tab.nav-btn-active{background:linear-gradient(90deg,#7c5cff,#3b82f6)!important;color:#fff!important;box-shadow:0 0 18px rgba(124,92,255,.65)}
+html[data-layout="dark"] #nbFooter{background:#0e1126!important;border-top:1px solid #7c5cff!important;box-shadow:0 -8px 30px rgba(124,92,255,.25);color:#9aa3d6}
+
+/* ---------- 3. Gradient Dream ---------- */
+html[data-layout="grad"]{--lx-bg:linear-gradient(180deg,#f4edff,#fbeeff 60%,#eef0ff);--lx-fg:#2a1458;--theme-primary:#8b3dff!important;--theme-secondary:#c026d3!important}
+html[data-layout="grad"] .nbh{background:linear-gradient(90deg,#6d28d9,#c026d3)!important;border:0!important;box-shadow:0 8px 28px rgba(139,61,255,.4)!important}
+html[data-layout="grad"] .nbh-tab,html[data-layout="grad"] .nbh-ib,html[data-layout="grad"] .nbh-brand b,html[data-layout="grad"] .nbh-brand small{color:#fff!important}
+html[data-layout="grad"] .nbh-tab{border-radius:16px}
+html[data-layout="grad"] .nbh-tab.nav-btn-active{background:rgba(255,255,255,.24)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+html[data-layout="grad"] #nbFooter{background:linear-gradient(90deg,#6d28d9,#c026d3)!important;border:0!important;border-radius:44px 44px 0 0;margin-top:40px;color:#f5e9ff;text-align:left}
+
+/* ---------- 4. Minimal Clean ---------- */
+html[data-layout="min"]{--lx-bg:#ffffff;--lx-fg:#18181b;--theme-primary:#16a34a!important;--theme-secondary:#15803d!important}
+html[data-layout="min"] .nbh{background:#fff!important;border-bottom:2px solid #16a34a!important;box-shadow:none!important}
+html[data-layout="min"] .nbh-bn small{display:none}
+html[data-layout="min"] .nbh-tab{border-radius:0;background:transparent!important;color:#3f3f46!important;border-bottom:2px solid transparent}
+html[data-layout="min"] .nbh-tab.nav-btn-active{color:#16a34a!important;border-bottom-color:#16a34a}
+html[data-layout="min"] #nbFooter{background:#fff!important;border-top:1px solid #e5e7eb!important;padding:14px 20px!important;margin-top:28px;color:#52525b}
+
+/* ---------- 5. Elegant Premium (centered serif header, gold footer) ---------- */
+html[data-layout="eleg"]{--lx-bg:#fffaf0;--lx-fg:#3b2a10;--theme-primary:#b8860b!important;--theme-secondary:#d4a017!important}
+html[data-layout="eleg"] body,html[data-layout="eleg"] .nbh,html[data-layout="eleg"] #nbFooter{font-family:Georgia,"Times New Roman",serif}
+html[data-layout="eleg"] .nbh{background:#fffdf6!important;border-bottom:3px double #b8860b!important;box-shadow:none!important}
+html[data-layout="eleg"] .nbh-in{position:relative;flex-wrap:wrap;justify-content:center;row-gap:4px}
+html[data-layout="eleg"] .nbh-left{order:1;flex:1 0 100%;justify-content:center}
+html[data-layout="eleg"] .nbh-nav{order:2;justify-content:center}
+html[data-layout="eleg"] .nbh-right{order:3;position:absolute;right:12px;top:8px}
+html[data-layout="eleg"] .nbh-brand b{font-size:1.45rem;letter-spacing:.08em}
+html[data-layout="eleg"] .nbh-tab{border-radius:0;color:#5a4116!important;background:transparent!important}
+html[data-layout="eleg"] .nbh-tab.nav-btn-active{color:#b8860b!important;border-bottom:2px solid #b8860b}
+html[data-layout="eleg"] #nbFooter{background:#3b2a10!important;border:0!important;margin-top:40px;color:#f3e3b0;text-align:left}
+
+/* ---------- footer markup (built by layouts.js) ---------- */
+#nbFooter .lxf-grid{display:grid;gap:22px;max-width:1100px;margin:0 auto;padding:6px 10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+#nbFooter .lxf-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.05rem}
+#nbFooter .lxf-grid p{margin:6px 0 0;font-size:12.5px;opacity:.85;line-height:1.55}
+#nbFooter .lxf-grid h4{font-size:12px;font-weight:700;margin:0 0 6px;opacity:.95}
+#nbFooter .lxf-grid button,#nbFooter .lxf-grid span.lxl{display:block;background:none;border:0;padding:2px 0;font:inherit;font-size:12.5px;color:inherit;opacity:.85;text-align:left;cursor:pointer}
+#nbFooter .lxf-grid button:hover{opacity:1;text-decoration:underline}
+#nbFooter .lxf-copy{text-align:center;font-size:12px;opacity:.75;margin-top:16px}
+#nbFooter .lxf-center{text-align:center}
+#nbFooter .lxf-center .lxf-brand{justify-content:center;margin-bottom:8px}
+#nbFooter .lxf-row{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;margin:6px 0}
+#nbFooter .lxf-row button{background:none;border:0;font:inherit;font-size:12.5px;color:inherit;cursor:pointer;opacity:.9}
+#nbFooter .lxf-line{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;font-size:12.5px}
+html[data-layout="eleg"] #nbFooter .lxf-brand{letter-spacing:.08em;color:#e7c45a}
+html[data-layout="eleg"] #nbFooter .lxf-grid h4{color:#e7c45a}
+
+/* ---------- admin: Website layout picker ---------- */
+.lx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin:12px 0}
+.lx-card{text-align:left;background:var(--a-card,#fff);border:2px solid var(--a-line,#e2e8f0);border-radius:14px;padding:10px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s,box-shadow .15s}
+.lx-card:hover{border-color:#a5b4fc}
+.lx-card.sel{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.22)}
+.lx-sw{height:62px;border-radius:9px;margin-bottom:8px;position:relative;overflow:hidden}
+.lx-sw i{position:absolute;left:8px;right:8px;top:8px;height:11px;border-radius:6px;background:rgba(255,255,255,.75)}
+.lx-sw u{position:absolute;left:8px;right:8px;bottom:8px;height:7px;border-radius:4px;background:rgba(0,0,0,.22)}
+.lx-card b{display:block;font-size:13.5px}
+.lx-card small{display:block;opacity:.7;font-size:12px;margin-top:2px}
+.lx-live{display:inline-block;margin-left:6px;padding:0 8px;border-radius:99px;background:#16a34a;color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
+.lx-msg{font-size:13px;margin-left:10px}
+.lx-rule{white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:rgba(100,116,139,.12);padding:10px;border-radius:10px;margin-top:8px;overflow:auto}
+
+/* ---------- user: delete account ---------- */
+.lx-del b,.lx-del i{color:#e11d48!important}
+#lxDelWrap{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+#lxDelWrap .lxd{background:#fff;color:#1e293b;border-radius:18px;max-width:380px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+html.dark #lxDelWrap .lxd{background:#1e293b;color:#f1f5f9}
+#lxDelWrap h3{font-size:1.1rem;font-weight:800;margin:0 0 6px;color:#e11d48}
+#lxDelWrap p{font-size:13.5px;line-height:1.55;margin:0 0 12px;opacity:.85}
+#lxDelWrap input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #cbd5e1;background:transparent;color:inherit;font-size:15px}
+#lxDelWrap .lxe{color:#e11d48;font-size:13px;min-height:18px;margin:6px 0}
+#lxDelWrap .lxb{display:flex;gap:8px;margin-top:6px}
+#lxDelWrap button{flex:1;padding:11px;border-radius:10px;border:0;font-weight:700;cursor:pointer;font-size:14px}
+#lxDelWrap .lxgo{background:#e11d48;color:#fff}
+#lxDelWrap .lxno{background:#e2e8f0;color:#334155}
+#lxDelWrap button:disabled{opacity:.6;cursor:wait}
+@media (max-width:640px){html[data-layout="eleg"] .nbh-right{position:static}}
