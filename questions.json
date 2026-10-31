@@ -1,5 +1,6 @@
 [
  {
+  "id": 1,
   "s": "Math",
   "c": [
    6,
@@ -13,10 +14,10 @@
    "10"
   ],
   "a": 1,
-  "e": "Multiples of 4: 4, 8, 12. Multiples of 6: 6, 12. The smallest common one is 12.",
-  "id": 1
+  "e": "Multiples of 4: 4, 8, 12. Multiples of 6: 6, 12. The smallest common one is 12."
  },
  {
+  "id": 2,
   "s": "Math",
   "c": [
    6,
@@ -30,10 +31,10 @@
    "20"
   ],
   "a": 1,
-  "e": "15% of 200 = 15/100 × 200 = 30.",
-  "id": 2
+  "e": "15% of 200 = 15/100 × 200 = 30."
  },
  {
+  "id": 3,
   "s": "Math",
   "c": [
    6,
@@ -47,10 +48,10 @@
    "360°"
   ],
   "a": 1,
-  "e": "The angle sum property of a triangle states the angles add up to 180°.",
-  "id": 3
+  "e": "The angle sum property of a triangle states the angles add up to 180°."
  },
  {
+  "id": 4,
   "s": "Math",
   "c": [
    6,
@@ -64,10 +65,10 @@
    "80 cm²"
   ],
   "a": 2,
-  "e": "Area = length × width = 8 × 5 = 40 cm².",
-  "id": 4
+  "e": "Area = length × width = 8 × 5 = 40 cm²."
  },
  {
+  "id": 5,
   "s": "Math",
   "c": [
    6,
@@ -81,10 +82,10 @@
    "33"
   ],
   "a": 2,
-  "e": "21 = 3×7, 27 = 3×9 and 33 = 3×11. 29 has no divisor other than 1 and itself.",
-  "id": 5
+  "e": "21 = 3×7, 27 = 3×9 and 33 = 3×11. 29 has no divisor other than 1 and itself."
  },
  {
+  "id": 6,
   "s": "Math",
   "c": [
    8,
@@ -98,10 +99,10 @@
    "2a + 2b"
   ],
   "a": 1,
-  "e": "Expanding (a + b)(a + b) gives a² + 2ab + b².",
-  "id": 6
+  "e": "Expanding (a + b)(a + b) gives a² + 2ab + b²."
  },
  {
+  "id": 7,
   "s": "Math",
   "c": [
    9,
@@ -115,10 +116,10 @@
    "−1 and 6"
   ],
   "a": 1,
-  "e": "x² − 5x + 6 = (x − 2)(x − 3), so x = 2 or x = 3.",
-  "id": 7
+  "e": "x² − 5x + 6 = (x − 2)(x − 3), so x = 2 or x = 3."
  },
  {
+  "id": 8,
   "s": "Math",
   "c": [
    9,
@@ -132,10 +133,10 @@
    "1/√2"
   ],
   "a": 1,
-  "e": "sin 30° = 1/2 is a standard trigonometric value.",
-  "id": 8
+  "e": "sin 30° = 1/2 is a standard trigonometric value."
  },
  {
+  "id": 9,
   "s": "Math",
   "c": [
    9,
@@ -149,10 +150,10 @@
    "√3"
   ],
   "a": 2,
-  "e": "In a 45°–45°–90° triangle the two legs are equal, so tan 45° = 1.",
-  "id": 9
+  "e": "In a 45°–45°–90° triangle the two legs are equal, so tan 45° = 1."
  },
  {
+  "id": 10,
   "s": "Math",
   "c": [
    10,
@@ -166,10 +167,10 @@
    "32"
   ],
   "a": 1,
-  "e": "a = 2, d = 3. a₁₀ = a + 9d = 2 + 27 = 29.",
-  "id": 10
+  "e": "a = 2, d = 3. a₁₀ = a + 9d = 2 + 27 = 29."
  },
  {
+  "id": 11,
   "s": "Math",
   "c": [
    10,
@@ -183,10 +184,10 @@
    "√(b² − 4ac)"
   ],
   "a": 0,
-  "e": "Discriminant D = b² − 4ac. It decides the nature of the roots.",
-  "id": 11
+  "e": "Discriminant D = b² − 4ac. It decides the nature of the roots."
  },
  {
+  "id": 12,
   "s": "Math",
   "c": [
    11,
@@ -200,10 +201,10 @@
    "tan x"
   ],
   "a": 1,
-  "e": "The derivative of sin x with respect to x is cos x.",
-  "id": 12
+  "e": "The derivative of sin x with respect to x is cos x."
  },
  {
+  "id": 13,
   "s": "Math",
   "c": [
    11,
@@ -217,10 +218,10 @@
    "2 + C"
   ],
   "a": 2,
-  "e": "The integral of 2x is x², plus the constant of integration C.",
-  "id": 13
+  "e": "The integral of 2x is x², plus the constant of integration C."
  },
  {
+  "id": 14,
   "s": "Math",
   "c": [
    11,
@@ -234,10 +235,10 @@
    "10"
   ],
   "a": 2,
-  "e": "10³ = 1000, so log₁₀ 1000 = 3.",
-  "id": 14
+  "e": "10³ = 1000, so log₁₀ 1000 = 3."
  },
  {
+  "id": 15,
   "s": "Science",
   "c": [
    6,
@@ -251,10 +252,10 @@
    "Hydrogen"
   ],
   "a": 2,
-  "e": "Plants use carbon dioxide, water and sunlight to make food and release oxygen.",
-  "id": 15
+  "e": "Plants use carbon dioxide, water and sunlight to make food and release oxygen."
  },
  {
+  "id": 16,
   "s": "Science",
   "c": [
    6,
@@ -268,10 +269,10 @@
    "Pascal"
   ],
   "a": 1,
-  "e": "Force is measured in newtons (N).",
-  "id": 16
+  "e": "Force is measured in newtons (N)."
  },
  {
+  "id": 17,
   "s": "Science",
   "c": [
    6,
@@ -285,10 +286,10 @@
    "Vacuole"
   ],
   "a": 2,
-  "e": "Mitochondria release energy from food, which is why they are called the powerhouse.",
-  "id": 17
+  "e": "Mitochondria release energy from food, which is why they are called the powerhouse."
  },
  {
+  "id": 18,
   "s": "Science",
   "c": [
    6,
@@ -302,10 +303,10 @@
    "Heart"
   ],
   "a": 3,
-  "e": "The heart pumps blood through the blood vessels.",
-  "id": 18
+  "e": "The heart pumps blood through the blood vessels."
  },
  {
+  "id": 19,
   "s": "Science",
   "c": [
    8,
@@ -319,10 +320,10 @@
    "14"
   ],
   "a": 1,
-  "e": "pH 7 is neutral. Below 7 is acidic and above 7 is basic.",
-  "id": 19
+  "e": "pH 7 is neutral. Below 7 is acidic and above 7 is basic."
  },
  {
+  "id": 20,
   "s": "Science",
   "c": [
    8,
@@ -336,10 +337,10 @@
    "Hydrochloric acid"
   ],
   "a": 0,
-  "e": "Lemons and other citrus fruits contain citric acid.",
-  "id": 20
+  "e": "Lemons and other citrus fruits contain citric acid."
  },
  {
+  "id": 21,
   "s": "Science",
   "c": [
    9,
@@ -353,10 +354,10 @@
    "Coulomb"
   ],
   "a": 2,
-  "e": "Electric current is measured in amperes (A).",
-  "id": 21
+  "e": "Electric current is measured in amperes (A)."
  },
  {
+  "id": 22,
   "s": "Science",
   "c": [
    9,
@@ -370,10 +371,10 @@
    "R = VI"
   ],
   "a": 0,
-  "e": "Potential difference V is proportional to current I: V = IR.",
-  "id": 22
+  "e": "Potential difference V is proportional to current I: V = IR."
  },
  {
+  "id": 23,
   "s": "Science",
   "c": [
    9,
@@ -387,10 +388,10 @@
    "3 × 10⁵ m/s"
   ],
   "a": 1,
-  "e": "Light travels at about 3 × 10⁸ metres per second in vacuum.",
-  "id": 23
+  "e": "Light travels at about 3 × 10⁸ metres per second in vacuum."
  },
  {
+  "id": 24,
   "s": "Science",
   "c": [
    10,
@@ -404,10 +405,10 @@
    "Plano-convex lens"
   ],
   "a": 1,
-  "e": "A concave (diverging) lens moves the image back onto the retina.",
-  "id": 24
+  "e": "A concave (diverging) lens moves the image back onto the retina."
  },
  {
+  "id": 25,
   "s": "Science",
   "c": [
    10,
@@ -421,10 +422,10 @@
    "Germination"
   ],
   "a": 0,
-  "e": "Transpiration is the evaporation of water through stomata in leaves.",
-  "id": 25
+  "e": "Transpiration is the evaporation of water through stomata in leaves."
  },
  {
+  "id": 26,
   "s": "Science",
   "c": [
    10,
@@ -438,10 +439,10 @@
    "12"
   ],
   "a": 1,
-  "e": "Carbon has 6 protons, so its atomic number is 6.",
-  "id": 26
+  "e": "Carbon has 6 protons, so its atomic number is 6."
  },
  {
+  "id": 27,
   "s": "Science",
   "c": [
    11,
@@ -455,10 +456,10 @@
    "Law of gravitation"
   ],
   "a": 2,
-  "e": "This is Newton's third law of motion.",
-  "id": 27
+  "e": "This is Newton's third law of motion."
  },
  {
+  "id": 28,
   "s": "Science",
   "c": [
    11,
@@ -472,10 +473,10 @@
    "Fd²"
   ],
   "a": 1,
-  "e": "A body of mass m moving at speed v has kinetic energy ½mv².",
-  "id": 28
+  "e": "A body of mass m moving at speed v has kinetic energy ½mv²."
  },
  {
+  "id": 29,
   "s": "English",
   "c": [
    6,
@@ -489,10 +490,10 @@
    "childrens"
   ],
   "a": 2,
-  "e": "“Child” has an irregular plural: children.",
-  "id": 29
+  "e": "“Child” has an irregular plural: children."
  },
  {
+  "id": 30,
   "s": "English",
   "c": [
    6,
@@ -506,10 +507,10 @@
    "Past"
   ],
   "a": 1,
-  "e": "Ancient means very old; its opposite is modern.",
-  "id": 30
+  "e": "Ancient means very old; its opposite is modern."
  },
  {
+  "id": 31,
   "s": "English",
   "c": [
    6,
@@ -523,10 +524,10 @@
    "gone"
   ],
   "a": 2,
-  "e": "A singular subject in the simple present takes “goes”.",
-  "id": 31
+  "e": "A singular subject in the simple present takes “goes”."
  },
  {
+  "id": 32,
   "s": "English",
   "c": [
    6,
@@ -540,10 +541,10 @@
    "writing"
   ],
   "a": 1,
-  "e": "The past tense of write is wrote; written is the past participle.",
-  "id": 32
+  "e": "The past tense of write is wrote; written is the past participle."
  },
  {
+  "id": 33,
   "s": "English",
   "c": [
    8,
@@ -557,10 +558,10 @@
    "Tired"
   ],
   "a": 1,
-  "e": "Joyful has nearly the same meaning as happy.",
-  "id": 33
+  "e": "Joyful has nearly the same meaning as happy."
  },
  {
+  "id": 34,
   "s": "English",
   "c": [
    8,
@@ -574,10 +575,10 @@
    "The cat was eaten by the fish."
   ],
   "a": 1,
-  "e": "Simple past active becomes “was/were + past participle” in the passive.",
-  "id": 34
+  "e": "Simple past active becomes “was/were + past participle” in the passive."
  },
  {
+  "id": 35,
   "s": "English",
   "c": [
    9,
@@ -591,10 +592,10 @@
    "Verb"
   ],
   "a": 2,
-  "e": "“Quickly” tells how he ran, so it is an adverb.",
-  "id": 35
+  "e": "“Quickly” tells how he ran, so it is an adverb."
  },
  {
+  "id": 36,
   "s": "English",
   "c": [
    9,
@@ -608,10 +609,10 @@
    "have been"
   ],
   "a": 1,
-  "e": "“Neither” takes a singular verb, so “was” is correct.",
-  "id": 36
+  "e": "“Neither” takes a singular verb, so “was” is correct."
  },
  {
+  "id": 37,
   "s": "SST",
   "c": [
    6,
@@ -625,10 +626,10 @@
    "Chennai"
   ],
   "a": 2,
-  "e": "New Delhi is the capital of India.",
-  "id": 37
+  "e": "New Delhi is the capital of India."
  },
  {
+  "id": 38,
   "s": "SST",
   "c": [
    6,
@@ -642,10 +643,10 @@
    "Muzaffarpur"
   ],
   "a": 1,
-  "e": "Patna is the capital city of Bihar.",
-  "id": 38
+  "e": "Patna is the capital city of Bihar."
  },
  {
+  "id": 39,
   "s": "SST",
   "c": [
    6,
@@ -659,10 +660,10 @@
    "Dr. Rajendra Prasad"
   ],
   "a": 2,
-  "e": "Jawaharlal Nehru became India's first Prime Minister in 1947.",
-  "id": 39
+  "e": "Jawaharlal Nehru became India's first Prime Minister in 1947."
  },
  {
+  "id": 40,
   "s": "SST",
   "c": [
    6,
@@ -676,10 +677,10 @@
    "Brahmaputra"
   ],
   "a": 0,
-  "e": "The Ganga was declared the national river of India in 2008.",
-  "id": 40
+  "e": "The Ganga was declared the national river of India in 2008."
  },
  {
+  "id": 41,
   "s": "SST",
   "c": [
    8,
@@ -693,10 +694,10 @@
    "Jhansi"
   ],
   "a": 1,
-  "e": "The revolt began with the sepoys at Meerut on 10 May 1857.",
-  "id": 41
+  "e": "The revolt began with the sepoys at Meerut on 10 May 1857."
  },
  {
+  "id": 42,
   "s": "SST",
   "c": [
    8,
@@ -710,10 +711,10 @@
    "Dr. Rajendra Prasad"
   ],
   "a": 0,
-  "e": "Dr. B. R. Ambedkar chaired the Drafting Committee.",
-  "id": 42
+  "e": "Dr. B. R. Ambedkar chaired the Drafting Committee."
  },
  {
+  "id": 43,
   "s": "SST",
   "c": [
    9,
@@ -727,10 +728,10 @@
    "2 October 1950"
   ],
   "a": 2,
-  "e": "It came into force on 26 January 1950, celebrated as Republic Day.",
-  "id": 43
+  "e": "It came into force on 26 January 1950, celebrated as Republic Day."
  },
  {
+  "id": 44,
   "s": "SST",
   "c": [
    9,
@@ -744,10 +745,10 @@
    "Punjab"
   ],
   "a": 1,
-  "e": "Jharkhand is one of the eight states crossed by the Tropic of Cancer.",
-  "id": 44
+  "e": "Jharkhand is one of the eight states crossed by the Tropic of Cancer."
  },
  {
+  "id": 45,
   "s": "SST",
   "c": [
    10,
@@ -761,10 +762,10 @@
    "1764"
   ],
   "a": 1,
-  "e": "The Battle of Plassey was fought in 1757.",
-  "id": 45
+  "e": "The Battle of Plassey was fought in 1757."
  },
  {
+  "id": 46,
   "s": "Hindi",
   "c": [
    6,
@@ -778,10 +779,10 @@
    "पवन"
   ],
   "a": 1,
-  "e": "दिनकर, भास्कर और रवि सूर्य के पर्यायवाची हैं।",
-  "id": 46
+  "e": "दिनकर, भास्कर और रवि सूर्य के पर्यायवाची हैं।"
  },
  {
+  "id": 47,
   "s": "Hindi",
   "c": [
    6,
@@ -795,10 +796,10 @@
    "काला"
   ],
   "a": 1,
-  "e": "अंधकार का विलोम प्रकाश है।",
-  "id": 47
+  "e": "अंधकार का विलोम प्रकाश है।"
  },
  {
+  "id": 48,
   "s": "Hindi",
   "c": [
    6,
@@ -812,10 +813,10 @@
    "धरती"
   ],
   "a": 1,
-  "e": "पवन, वायु और हवा समानार्थी शब्द हैं।",
-  "id": 48
+  "e": "पवन, वायु और हवा समानार्थी शब्द हैं।"
  },
  {
+  "id": 49,
   "s": "Hindi",
   "c": [
    6,
@@ -829,10 +830,10 @@
    "विद्या + लय"
   ],
   "a": 0,
-  "e": "विद्या + आलय = विद्यालय (दीर्घ संधि)।",
-  "id": 49
+  "e": "विद्या + आलय = विद्यालय (दीर्घ संधि)।"
  },
  {
+  "id": 50,
   "s": "Hindi",
   "c": [
    8,
@@ -846,10 +847,10 @@
    "ने"
   ],
   "a": 2,
-  "e": "क्रिया को करने वाला कर्ता होता है। यहाँ खाने का काम राम ने किया।",
-  "id": 50
+  "e": "क्रिया को करने वाला कर्ता होता है। यहाँ खाने का काम राम ने किया।"
  },
  {
+  "id": 51,
   "s": "Hindi",
   "c": [
    9,
@@ -863,7 +864,6567 @@
    "नपुंसक लिंग"
   ],
   "a": 1,
-  "e": "पुस्तक स्त्रीलिंग शब्द है (एक पुस्तक, अच्छी पुस्तक)।",
-  "id": 51
+  "e": "पुस्तक स्त्रीलिंग शब्द है (एक पुस्तक, अच्छी पुस्तक)।"
+ },
+ {
+  "id": 52,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "Using Euclid's division algorithm, the HCF of 96 and 404 is:",
+  "o": [
+   "2",
+   "4",
+   "8",
+   "12"
+  ],
+  "a": 1,
+  "e": "404 = 96×4 + 20; 96 = 20×4 + 16; 20 = 16×1 + 4; 16 = 4×4 + 0. The last non-zero remainder is 4.",
+  "qh": "यूक्लिड विभाजन एल्गोरिथ्म से 96 और 404 का HCF है:",
+  "oh": [
+   "2",
+   "4",
+   "8",
+   "12"
+  ],
+  "eh": "404 = 96×4 + 20; 96 = 20×4 + 16; 20 = 16×1 + 4; 16 = 4×4 + 0. अंतिम शून्येतर शेषफल 4 है।"
+ },
+ {
+  "id": 53,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "medium",
+  "q": "The HCF of two numbers is 9 and their LCM is 360. If one number is 45, the other number is:",
+  "o": [
+   "54",
+   "72",
+   "81",
+   "90"
+  ],
+  "a": 1,
+  "e": "HCF × LCM = product of the numbers, so the other number = (9 × 360) / 45 = 72.",
+  "qh": "दो संख्याओं का HCF 9 और LCM 360 है। यदि एक संख्या 45 है, तो दूसरी संख्या है:",
+  "oh": [
+   "54",
+   "72",
+   "81",
+   "90"
+  ],
+  "eh": "HCF × LCM = दोनों संख्याओं का गुणनफल, अतः दूसरी संख्या = (9 × 360) / 45 = 72."
+ },
+ {
+  "id": 54,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The decimal expansion of 13/3125 terminates after how many decimal places?",
+  "o": [
+   "3",
+   "4",
+   "5",
+   "6"
+  ],
+  "a": 2,
+  "e": "3125 = 5⁵, so 13/3125 = 13×2⁵ / 10⁵ = 416/10⁵ = 0.00416. It terminates after 5 places.",
+  "qh": "13/3125 का दशमलव प्रसार कितने दशमलव स्थानों के बाद समाप्त होगा?",
+  "oh": [
+   "3",
+   "4",
+   "5",
+   "6"
+  ],
+  "eh": "3125 = 5⁵, अतः 13/3125 = 13×2⁵ / 10⁵ = 416/10⁵ = 0.00416. यह 5 स्थानों के बाद समाप्त होता है।"
+ },
+ {
+  "id": 55,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "medium",
+  "q": "Which of the following is an irrational number?",
+  "o": [
+   "(2 + √3)(2 − √3)",
+   "√(25/4)",
+   "(√7)²",
+   "2√3 + 5"
+  ],
+  "a": 3,
+  "e": "(2+√3)(2−√3) = 4−3 = 1, √(25/4) = 5/2 and (√7)² = 7 are all rational. 2√3 + 5 is irrational because a rational plus an irrational is irrational.",
+  "qh": "निम्नलिखित में कौन-सी संख्या अपरिमेय है?",
+  "oh": [
+   "(2 + √3)(2 − √3)",
+   "√(25/4)",
+   "(√7)²",
+   "2√3 + 5"
+  ],
+  "eh": "(2+√3)(2−√3) = 4−3 = 1, √(25/4) = 5/2 और (√7)² = 7 परिमेय हैं। 2√3 + 5 अपरिमेय है क्योंकि परिमेय + अपरिमेय = अपरिमेय।"
+ },
+ {
+  "id": 56,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The HCF of 245 and 1029 is:",
+  "o": [
+   "7",
+   "49",
+   "35",
+   "21"
+  ],
+  "a": 1,
+  "e": "1029 = 245×4 + 49; 245 = 49×5 + 0. So HCF = 49.",
+  "qh": "245 और 1029 का HCF है:",
+  "oh": [
+   "7",
+   "49",
+   "35",
+   "21"
+  ],
+  "eh": "1029 = 245×4 + 49; 245 = 49×5 + 0. अतः HCF = 49."
+ },
+ {
+  "id": 57,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "medium",
+  "q": "The LCM of 12, 15 and 21 is:",
+  "o": [
+   "210",
+   "420",
+   "630",
+   "840"
+  ],
+  "a": 1,
+  "e": "12 = 2²×3, 15 = 3×5, 21 = 3×7. LCM = 2²×3×5×7 = 420.",
+  "qh": "12, 15 और 21 का LCM है:",
+  "oh": [
+   "210",
+   "420",
+   "630",
+   "840"
+  ],
+  "eh": "12 = 2²×3, 15 = 3×5, 21 = 3×7. LCM = 2²×3×5×7 = 420."
+ },
+ {
+  "id": 58,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The largest number which divides 70 and 125, leaving remainders 5 and 8 respectively, is:",
+  "o": [
+   "13",
+   "26",
+   "39",
+   "65"
+  ],
+  "a": 0,
+  "e": "The number must divide 70−5 = 65 and 125−8 = 117. HCF(65, 117) = 13.",
+  "qh": "वह बड़ी से बड़ी संख्या जो 70 और 125 को भाग देने पर क्रमशः 5 और 8 शेषफल छोड़ती है:",
+  "oh": [
+   "13",
+   "26",
+   "39",
+   "65"
+  ],
+  "eh": "संख्या को 70−5 = 65 और 125−8 = 117 को पूर्णतः विभाजित करना होगा। HCF(65, 117) = 13."
+ },
+ {
+  "id": 59,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The number 7 × 11 × 13 + 13 is:",
+  "o": [
+   "A prime number",
+   "A composite number",
+   "An irrational number",
+   "Neither prime nor composite"
+  ],
+  "a": 1,
+  "e": "7×11×13 + 13 = 13(77 + 1) = 13 × 78. It has factors other than 1 and itself, so it is composite.",
+  "qh": "संख्या 7 × 11 × 13 + 13 है:",
+  "oh": [
+   "अभाज्य संख्या",
+   "भाज्य संख्या",
+   "अपरिमेय संख्या",
+   "न अभाज्य न भाज्य"
+  ],
+  "eh": "7×11×13 + 13 = 13(77 + 1) = 13 × 78. इसके 1 और स्वयं के अतिरिक्त भी गुणनखंड हैं, अतः यह भाज्य है।"
+ },
+ {
+  "id": 60,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "For which natural number n can 6ⁿ end with the digit 0?",
+  "o": [
+   "n = 1",
+   "n = 5",
+   "n = 10",
+   "No natural number n"
+  ],
+  "a": 3,
+  "e": "6ⁿ = 2ⁿ × 3ⁿ has no factor 5. A number ending in 0 must be divisible by 5, so 6ⁿ never ends in 0.",
+  "qh": "किस प्राकृत संख्या n के लिए 6ⁿ का अंतिम अंक 0 हो सकता है?",
+  "oh": [
+   "n = 1",
+   "n = 5",
+   "n = 10",
+   "कोई भी प्राकृत संख्या n नहीं"
+  ],
+  "eh": "6ⁿ = 2ⁿ × 3ⁿ में 5 गुणनखंड नहीं है। 0 पर समाप्त होने वाली संख्या 5 से विभाज्य होनी चाहिए, अतः 6ⁿ कभी 0 पर समाप्त नहीं होता।"
+ },
+ {
+  "id": 61,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "Which of the following has a terminating decimal expansion?",
+  "o": [
+   "64/455",
+   "29/343",
+   "15/1600",
+   "77/210"
+  ],
+  "a": 2,
+  "e": "15/1600 = 3/320 = 3/(2⁶×5), whose denominator has only 2 and 5 as prime factors. In the others the denominator has 7, 13 or 3 as a factor.",
+  "qh": "निम्नलिखित में से किसका दशमलव प्रसार सांत (समाप्त होने वाला) है?",
+  "oh": [
+   "64/455",
+   "29/343",
+   "15/1600",
+   "77/210"
+  ],
+  "eh": "15/1600 = 3/320 = 3/(2⁶×5), जिसके हर के अभाज्य गुणनखंड केवल 2 और 5 हैं। अन्य में हर में 7, 13 या 3 है।"
+ },
+ {
+  "id": 62,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "medium",
+  "q": "If HCF(a, b) = 12 and a × b = 1800, then LCM(a, b) is:",
+  "o": [
+   "120",
+   "150",
+   "180",
+   "200"
+  ],
+  "a": 1,
+  "e": "LCM = (a × b) / HCF = 1800 / 12 = 150.",
+  "qh": "यदि HCF(a, b) = 12 और a × b = 1800 है, तो LCM(a, b) है:",
+  "oh": [
+   "120",
+   "150",
+   "180",
+   "200"
+  ],
+  "eh": "LCM = (a × b) / HCF = 1800 / 12 = 150."
+ },
+ {
+  "id": 63,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "If p is a prime number and p divides a², then:",
+  "o": [
+   "p divides a",
+   "p does not divide a",
+   "p² divides a",
+   "p divides a² only"
+  ],
+  "a": 0,
+  "e": "This is the key theorem used to prove that √p is irrational. If a prime divides a², it must divide a.",
+  "qh": "यदि p एक अभाज्य संख्या है और p, a² को विभाजित करता है, तो:",
+  "oh": [
+   "p, a को विभाजित करता है",
+   "p, a को विभाजित नहीं करता",
+   "p², a को विभाजित करता है",
+   "p केवल a² को विभाजित करता है"
+  ],
+  "eh": "√p को अपरिमेय सिद्ध करने में यही प्रमेय प्रयुक्त होती है। यदि कोई अभाज्य संख्या a² को विभाजित करे, तो वह a को भी विभाजित करती है।"
+ },
+ {
+  "id": 64,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "medium",
+  "q": "The LCM of 120 and 252 is:",
+  "o": [
+   "1260",
+   "2520",
+   "5040",
+   "30240"
+  ],
+  "a": 1,
+  "e": "120 = 2³×3×5 and 252 = 2²×3²×7. LCM = 2³×3²×5×7 = 2520.",
+  "qh": "120 और 252 का LCM है:",
+  "oh": [
+   "1260",
+   "2520",
+   "5040",
+   "30240"
+  ],
+  "eh": "120 = 2³×3×5 और 252 = 2²×3²×7. LCM = 2³×3²×5×7 = 2520."
+ },
+ {
+  "id": 65,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The product of any three consecutive positive integers is always divisible by:",
+  "o": [
+   "4",
+   "6",
+   "12",
+   "24"
+  ],
+  "a": 1,
+  "e": "Among three consecutive integers one is a multiple of 3 and at least one is even, so the product is divisible by 6. For 1×2×3 = 6 it is not divisible by 12 or 24.",
+  "qh": "किन्हीं तीन क्रमागत धनात्मक पूर्णांकों का गुणनफल सदैव किससे विभाज्य होता है?",
+  "oh": [
+   "4",
+   "6",
+   "12",
+   "24"
+  ],
+  "eh": "तीन क्रमागत पूर्णांकों में एक 3 का गुणज और कम से कम एक सम होता है, अतः गुणनफल 6 से विभाज्य है। 1×2×3 = 6, जो 12 या 24 से विभाज्य नहीं है।"
+ },
+ {
+  "id": 66,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The square of any positive integer cannot be of the form:",
+  "o": [
+   "3m",
+   "3m + 1",
+   "3m + 2",
+   "4m"
+  ],
+  "a": 2,
+  "e": "Writing the integer as 3q, 3q+1 or 3q+2 gives squares of the form 3m or 3m+1 only. So a square is never of the form 3m+2.",
+  "qh": "किसी भी धनात्मक पूर्णांक का वर्ग निम्न रूप का नहीं हो सकता:",
+  "oh": [
+   "3m",
+   "3m + 1",
+   "3m + 2",
+   "4m"
+  ],
+  "eh": "पूर्णांक को 3q, 3q+1 या 3q+2 लिखने पर वर्ग केवल 3m या 3m+1 रूप का आता है। अतः वर्ग कभी 3m+2 रूप का नहीं होता।"
+ },
+ {
+  "id": 67,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The cube of any positive integer cannot be of the form:",
+  "o": [
+   "9m",
+   "9m + 1",
+   "9m + 8",
+   "9m + 4"
+  ],
+  "a": 3,
+  "e": "Using Euclid's lemma with b = 3, cubes are always of the form 9m, 9m+1 or 9m+8. So 9m+4 is never a cube.",
+  "qh": "किसी भी धनात्मक पूर्णांक का घन निम्न रूप का नहीं हो सकता:",
+  "oh": [
+   "9m",
+   "9m + 1",
+   "9m + 8",
+   "9m + 4"
+  ],
+  "eh": "b = 3 लेकर यूक्लिड प्रमेयिका से घन सदैव 9m, 9m+1 या 9m+8 रूप का होता है। अतः 9m+4 कभी घन नहीं होता।"
+ },
+ {
+  "id": 68,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The number of digits in the repeating block of the decimal expansion of 1/7 is:",
+  "o": [
+   "3",
+   "6",
+   "7",
+   "12"
+  ],
+  "a": 1,
+  "e": "1/7 = 0.142857142857…, so the repeating block 142857 has 6 digits.",
+  "qh": "1/7 के दशमलव प्रसार में आवर्ती खंड में अंकों की संख्या है:",
+  "oh": [
+   "3",
+   "6",
+   "7",
+   "12"
+  ],
+  "eh": "1/7 = 0.142857142857…, अतः आवर्ती खंड 142857 में 6 अंक हैं।"
+ },
+ {
+  "id": 69,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "medium",
+  "q": "Which of the following is a rational number?",
+  "o": [
+   "√2 + √8",
+   "√2 × √8",
+   "3 + √2",
+   "√3 × √5"
+  ],
+  "a": 1,
+  "e": "√2 × √8 = √16 = 4, which is rational. √2 + √8 = 3√2, 3 + √2 and √15 are irrational.",
+  "qh": "निम्नलिखित में कौन-सी संख्या परिमेय है?",
+  "oh": [
+   "√2 + √8",
+   "√2 × √8",
+   "3 + √2",
+   "√3 × √5"
+  ],
+  "eh": "√2 × √8 = √16 = 4, जो परिमेय है। √2 + √8 = 3√2, 3 + √2 और √15 अपरिमेय हैं।"
+ },
+ {
+  "id": 70,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "The smallest number which leaves remainder 3 when divided by 12, 15 and 20 (and is greater than 3) is:",
+  "o": [
+   "60",
+   "63",
+   "123",
+   "183"
+  ],
+  "a": 1,
+  "e": "LCM(12, 15, 20) = 60. The required number is 60 + 3 = 63.",
+  "qh": "वह सबसे छोटी संख्या (3 से बड़ी) जिसे 12, 15 और 20 से भाग देने पर शेषफल 3 बचे:",
+  "oh": [
+   "60",
+   "63",
+   "123",
+   "183"
+  ],
+  "eh": "LCM(12, 15, 20) = 60. अभीष्ट संख्या = 60 + 3 = 63."
+ },
+ {
+  "id": 71,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Real Numbers",
+  "d": "hard",
+  "q": "Three bells toll at intervals of 9, 12 and 15 minutes. If they toll together at 8:00 a.m., they will next toll together at:",
+  "o": [
+   "10:00 a.m.",
+   "11:00 a.m.",
+   "12:00 noon",
+   "11:30 a.m."
+  ],
+  "a": 1,
+  "e": "LCM(9, 12, 15) = 180 minutes = 3 hours. So 8:00 a.m. + 3 hours = 11:00 a.m.",
+  "qh": "तीन घंटियाँ क्रमशः 9, 12 और 15 मिनट के अंतराल पर बजती हैं। यदि वे प्रातः 8:00 बजे एक साथ बजें, तो अगली बार एक साथ बजेंगी:",
+  "oh": [
+   "प्रातः 10:00 बजे",
+   "प्रातः 11:00 बजे",
+   "दोपहर 12:00 बजे",
+   "प्रातः 11:30 बजे"
+  ],
+  "eh": "LCM(9, 12, 15) = 180 मिनट = 3 घंटे। अतः 8:00 + 3 घंटे = प्रातः 11:00 बजे।"
+ },
+ {
+  "id": 72,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "medium",
+  "q": "The zeroes of the polynomial x² − 2x − 8 are:",
+  "o": [
+   "4 and −2",
+   "−4 and 2",
+   "4 and 2",
+   "−4 and −2"
+  ],
+  "a": 0,
+  "e": "x² − 2x − 8 = (x − 4)(x + 2), so the zeroes are 4 and −2.",
+  "qh": "बहुपद x² − 2x − 8 के शून्यक हैं:",
+  "oh": [
+   "4 और −2",
+   "−4 और 2",
+   "4 और 2",
+   "−4 और −2"
+  ],
+  "eh": "x² − 2x − 8 = (x − 4)(x + 2), अतः शून्यक 4 और −2 हैं।"
+ },
+ {
+  "id": 73,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "medium",
+  "q": "The sum and product of the zeroes of 2x² − 8x + 6 are respectively:",
+  "o": [
+   "4 and 3",
+   "−4 and 3",
+   "4 and −3",
+   "8 and 6"
+  ],
+  "a": 0,
+  "e": "Sum = −b/a = 8/2 = 4. Product = c/a = 6/2 = 3.",
+  "qh": "2x² − 8x + 6 के शून्यकों का योग और गुणनफल क्रमशः हैं:",
+  "oh": [
+   "4 और 3",
+   "−4 और 3",
+   "4 और −3",
+   "8 और 6"
+  ],
+  "eh": "योग = −b/a = 8/2 = 4. गुणनफल = c/a = 6/2 = 3."
+ },
+ {
+  "id": 74,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "If α and β are the zeroes of x² − 5x + 6, then α² + β² is:",
+  "o": [
+   "11",
+   "13",
+   "19",
+   "25"
+  ],
+  "a": 1,
+  "e": "α + β = 5, αβ = 6. α² + β² = (α + β)² − 2αβ = 25 − 12 = 13.",
+  "qh": "यदि α और β बहुपद x² − 5x + 6 के शून्यक हैं, तो α² + β² का मान है:",
+  "oh": [
+   "11",
+   "13",
+   "19",
+   "25"
+  ],
+  "eh": "α + β = 5, αβ = 6. α² + β² = (α + β)² − 2αβ = 25 − 12 = 13."
+ },
+ {
+  "id": 75,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "medium",
+  "q": "A quadratic polynomial whose zeroes sum to −3 and multiply to 2 is:",
+  "o": [
+   "x² − 3x + 2",
+   "x² + 3x + 2",
+   "x² + 3x − 2",
+   "x² − 3x − 2"
+  ],
+  "a": 1,
+  "e": "Polynomial = x² − (sum)x + product = x² + 3x + 2.",
+  "qh": "वह द्विघात बहुपद जिसके शून्यकों का योग −3 और गुणनफल 2 है:",
+  "oh": [
+   "x² − 3x + 2",
+   "x² + 3x + 2",
+   "x² + 3x − 2",
+   "x² − 3x − 2"
+  ],
+  "eh": "बहुपद = x² − (योग)x + गुणनफल = x² + 3x + 2."
+ },
+ {
+  "id": 76,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "medium",
+  "q": "If 3 is a zero of x² − 7x + k, then k is:",
+  "o": [
+   "10",
+   "12",
+   "−12",
+   "14"
+  ],
+  "a": 1,
+  "e": "Put x = 3: 9 − 21 + k = 0, so k = 12.",
+  "qh": "यदि 3, बहुपद x² − 7x + k का एक शून्यक है, तो k का मान है:",
+  "oh": [
+   "10",
+   "12",
+   "−12",
+   "14"
+  ],
+  "eh": "x = 3 रखने पर: 9 − 21 + k = 0, अतः k = 12."
+ },
+ {
+  "id": 77,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "The product of the zeroes of x³ − 4x² + x + 6 is:",
+  "o": [
+   "6",
+   "−6",
+   "−4",
+   "4"
+  ],
+  "a": 1,
+  "e": "For ax³ + bx² + cx + d the product of zeroes is −d/a = −6. (Zeroes are 2, 3, −1.)",
+  "qh": "x³ − 4x² + x + 6 के शून्यकों का गुणनफल है:",
+  "oh": [
+   "6",
+   "−6",
+   "−4",
+   "4"
+  ],
+  "eh": "ax³ + bx² + cx + d के शून्यकों का गुणनफल −d/a = −6 होता है। (शून्यक 2, 3, −1 हैं।)"
+ },
+ {
+  "id": 78,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "medium",
+  "q": "The sum of the zeroes of 2x³ − 6x² + 3x − 5 is:",
+  "o": [
+   "3",
+   "−3",
+   "3/2",
+   "5/2"
+  ],
+  "a": 0,
+  "e": "Sum of zeroes of a cubic = −b/a = 6/2 = 3.",
+  "qh": "2x³ − 6x² + 3x − 5 के शून्यकों का योग है:",
+  "oh": [
+   "3",
+   "−3",
+   "3/2",
+   "5/2"
+  ],
+  "eh": "त्रिघात बहुपद के शून्यकों का योग = −b/a = 6/2 = 3."
+ },
+ {
+  "id": 79,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "If the zeroes of x² − kx + 6 differ by 1, then k is:",
+  "o": [
+   "±5",
+   "±7",
+   "±1",
+   "±6"
+  ],
+  "a": 0,
+  "e": "Let zeroes be α and α + 1. α(α + 1) = 6 gives α = 2 or −3. The zeroes are (2, 3) or (−3, −2), so k = sum = ±5.",
+  "qh": "यदि x² − kx + 6 के शून्यकों का अंतर 1 है, तो k का मान है:",
+  "oh": [
+   "±5",
+   "±7",
+   "±1",
+   "±6"
+  ],
+  "eh": "शून्यक α और α + 1 मानें। α(α + 1) = 6 से α = 2 या −3. शून्यक (2, 3) या (−3, −2) हैं, अतः k = योग = ±5."
+ },
+ {
+  "id": 80,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "If α and β are the zeroes of kx² + 4x + 4 and α² + β² = 24, then k is:",
+  "o": [
+   "1 or −2/3",
+   "−1 or 2/3",
+   "1 or 2/3",
+   "−1 or −2/3"
+  ],
+  "a": 1,
+  "e": "α + β = −4/k, αβ = 4/k. α² + β² = 16/k² − 8/k = 24 gives 3k² + k − 2 = 0, so k = −1 or 2/3.",
+  "qh": "यदि kx² + 4x + 4 के शून्यक α, β हैं और α² + β² = 24 है, तो k का मान है:",
+  "oh": [
+   "1 या −2/3",
+   "−1 या 2/3",
+   "1 या 2/3",
+   "−1 या −2/3"
+  ],
+  "eh": "α + β = −4/k, αβ = 4/k. α² + β² = 16/k² − 8/k = 24 से 3k² + k − 2 = 0, अतः k = −1 या 2/3."
+ },
+ {
+  "id": 81,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "A quadratic polynomial whose zeroes are 1/2 and −3/2 is:",
+  "o": [
+   "4x² + 4x − 3",
+   "4x² − 4x − 3",
+   "2x² + 2x − 3",
+   "4x² + 4x + 3"
+  ],
+  "a": 0,
+  "e": "Sum = −1, product = −3/4. x² + x − 3/4, multiplied by 4, gives 4x² + 4x − 3.",
+  "qh": "वह द्विघात बहुपद जिसके शून्यक 1/2 और −3/2 हैं:",
+  "oh": [
+   "4x² + 4x − 3",
+   "4x² − 4x − 3",
+   "2x² + 2x − 3",
+   "4x² + 4x + 3"
+  ],
+  "eh": "योग = −1, गुणनफल = −3/4. x² + x − 3/4 को 4 से गुणा करने पर 4x² + 4x − 3 मिलता है।"
+ },
+ {
+  "id": 82,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "The zeroes of √3x² − 8x + 4√3 are:",
+  "o": [
+   "2√3 and 2/√3",
+   "√3 and 4/√3",
+   "−2√3 and −2/√3",
+   "4√3 and 1/√3"
+  ],
+  "a": 0,
+  "e": "x = [8 ± √(64 − 48)] / (2√3) = (8 ± 4)/(2√3), giving 2√3 and 2/√3.",
+  "qh": "√3x² − 8x + 4√3 के शून्यक हैं:",
+  "oh": [
+   "2√3 और 2/√3",
+   "√3 और 4/√3",
+   "−2√3 और −2/√3",
+   "4√3 और 1/√3"
+  ],
+  "eh": "x = [8 ± √(64 − 48)] / (2√3) = (8 ± 4)/(2√3), अतः शून्यक 2√3 और 2/√3 हैं।"
+ },
+ {
+  "id": 83,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "When x³ − 3x² + 5x − 3 is divided by x² − 2, the quotient and remainder are:",
+  "o": [
+   "x − 3 and 7x − 9",
+   "x + 3 and 7x − 9",
+   "x − 3 and 7x + 9",
+   "x − 2 and 5x − 3"
+  ],
+  "a": 0,
+  "e": "(x² − 2)(x − 3) = x³ − 3x² − 2x + 6. Subtracting from the dividend leaves 7x − 9.",
+  "qh": "x³ − 3x² + 5x − 3 को x² − 2 से भाग देने पर भागफल और शेषफल हैं:",
+  "oh": [
+   "x − 3 और 7x − 9",
+   "x + 3 और 7x − 9",
+   "x − 3 और 7x + 9",
+   "x − 2 और 5x − 3"
+  ],
+  "eh": "(x² − 2)(x − 3) = x³ − 3x² − 2x + 6. इसे भाज्य में से घटाने पर शेषफल 7x − 9 मिलता है।"
+ },
+ {
+  "id": 84,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "medium",
+  "q": "If x − 2 is a factor of x³ − 2x² + kx − 6, then k is:",
+  "o": [
+   "3",
+   "−3",
+   "6",
+   "2"
+  ],
+  "a": 0,
+  "e": "Put x = 2: 8 − 8 + 2k − 6 = 0, so k = 3.",
+  "qh": "यदि x − 2, बहुपद x³ − 2x² + kx − 6 का एक गुणनखंड है, तो k का मान है:",
+  "oh": [
+   "3",
+   "−3",
+   "6",
+   "2"
+  ],
+  "eh": "x = 2 रखने पर: 8 − 8 + 2k − 6 = 0, अतः k = 3."
+ },
+ {
+  "id": 85,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "If the sum of the zeroes of kx² + 2x + 3k equals their product, then k is:",
+  "o": [
+   "2/3",
+   "−2/3",
+   "3/2",
+   "−3/2"
+  ],
+  "a": 1,
+  "e": "Sum = −2/k, product = 3k/k = 3. −2/k = 3 gives k = −2/3.",
+  "qh": "यदि kx² + 2x + 3k के शून्यकों का योग उनके गुणनफल के बराबर है, तो k का मान है:",
+  "oh": [
+   "2/3",
+   "−2/3",
+   "3/2",
+   "−3/2"
+  ],
+  "eh": "योग = −2/k, गुणनफल = 3k/k = 3. −2/k = 3 से k = −2/3."
+ },
+ {
+  "id": 86,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Polynomials",
+  "d": "hard",
+  "q": "If α and β are the zeroes of x² − 4x + 1, then 1/α + 1/β − αβ is:",
+  "o": [
+   "3",
+   "5",
+   "−3",
+   "4"
+  ],
+  "a": 0,
+  "e": "α + β = 4, αβ = 1. 1/α + 1/β = (α + β)/αβ = 4. So 4 − 1 = 3.",
+  "qh": "यदि α और β बहुपद x² − 4x + 1 के शून्यक हैं, तो 1/α + 1/β − αβ का मान है:",
+  "oh": [
+   "3",
+   "5",
+   "−3",
+   "4"
+  ],
+  "eh": "α + β = 4, αβ = 1. 1/α + 1/β = (α + β)/αβ = 4. अतः 4 − 1 = 3."
+ },
+ {
+  "id": 87,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "medium",
+  "q": "The pair x + 2y = 4 and 2x + 4y = 8 has:",
+  "o": [
+   "A unique solution",
+   "No solution",
+   "Infinitely many solutions",
+   "Exactly two solutions"
+  ],
+  "a": 2,
+  "e": "1/2 = 2/4 = 4/8, so the lines are coincident and there are infinitely many solutions.",
+  "qh": "रैखिक समीकरण युग्म x + 2y = 4 और 2x + 4y = 8 के:",
+  "oh": [
+   "अद्वितीय हल हैं",
+   "कोई हल नहीं है",
+   "अनंत हल हैं",
+   "ठीक दो हल हैं"
+  ],
+  "eh": "1/2 = 2/4 = 4/8, अतः रेखाएँ संपाती हैं और अनंत हल हैं।"
+ },
+ {
+  "id": 88,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "For what value of k does 2x + 3y = 5 and 4x + ky = 10 have infinitely many solutions?",
+  "o": [
+   "3",
+   "6",
+   "9",
+   "12"
+  ],
+  "a": 1,
+  "e": "Need 2/4 = 3/k = 5/10 = 1/2, so k = 6.",
+  "qh": "k के किस मान के लिए 2x + 3y = 5 और 4x + ky = 10 के अनंत हल होंगे?",
+  "oh": [
+   "3",
+   "6",
+   "9",
+   "12"
+  ],
+  "eh": "आवश्यक: 2/4 = 3/k = 5/10 = 1/2, अतः k = 6."
+ },
+ {
+  "id": 89,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The system kx + 3y = k − 3 and 12x + ky = k has no solution when k is:",
+  "o": [
+   "6",
+   "−6",
+   "12",
+   "−12"
+  ],
+  "a": 1,
+  "e": "No solution needs k/12 = 3/k ≠ (k − 3)/k. k² = 36 gives k = ±6. For k = 6 the ratios are all 1/2 (infinite solutions). For k = −6 the third ratio is 3/2, so there is no solution.",
+  "qh": "निकाय kx + 3y = k − 3 और 12x + ky = k का कोई हल नहीं होगा जब k का मान है:",
+  "oh": [
+   "6",
+   "−6",
+   "12",
+   "−12"
+  ],
+  "eh": "कोई हल न होने के लिए k/12 = 3/k ≠ (k − 3)/k. k² = 36 से k = ±6. k = 6 पर तीनों अनुपात 1/2 होते हैं (अनंत हल)। k = −6 पर तीसरा अनुपात 3/2 है, अतः कोई हल नहीं।"
+ },
+ {
+  "id": 90,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "medium",
+  "q": "Solving x + y = 14 and x − y = 4 gives:",
+  "o": [
+   "x = 9, y = 5",
+   "x = 10, y = 4",
+   "x = 8, y = 6",
+   "x = 5, y = 9"
+  ],
+  "a": 0,
+  "e": "Adding: 2x = 18, so x = 9. Then y = 5.",
+  "qh": "x + y = 14 और x − y = 4 को हल करने पर प्राप्त होता है:",
+  "oh": [
+   "x = 9, y = 5",
+   "x = 10, y = 4",
+   "x = 8, y = 6",
+   "x = 5, y = 9"
+  ],
+  "eh": "जोड़ने पर: 2x = 18, अतः x = 9. तब y = 5."
+ },
+ {
+  "id": 91,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "If 2x + 3y = 11 and 2x − 4y = −24, the value of m for which y = mx + 3 is:",
+  "o": [
+   "−1",
+   "1",
+   "2",
+   "−2"
+  ],
+  "a": 0,
+  "e": "Subtracting: 7y = 35, y = 5, then x = −2. Put in y = mx + 3: 5 = −2m + 3, so m = −1.",
+  "qh": "यदि 2x + 3y = 11 और 2x − 4y = −24 है, तो m का वह मान जिसके लिए y = mx + 3 हो:",
+  "oh": [
+   "−1",
+   "1",
+   "2",
+   "−2"
+  ],
+  "eh": "घटाने पर: 7y = 35, y = 5, तब x = −2. y = mx + 3 में रखने पर: 5 = −2m + 3, अतः m = −1."
+ },
+ {
+  "id": 92,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "A father is 3 times his son's age. After 12 years he will be twice the son's age. The son's present age is:",
+  "o": [
+   "10 years",
+   "12 years",
+   "14 years",
+   "18 years"
+  ],
+  "a": 1,
+  "e": "3s + 12 = 2(s + 12) gives s = 12. The father is 36.",
+  "qh": "पिता की आयु पुत्र की आयु की 3 गुना है। 12 वर्ष बाद पिता की आयु पुत्र की आयु की दुगुनी होगी। पुत्र की वर्तमान आयु है:",
+  "oh": [
+   "10 वर्ष",
+   "12 वर्ष",
+   "14 वर्ष",
+   "18 वर्ष"
+  ],
+  "eh": "3s + 12 = 2(s + 12) से s = 12. पिता की आयु 36 वर्ष है।"
+ },
+ {
+  "id": 93,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "5 pencils and 7 pens cost ₹50, and 7 pencils and 5 pens cost ₹46. The cost of one pencil is:",
+  "o": [
+   "₹3",
+   "₹4",
+   "₹5",
+   "₹2"
+  ],
+  "a": 0,
+  "e": "5x + 7y = 50 and 7x + 5y = 46. Adding: x + y = 8. Subtracting: x − y = −2. So x = 3 and y = 5.",
+  "qh": "5 पेंसिल और 7 कलम का मूल्य ₹50 है तथा 7 पेंसिल और 5 कलम का मूल्य ₹46 है। एक पेंसिल का मूल्य है:",
+  "oh": [
+   "₹3",
+   "₹4",
+   "₹5",
+   "₹2"
+  ],
+  "eh": "5x + 7y = 50 और 7x + 5y = 46. जोड़ने पर x + y = 8, घटाने पर x − y = −2. अतः x = 3 और y = 5."
+ },
+ {
+  "id": 94,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "medium",
+  "q": "If a₁/a₂ ≠ b₁/b₂ for a pair of linear equations, the lines are:",
+  "o": [
+   "Parallel",
+   "Coincident",
+   "Intersecting",
+   "Perpendicular always"
+  ],
+  "a": 2,
+  "e": "When a₁/a₂ ≠ b₁/b₂ the lines meet at exactly one point, so there is a unique solution.",
+  "qh": "यदि रैखिक समीकरण युग्म के लिए a₁/a₂ ≠ b₁/b₂ है, तो रेखाएँ हैं:",
+  "oh": [
+   "समांतर",
+   "संपाती",
+   "प्रतिच्छेदी",
+   "सदैव लंबवत"
+  ],
+  "eh": "जब a₁/a₂ ≠ b₁/b₂ होता है तो रेखाएँ एक ही बिंदु पर मिलती हैं, अतः अद्वितीय हल होता है।"
+ },
+ {
+  "id": 95,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "medium",
+  "q": "A pair of linear equations has no solution when the lines are:",
+  "o": [
+   "Intersecting",
+   "Coincident",
+   "Parallel",
+   "Perpendicular"
+  ],
+  "a": 2,
+  "e": "Parallel lines never meet, so the system is inconsistent.",
+  "qh": "रैखिक समीकरण युग्म का कोई हल नहीं होता जब रेखाएँ होती हैं:",
+  "oh": [
+   "प्रतिच्छेदी",
+   "संपाती",
+   "समांतर",
+   "लंबवत"
+  ],
+  "eh": "समांतर रेखाएँ कभी नहीं मिलतीं, अतः निकाय असंगत होता है।"
+ },
+ {
+  "id": 96,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The solution of 3x + 4y = 10 and 2x − 2y = 2 is:",
+  "o": [
+   "x = 2, y = 1",
+   "x = 1, y = 2",
+   "x = −2, y = 1",
+   "x = 2, y = −1"
+  ],
+  "a": 0,
+  "e": "Second equation gives x = y + 1. Then 3y + 3 + 4y = 10, so y = 1 and x = 2.",
+  "qh": "3x + 4y = 10 और 2x − 2y = 2 का हल है:",
+  "oh": [
+   "x = 2, y = 1",
+   "x = 1, y = 2",
+   "x = −2, y = 1",
+   "x = 2, y = −1"
+  ],
+  "eh": "दूसरे समीकरण से x = y + 1. तब 3y + 3 + 4y = 10, अतः y = 1 और x = 2."
+ },
+ {
+  "id": 97,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The solution of 2/x + 3/y = 13 and 5/x − 4/y = −2 is:",
+  "o": [
+   "x = 1/2, y = 1/3",
+   "x = 2, y = 3",
+   "x = 1/3, y = 1/2",
+   "x = 3, y = 2"
+  ],
+  "a": 0,
+  "e": "Let u = 1/x, v = 1/y: 2u + 3v = 13 and 5u − 4v = −2. Solving gives u = 2, v = 3, so x = 1/2 and y = 1/3.",
+  "qh": "2/x + 3/y = 13 और 5/x − 4/y = −2 का हल है:",
+  "oh": [
+   "x = 1/2, y = 1/3",
+   "x = 2, y = 3",
+   "x = 1/3, y = 1/2",
+   "x = 3, y = 2"
+  ],
+  "eh": "u = 1/x, v = 1/y मानें: 2u + 3v = 13 और 5u − 4v = −2. हल करने पर u = 2, v = 3, अतः x = 1/2 और y = 1/3."
+ },
+ {
+  "id": 98,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The value of k for which 3x + y = 1 and (2k − 1)x + (k − 1)y = 2k + 1 have no solution is:",
+  "o": [
+   "1",
+   "2",
+   "3",
+   "−2"
+  ],
+  "a": 1,
+  "e": "3/(2k − 1) = 1/(k − 1) gives k = 2. Then 1/(k − 1) = 1 ≠ 1/(2k + 1) = 1/5, so the system has no solution.",
+  "qh": "k का वह मान जिसके लिए 3x + y = 1 और (2k − 1)x + (k − 1)y = 2k + 1 का कोई हल नहीं है:",
+  "oh": [
+   "1",
+   "2",
+   "3",
+   "−2"
+  ],
+  "eh": "3/(2k − 1) = 1/(k − 1) से k = 2. तब 1/(k − 1) = 1 ≠ 1/(2k + 1) = 1/5, अतः निकाय का कोई हल नहीं है।"
+ },
+ {
+  "id": 99,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The sum of the digits of a two-digit number is 9. Reversing the digits decreases the number by 27. The number is:",
+  "o": [
+   "36",
+   "54",
+   "63",
+   "72"
+  ],
+  "a": 2,
+  "e": "x + y = 9 and 9(x − y) = 27 gives x − y = 3. So x = 6, y = 3 and the number is 63.",
+  "qh": "एक दो अंकीय संख्या के अंकों का योग 9 है। अंकों को उलटने पर संख्या 27 कम हो जाती है। संख्या है:",
+  "oh": [
+   "36",
+   "54",
+   "63",
+   "72"
+  ],
+  "eh": "x + y = 9 और 9(x − y) = 27 से x − y = 3. अतः x = 6, y = 3 और संख्या 63 है।"
+ },
+ {
+  "id": 100,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The area of the triangle formed by the lines 2x + y = 6, 4x − 2y = 4 and the x-axis is:",
+  "o": [
+   "2 sq. units",
+   "3 sq. units",
+   "4 sq. units",
+   "6 sq. units"
+  ],
+  "a": 0,
+  "e": "The lines meet at (2, 2). They cut the x-axis at (3, 0) and (1, 0). Area = ½ × 2 × 2 = 2.",
+  "qh": "रेखाओं 2x + y = 6, 4x − 2y = 4 और x-अक्ष से बने त्रिभुज का क्षेत्रफल है:",
+  "oh": [
+   "2 वर्ग इकाई",
+   "3 वर्ग इकाई",
+   "4 वर्ग इकाई",
+   "6 वर्ग इकाई"
+  ],
+  "eh": "रेखाएँ (2, 2) पर मिलती हैं तथा x-अक्ष को (3, 0) और (1, 0) पर काटती हैं। क्षेत्रफल = ½ × 2 × 2 = 2."
+ },
+ {
+  "id": 101,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "If x = a, y = b is the solution of 2x + 3y = 13 and 5x − 2y = 4, then a + b is:",
+  "o": [
+   "4",
+   "5",
+   "6",
+   "1"
+  ],
+  "a": 1,
+  "e": "Eliminating y: 19x = 38, so x = 2 and y = 3. Hence a + b = 5.",
+  "qh": "यदि x = a, y = b समीकरण 2x + 3y = 13 और 5x − 2y = 4 का हल है, तो a + b का मान है:",
+  "oh": [
+   "4",
+   "5",
+   "6",
+   "1"
+  ],
+  "eh": "y को विलुप्त करने पर: 19x = 38, अतः x = 2 और y = 3. इसलिए a + b = 5."
+ },
+ {
+  "id": 102,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "A boat goes 24 km upstream and 28 km downstream in 6 hours, and 30 km upstream and 21 km downstream in 6½ hours. The speed of the boat in still water is:",
+  "o": [
+   "8 km/h",
+   "10 km/h",
+   "12 km/h",
+   "14 km/h"
+  ],
+  "a": 1,
+  "e": "Let u = 1/(x − y), v = 1/(x + y). 24u + 28v = 6 and 30u + 21v = 6.5 give u = 1/6, v = 1/14. So x − y = 6 and x + y = 14, giving x = 10 km/h.",
+  "qh": "एक नाव धारा के प्रतिकूल 24 km और अनुकूल 28 km जाने में 6 घंटे लेती है, तथा प्रतिकूल 30 km और अनुकूल 21 km जाने में 6½ घंटे लेती है। शांत जल में नाव की चाल है:",
+  "oh": [
+   "8 km/h",
+   "10 km/h",
+   "12 km/h",
+   "14 km/h"
+  ],
+  "eh": "u = 1/(x − y), v = 1/(x + y) मानें। 24u + 28v = 6 और 30u + 21v = 6.5 से u = 1/6, v = 1/14. अतः x − y = 6 और x + y = 14, जिससे x = 10 km/h."
+ },
+ {
+  "id": 103,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "The lines kx − y = 2 and 6x − 2y = 3 are parallel when k is:",
+  "o": [
+   "2",
+   "3",
+   "4",
+   "6"
+  ],
+  "a": 1,
+  "e": "Parallel needs k/6 = 1/2 ≠ 2/3. So k = 3.",
+  "qh": "रेखाएँ kx − y = 2 और 6x − 2y = 3 समांतर होंगी जब k का मान है:",
+  "oh": [
+   "2",
+   "3",
+   "4",
+   "6"
+  ],
+  "eh": "समांतर होने के लिए k/6 = 1/2 ≠ 2/3. अतः k = 3."
+ },
+ {
+  "id": 104,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Pair of Linear Equations in Two Variables",
+  "d": "hard",
+  "q": "If the length of a rectangle is reduced by 5 and breadth increased by 3, the area decreases by 9. If length is increased by 3 and breadth by 2, the area increases by 67. The perimeter of the rectangle is:",
+  "o": [
+   "52 units",
+   "48 units",
+   "56 units",
+   "44 units"
+  ],
+  "a": 0,
+  "e": "3x − 5y = 6 and 2x + 3y = 61 give x = 17 and y = 9. Perimeter = 2(17 + 9) = 52.",
+  "qh": "एक आयत की लंबाई 5 घटाने और चौड़ाई 3 बढ़ाने पर क्षेत्रफल 9 कम हो जाता है। लंबाई 3 और चौड़ाई 2 बढ़ाने पर क्षेत्रफल 67 बढ़ जाता है। आयत का परिमाप है:",
+  "oh": [
+   "52 इकाई",
+   "48 इकाई",
+   "56 इकाई",
+   "44 इकाई"
+  ],
+  "eh": "3x − 5y = 6 और 2x + 3y = 61 से x = 17 और y = 9. परिमाप = 2(17 + 9) = 52."
+ },
+ {
+  "id": 105,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "hard",
+  "q": "In the balanced equation x Fe + y H₂O → Fe₃O₄ + z H₂, the values of x, y, z are:",
+  "o": [
+   "3, 4, 4",
+   "1, 4, 4",
+   "3, 2, 2",
+   "2, 3, 4"
+  ],
+  "a": 0,
+  "e": "3Fe + 4H₂O → Fe₃O₄ + 4H₂ has equal atoms of Fe, H and O on both sides.",
+  "qh": "संतुलित समीकरण x Fe + y H₂O → Fe₃O₄ + z H₂ में x, y, z के मान हैं:",
+  "oh": [
+   "3, 4, 4",
+   "1, 4, 4",
+   "3, 2, 2",
+   "2, 3, 4"
+  ],
+  "eh": "3Fe + 4H₂O → Fe₃O₄ + 4H₂ में दोनों ओर Fe, H और O के परमाणु बराबर हैं।"
+ },
+ {
+  "id": 106,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "CaO + H₂O → Ca(OH)₂ + heat is a:",
+  "o": [
+   "Decomposition reaction, endothermic",
+   "Combination reaction, exothermic",
+   "Displacement reaction",
+   "Double displacement reaction"
+  ],
+  "a": 1,
+  "e": "Two reactants form one product and heat is released, so it is an exothermic combination reaction.",
+  "qh": "CaO + H₂O → Ca(OH)₂ + ऊष्मा एक ____ अभिक्रिया है।",
+  "oh": [
+   "वियोजन अभिक्रिया, ऊष्माशोषी",
+   "संयोजन अभिक्रिया, ऊष्माक्षेपी",
+   "विस्थापन अभिक्रिया",
+   "द्विविस्थापन अभिक्रिया"
+  ],
+  "eh": "दो अभिकारक मिलकर एक उत्पाद बनाते हैं और ऊष्मा निकलती है, अतः यह ऊष्माक्षेपी संयोजन अभिक्रिया है।"
+ },
+ {
+  "id": 107,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "Manufacturers prevent rancidity of chips by packing them in a bag filled with:",
+  "o": [
+   "Oxygen",
+   "Nitrogen",
+   "Hydrogen",
+   "Chlorine"
+  ],
+  "a": 1,
+  "e": "Nitrogen is unreactive, so it prevents oxidation of fats and oils in the chips.",
+  "qh": "चिप्स को खराब (विकृतगंधिता) होने से बचाने के लिए निर्माता थैली में भरते हैं:",
+  "oh": [
+   "ऑक्सीजन",
+   "नाइट्रोजन",
+   "हाइड्रोजन",
+   "क्लोरीन"
+  ],
+  "eh": "नाइट्रोजन अक्रिय है, अतः यह चिप्स में उपस्थित वसा और तेल के ऑक्सीकरण को रोकती है।"
+ },
+ {
+  "id": 108,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "On heating lead nitrate, the brown fumes evolved are of:",
+  "o": [
+   "NO₂",
+   "N₂O",
+   "O₂",
+   "NH₃"
+  ],
+  "a": 0,
+  "e": "2Pb(NO₃)₂ → 2PbO + 4NO₂ + O₂. Nitrogen dioxide is a brown gas.",
+  "qh": "लेड नाइट्रेट को गरम करने पर निकलने वाली भूरी धूम्र है:",
+  "oh": [
+   "NO₂",
+   "N₂O",
+   "O₂",
+   "NH₃"
+  ],
+  "eh": "2Pb(NO₃)₂ → 2PbO + 4NO₂ + O₂. नाइट्रोजन डाइऑक्साइड भूरी गैस है।"
+ },
+ {
+  "id": 109,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "hard",
+  "q": "When a zinc plate is dipped in copper sulphate solution, the blue colour fades because:",
+  "o": [
+   "Zinc forms a blue compound",
+   "Cu²⁺ ions are replaced by Zn²⁺ ions",
+   "Copper dissolves in water",
+   "Zinc gets reduced"
+  ],
+  "a": 1,
+  "e": "Zn + CuSO₄ → ZnSO₄ + Cu. Zinc is more reactive and displaces copper, so blue Cu²⁺ ions are replaced by colourless Zn²⁺ ions.",
+  "qh": "कॉपर सल्फेट विलयन में जिंक की प्लेट डुबाने पर नीला रंग फीका पड़ जाता है क्योंकि:",
+  "oh": [
+   "जिंक नीला यौगिक बनाता है",
+   "Cu²⁺ आयन Zn²⁺ आयनों द्वारा प्रतिस्थापित हो जाते हैं",
+   "कॉपर जल में घुल जाता है",
+   "जिंक अपचयित होता है"
+  ],
+  "eh": "Zn + CuSO₄ → ZnSO₄ + Cu. जिंक अधिक क्रियाशील है और कॉपर को विस्थापित करता है, अतः नीले Cu²⁺ आयन रंगहीन Zn²⁺ आयनों से प्रतिस्थापित हो जाते हैं।"
+ },
+ {
+  "id": 110,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "In the electrolysis of water, the ratio of volumes of hydrogen to oxygen collected is:",
+  "o": [
+   "1 : 1",
+   "1 : 2",
+   "2 : 1",
+   "3 : 1"
+  ],
+  "a": 2,
+  "e": "2H₂O → 2H₂ + O₂. The mole ratio, and so volume ratio, of H₂ to O₂ is 2 : 1.",
+  "qh": "जल के विद्युत अपघटन में एकत्र हाइड्रोजन और ऑक्सीजन के आयतन का अनुपात है:",
+  "oh": [
+   "1 : 1",
+   "1 : 2",
+   "2 : 1",
+   "3 : 1"
+  ],
+  "eh": "2H₂O → 2H₂ + O₂. H₂ और O₂ का मोल अनुपात, अतः आयतन अनुपात, 2 : 1 है।"
+ },
+ {
+  "id": 111,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "hard",
+  "q": "Silver chloride turns grey in sunlight because:",
+  "o": [
+   "It forms silver oxide",
+   "It decomposes to silver metal and chlorine",
+   "It combines with oxygen",
+   "It forms silver nitrate"
+  ],
+  "a": 1,
+  "e": "2AgCl → 2Ag + Cl₂ in sunlight. This is a photolytic decomposition, and the silver metal is grey.",
+  "qh": "सिल्वर क्लोराइड सूर्य के प्रकाश में धूसर हो जाता है क्योंकि:",
+  "oh": [
+   "यह सिल्वर ऑक्साइड बनाता है",
+   "यह सिल्वर धातु और क्लोरीन में अपघटित हो जाता है",
+   "यह ऑक्सीजन से संयोग करता है",
+   "यह सिल्वर नाइट्रेट बनाता है"
+  ],
+  "eh": "सूर्य के प्रकाश में 2AgCl → 2Ag + Cl₂. यह प्रकाश-अपघटन है और सिल्वर धातु धूसर होती है।"
+ },
+ {
+  "id": 112,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "hard",
+  "q": "In CuO + H₂ → Cu + H₂O, the substance that is oxidised is:",
+  "o": [
+   "CuO",
+   "H₂",
+   "Cu",
+   "H₂O"
+  ],
+  "a": 1,
+  "e": "H₂ gains oxygen to form H₂O, so it is oxidised. CuO loses oxygen, so it is reduced.",
+  "qh": "CuO + H₂ → Cu + H₂O में जिस पदार्थ का ऑक्सीकरण होता है वह है:",
+  "oh": [
+   "CuO",
+   "H₂",
+   "Cu",
+   "H₂O"
+  ],
+  "eh": "H₂ ऑक्सीजन प्राप्त करके H₂O बनाता है, अतः उसका ऑक्सीकरण होता है। CuO ऑक्सीजन खोता है, अतः उसका अपचयन होता है।"
+ },
+ {
+  "id": 113,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "In Na₂SO₄ + BaCl₂ → BaSO₄ + 2NaCl, the white precipitate formed is:",
+  "o": [
+   "NaCl",
+   "BaSO₄",
+   "Na₂SO₄",
+   "BaCl₂"
+  ],
+  "a": 1,
+  "e": "This is a double displacement (precipitation) reaction. BaSO₄ is insoluble in water.",
+  "qh": "Na₂SO₄ + BaCl₂ → BaSO₄ + 2NaCl में बनने वाला श्वेत अवक्षेप है:",
+  "oh": [
+   "NaCl",
+   "BaSO₄",
+   "Na₂SO₄",
+   "BaCl₂"
+  ],
+  "eh": "यह द्विविस्थापन (अवक्षेपण) अभिक्रिया है। BaSO₄ जल में अविलेय है।"
+ },
+ {
+  "id": 114,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "hard",
+  "q": "Iron nails do not rust in a test tube containing anhydrous calcium chloride because:",
+  "o": [
+   "CaCl₂ absorbs oxygen",
+   "CaCl₂ absorbs moisture, so there is no water",
+   "CaCl₂ reacts with iron",
+   "Calcium chloride is acidic"
+  ],
+  "a": 1,
+  "e": "Rusting needs both oxygen and water. Anhydrous CaCl₂ removes moisture from the air in the tube.",
+  "qh": "निर्जल कैल्शियम क्लोराइड वाली परखनली में लोहे की कीलें जंग नहीं खातीं क्योंकि:",
+  "oh": [
+   "CaCl₂ ऑक्सीजन अवशोषित करता है",
+   "CaCl₂ नमी अवशोषित कर लेता है, इसलिए जल उपलब्ध नहीं रहता",
+   "CaCl₂ लोहे से अभिक्रिया करता है",
+   "कैल्शियम क्लोराइड अम्लीय है"
+  ],
+  "eh": "जंग लगने के लिए ऑक्सीजन और जल दोनों चाहिए। निर्जल CaCl₂ परखनली की वायु की नमी सोख लेता है।"
+ },
+ {
+  "id": 115,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "hard",
+  "q": "When green ferrous sulphate crystals are heated strongly, the final residue is:",
+  "o": [
+   "Green FeSO₄",
+   "Blue CuSO₄",
+   "Reddish-brown Fe₂O₃",
+   "Black FeO"
+  ],
+  "a": 2,
+  "e": "They first lose water and turn white, then decompose: 2FeSO₄ → Fe₂O₃ + SO₂ + SO₃. Fe₂O₃ is reddish-brown.",
+  "qh": "हरे फेरस सल्फेट क्रिस्टलों को तेज गरम करने पर अंतिम अवशेष होता है:",
+  "oh": [
+   "हरा FeSO₄",
+   "नीला CuSO₄",
+   "लाल-भूरा Fe₂O₃",
+   "काला FeO"
+  ],
+  "eh": "पहले जल निकलकर क्रिस्टल श्वेत हो जाते हैं, फिर 2FeSO₄ → Fe₂O₃ + SO₂ + SO₃. Fe₂O₃ लाल-भूरा होता है।"
+ },
+ {
+  "id": 116,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "The reaction used to join railway tracks, Fe₂O₃ + 2Al → Al₂O₃ + 2Fe, is a:",
+  "o": [
+   "Thermite displacement reaction",
+   "Decomposition reaction",
+   "Neutralisation reaction",
+   "Combustion of methane"
+  ],
+  "a": 0,
+  "e": "Aluminium displaces iron from iron(III) oxide releasing so much heat that the iron is molten.",
+  "qh": "रेल की पटरियाँ जोड़ने में प्रयुक्त अभिक्रिया Fe₂O₃ + 2Al → Al₂O₃ + 2Fe है:",
+  "oh": [
+   "थर्माइट विस्थापन अभिक्रिया",
+   "वियोजन अभिक्रिया",
+   "उदासीनीकरण अभिक्रिया",
+   "मेथेन का दहन"
+  ],
+  "eh": "एलुमिनियम आयरन(III) ऑक्साइड से आयरन को विस्थापित करता है और इतनी ऊष्मा निकलती है कि आयरन पिघल जाता है।"
+ },
+ {
+  "id": 117,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "Which of the following is an endothermic process?",
+  "o": [
+   "Respiration",
+   "Burning of LPG",
+   "Photosynthesis",
+   "Neutralisation of acid and base"
+  ],
+  "a": 2,
+  "e": "Photosynthesis absorbs energy from sunlight. The others release heat.",
+  "qh": "निम्नलिखित में कौन-सी प्रक्रिया ऊष्माशोषी है?",
+  "oh": [
+   "श्वसन",
+   "LPG का दहन",
+   "प्रकाश संश्लेषण",
+   "अम्ल और क्षार का उदासीनीकरण"
+  ],
+  "eh": "प्रकाश संश्लेषण सूर्य के प्रकाश से ऊर्जा अवशोषित करता है। अन्य प्रक्रियाओं में ऊष्मा निकलती है।"
+ },
+ {
+  "id": 118,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "In the balanced equation C₃H₈ + x O₂ → 3CO₂ + 4H₂O, the value of x is:",
+  "o": [
+   "3",
+   "4",
+   "5",
+   "6"
+  ],
+  "a": 2,
+  "e": "Oxygen atoms on the right = 6 + 4 = 10, so x = 5.",
+  "qh": "संतुलित समीकरण C₃H₈ + x O₂ → 3CO₂ + 4H₂O में x का मान है:",
+  "oh": [
+   "3",
+   "4",
+   "5",
+   "6"
+  ],
+  "eh": "दाईं ओर ऑक्सीजन परमाणु = 6 + 4 = 10, अतः x = 5."
+ },
+ {
+  "id": 119,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Chemical Reactions and Equations",
+  "d": "medium",
+  "q": "Quicklime (CaO) is obtained by the thermal decomposition of:",
+  "o": [
+   "Ca(OH)₂",
+   "CaCO₃",
+   "CaSO₄",
+   "CaCl₂"
+  ],
+  "a": 1,
+  "e": "CaCO₃ → CaO + CO₂ on strong heating of limestone.",
+  "qh": "बिना बुझा चूना (CaO) किसके ऊष्मीय वियोजन से प्राप्त होता है?",
+  "oh": [
+   "Ca(OH)₂",
+   "CaCO₃",
+   "CaSO₄",
+   "CaCl₂"
+  ],
+  "eh": "चूना पत्थर को तेज गरम करने पर CaCO₃ → CaO + CO₂."
+ },
+ {
+  "id": 120,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "The roots of x² − 7x + 12 = 0 are:",
+  "o": [
+   "3 and 4",
+   "−3 and −4",
+   "2 and 6",
+   "1 and 12"
+  ],
+  "a": 0,
+  "e": "x² − 7x + 12 = (x − 3)(x − 4), so x = 3 or 4.",
+  "qh": "x² − 7x + 12 = 0 के मूल हैं:",
+  "oh": [
+   "3 और 4",
+   "−3 और −4",
+   "2 और 6",
+   "1 और 12"
+  ],
+  "eh": "x² − 7x + 12 = (x − 3)(x − 4), अतः x = 3 या 4."
+ },
+ {
+  "id": 121,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "The discriminant of 2x² − 4x + 3 = 0 is:",
+  "o": [
+   "−8",
+   "8",
+   "40",
+   "−40"
+  ],
+  "a": 0,
+  "e": "D = b² − 4ac = 16 − 24 = −8. Since D < 0, there are no real roots.",
+  "qh": "2x² − 4x + 3 = 0 का विविक्तकर है:",
+  "oh": [
+   "−8",
+   "8",
+   "40",
+   "−40"
+  ],
+  "eh": "D = b² − 4ac = 16 − 24 = −8. D < 0 होने से कोई वास्तविक मूल नहीं है।"
+ },
+ {
+  "id": 122,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "The roots of 3x² − 4√3x + 4 = 0 are:",
+  "o": [
+   "Real and equal",
+   "Real and distinct",
+   "Not real",
+   "Rational and distinct"
+  ],
+  "a": 0,
+  "e": "D = (4√3)² − 4(3)(4) = 48 − 48 = 0, so the roots are real and equal.",
+  "qh": "3x² − 4√3x + 4 = 0 के मूल हैं:",
+  "oh": [
+   "वास्तविक और बराबर",
+   "वास्तविक और भिन्न",
+   "वास्तविक नहीं",
+   "परिमेय और भिन्न"
+  ],
+  "eh": "D = (4√3)² − 4(3)(4) = 48 − 48 = 0, अतः मूल वास्तविक और बराबर हैं।"
+ },
+ {
+  "id": 123,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "If 2x² + kx + 3 = 0 has two equal roots, then k is:",
+  "o": [
+   "±2√6",
+   "±√6",
+   "±12",
+   "±24"
+  ],
+  "a": 0,
+  "e": "D = k² − 24 = 0, so k = ±√24 = ±2√6.",
+  "qh": "यदि 2x² + kx + 3 = 0 के दो बराबर मूल हैं, तो k का मान है:",
+  "oh": [
+   "±2√6",
+   "±√6",
+   "±12",
+   "±24"
+  ],
+  "eh": "D = k² − 24 = 0, अतः k = ±√24 = ±2√6."
+ },
+ {
+  "id": 124,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "Two numbers whose sum is 27 and product is 182 are:",
+  "o": [
+   "13 and 14",
+   "12 and 15",
+   "11 and 16",
+   "10 and 17"
+  ],
+  "a": 0,
+  "e": "x(27 − x) = 182 gives x² − 27x + 182 = 0, so (x − 13)(x − 14) = 0.",
+  "qh": "वे दो संख्याएँ जिनका योग 27 और गुणनफल 182 है:",
+  "oh": [
+   "13 और 14",
+   "12 और 15",
+   "11 और 16",
+   "10 और 17"
+  ],
+  "eh": "x(27 − x) = 182 से x² − 27x + 182 = 0, अर्थात् (x − 13)(x − 14) = 0."
+ },
+ {
+  "id": 125,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "Which of the following is NOT a quadratic equation?",
+  "o": [
+   "x(x + 1) + 8 = (x + 2)(x − 2)",
+   "(x − 2)² + 1 = 2x − 3",
+   "x(2x + 3) = x² + 1",
+   "(x + 2)³ = x³ − 4"
+  ],
+  "a": 0,
+  "e": "Option A simplifies to x² + x + 8 = x² − 4, i.e. x + 12 = 0, which is linear. The others reduce to degree 2 (the x³ terms cancel in option D).",
+  "qh": "निम्नलिखित में कौन-सा समीकरण द्विघात समीकरण नहीं है?",
+  "oh": [
+   "x(x + 1) + 8 = (x + 2)(x − 2)",
+   "(x − 2)² + 1 = 2x − 3",
+   "x(2x + 3) = x² + 1",
+   "(x + 2)³ = x³ − 4"
+  ],
+  "eh": "विकल्प A सरल करने पर x² + x + 8 = x² − 4, यानी x + 12 = 0 बनता है, जो रैखिक है। अन्य सभी घात 2 के हो जाते हैं (विकल्प D में x³ पद कट जाते हैं)।"
+ },
+ {
+  "id": 126,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "The roots of 3x² − 5x + 2 = 0 are:",
+  "o": [
+   "1 and 2/3",
+   "−1 and −2/3",
+   "1 and 3/2",
+   "2 and 1/3"
+  ],
+  "a": 0,
+  "e": "3x² − 3x − 2x + 2 = 3x(x − 1) − 2(x − 1) = (3x − 2)(x − 1), so x = 2/3 or 1.",
+  "qh": "3x² − 5x + 2 = 0 के मूल हैं:",
+  "oh": [
+   "1 और 2/3",
+   "−1 और −2/3",
+   "1 और 3/2",
+   "2 और 1/3"
+  ],
+  "eh": "3x² − 3x − 2x + 2 = 3x(x − 1) − 2(x − 1) = (3x − 2)(x − 1), अतः x = 2/3 या 1."
+ },
+ {
+  "id": 127,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "Using the quadratic formula, the roots of x² − 4x + 1 = 0 are:",
+  "o": [
+   "2 ± √3",
+   "−2 ± √3",
+   "4 ± √3",
+   "2 ± √5"
+  ],
+  "a": 0,
+  "e": "D = 16 − 4 = 12. x = (4 ± √12)/2 = (4 ± 2√3)/2 = 2 ± √3.",
+  "qh": "द्विघात सूत्र से x² − 4x + 1 = 0 के मूल हैं:",
+  "oh": [
+   "2 ± √3",
+   "−2 ± √3",
+   "4 ± √3",
+   "2 ± √5"
+  ],
+  "eh": "D = 16 − 4 = 12. x = (4 ± √12)/2 = (4 ± 2√3)/2 = 2 ± √3."
+ },
+ {
+  "id": 128,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "The equation kx² − 6x − 2 = 0 has two distinct real roots if:",
+  "o": [
+   "k > −9/2",
+   "k < −9/2",
+   "k > 9/2",
+   "k ≥ 0 only"
+  ],
+  "a": 0,
+  "e": "D = 36 + 8k > 0 gives k > −9/2 (and k ≠ 0 for the equation to be quadratic).",
+  "qh": "समीकरण kx² − 6x − 2 = 0 के दो भिन्न वास्तविक मूल होंगे यदि:",
+  "oh": [
+   "k > −9/2",
+   "k < −9/2",
+   "k > 9/2",
+   "केवल k ≥ 0"
+  ],
+  "eh": "D = 36 + 8k > 0 से k > −9/2 (और द्विघात होने के लिए k ≠ 0)."
+ },
+ {
+  "id": 129,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "If −5 is a root of 2x² + px − 15 = 0 and p(x² + x) + k = 0 has equal roots, then k is:",
+  "o": [
+   "7/4",
+   "4/7",
+   "7",
+   "3/4"
+  ],
+  "a": 0,
+  "e": "Put x = −5: 50 − 5p − 15 = 0 gives p = 7. Then 7x² + 7x + k = 0 has D = 49 − 28k = 0, so k = 7/4.",
+  "qh": "यदि −5, समीकरण 2x² + px − 15 = 0 का एक मूल है और p(x² + x) + k = 0 के मूल बराबर हैं, तो k का मान है:",
+  "oh": [
+   "7/4",
+   "4/7",
+   "7",
+   "3/4"
+  ],
+  "eh": "x = −5 रखने पर 50 − 5p − 15 = 0, अतः p = 7. तब 7x² + 7x + k = 0 में D = 49 − 28k = 0, इसलिए k = 7/4."
+ },
+ {
+  "id": 130,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "The product of two consecutive positive integers is 306. The smaller integer is:",
+  "o": [
+   "16",
+   "17",
+   "18",
+   "19"
+  ],
+  "a": 1,
+  "e": "x(x + 1) = 306 gives x² + x − 306 = 0, so (x − 17)(x + 18) = 0. Hence x = 17.",
+  "qh": "दो क्रमागत धनात्मक पूर्णांकों का गुणनफल 306 है। छोटा पूर्णांक है:",
+  "oh": [
+   "16",
+   "17",
+   "18",
+   "19"
+  ],
+  "eh": "x(x + 1) = 306 से x² + x − 306 = 0, अर्थात् (x − 17)(x + 18) = 0. अतः x = 17."
+ },
+ {
+  "id": 131,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "The length of a rectangle exceeds its breadth by 4 m and its area is 96 m². The breadth is:",
+  "o": [
+   "6 m",
+   "8 m",
+   "10 m",
+   "12 m"
+  ],
+  "a": 1,
+  "e": "x(x + 4) = 96 gives x² + 4x − 96 = 0, so (x − 8)(x + 12) = 0. The breadth is 8 m.",
+  "qh": "एक आयत की लंबाई उसकी चौड़ाई से 4 m अधिक है और क्षेत्रफल 96 m² है। चौड़ाई है:",
+  "oh": [
+   "6 m",
+   "8 m",
+   "10 m",
+   "12 m"
+  ],
+  "eh": "x(x + 4) = 96 से x² + 4x − 96 = 0, अर्थात् (x − 8)(x + 12) = 0. चौड़ाई 8 m है।"
+ },
+ {
+  "id": 132,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "A train covers 360 km at a uniform speed. If the speed were 5 km/h more, the journey would take 1 hour less. The original speed is:",
+  "o": [
+   "30 km/h",
+   "40 km/h",
+   "45 km/h",
+   "50 km/h"
+  ],
+  "a": 1,
+  "e": "360/x − 360/(x + 5) = 1 gives x² + 5x − 1800 = 0, so (x − 40)(x + 45) = 0. The speed is 40 km/h.",
+  "qh": "एक रेलगाड़ी एकसमान चाल से 360 km दूरी तय करती है। यदि चाल 5 km/h अधिक होती तो यात्रा में 1 घंटा कम लगता। गाड़ी की वास्तविक चाल है:",
+  "oh": [
+   "30 km/h",
+   "40 km/h",
+   "45 km/h",
+   "50 km/h"
+  ],
+  "eh": "360/x − 360/(x + 5) = 1 से x² + 5x − 1800 = 0, अर्थात् (x − 40)(x + 45) = 0. चाल 40 km/h है।"
+ },
+ {
+  "id": 133,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "The sum of the squares of two consecutive odd positive integers is 290. The larger integer is:",
+  "o": [
+   "11",
+   "13",
+   "15",
+   "9"
+  ],
+  "a": 1,
+  "e": "x² + (x + 2)² = 290 gives x² + 2x − 143 = 0, so x = 11. The larger integer is 13.",
+  "qh": "दो क्रमागत धनात्मक विषम पूर्णांकों के वर्गों का योग 290 है। बड़ा पूर्णांक है:",
+  "oh": [
+   "11",
+   "13",
+   "15",
+   "9"
+  ],
+  "eh": "x² + (x + 2)² = 290 से x² + 2x − 143 = 0, अतः x = 11. बड़ा पूर्णांक 13 है।"
+ },
+ {
+  "id": 134,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "medium",
+  "q": "If the roots of ax² + bx + c = 0 are equal, then c equals:",
+  "o": [
+   "b²/4a",
+   "b²/2a",
+   "−b²/4a",
+   "b/2a"
+  ],
+  "a": 0,
+  "e": "Equal roots need b² − 4ac = 0, so c = b²/4a.",
+  "qh": "यदि ax² + bx + c = 0 के मूल बराबर हैं, तो c बराबर है:",
+  "oh": [
+   "b²/4a",
+   "b²/2a",
+   "−b²/4a",
+   "b/2a"
+  ],
+  "eh": "मूल बराबर होने के लिए b² − 4ac = 0, अतः c = b²/4a."
+ },
+ {
+  "id": 135,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "The roots of 2x² − x + 1/8 = 0 are:",
+  "o": [
+   "1/4 and 1/4",
+   "1/2 and 1/2",
+   "1/8 and 1/8",
+   "−1/4 and −1/4"
+  ],
+  "a": 0,
+  "e": "D = 1 − 4(2)(1/8) = 0. x = 1/(2×2) = 1/4 (repeated).",
+  "qh": "2x² − x + 1/8 = 0 के मूल हैं:",
+  "oh": [
+   "1/4 और 1/4",
+   "1/2 और 1/2",
+   "1/8 और 1/8",
+   "−1/4 और −1/4"
+  ],
+  "eh": "D = 1 − 4(2)(1/8) = 0. x = 1/(2×2) = 1/4 (दोहराया हुआ)।"
+ },
+ {
+  "id": 136,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Quadratic Equations",
+  "d": "hard",
+  "q": "The roots of 2x² − 6x + 3 = 0 are:",
+  "o": [
+   "Real, distinct and irrational",
+   "Real, distinct and rational",
+   "Real and equal",
+   "Not real"
+  ],
+  "a": 0,
+  "e": "D = 36 − 24 = 12 > 0, but 12 is not a perfect square, so the roots are real, distinct and irrational.",
+  "qh": "2x² − 6x + 3 = 0 के मूल हैं:",
+  "oh": [
+   "वास्तविक, भिन्न और अपरिमेय",
+   "वास्तविक, भिन्न और परिमेय",
+   "वास्तविक और बराबर",
+   "वास्तविक नहीं"
+  ],
+  "eh": "D = 36 − 24 = 12 > 0, परंतु 12 पूर्ण वर्ग नहीं है, अतः मूल वास्तविक, भिन्न और अपरिमेय हैं।"
+ },
+ {
+  "id": 137,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "When milk turns into curd, its pH:",
+  "o": [
+   "Increases",
+   "Decreases",
+   "Remains the same",
+   "Becomes 14"
+  ],
+  "a": 1,
+  "e": "Curd formation produces lactic acid, so the pH decreases.",
+  "qh": "जब दूध दही बन जाता है, तो उसका pH:",
+  "oh": [
+   "बढ़ जाता है",
+   "घट जाता है",
+   "समान रहता है",
+   "14 हो जाता है"
+  ],
+  "eh": "दही बनने पर लैक्टिक अम्ल बनता है, अतः pH घट जाता है।"
+ },
+ {
+  "id": 138,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "The chemical formula of baking soda is:",
+  "o": [
+   "Na₂CO₃",
+   "NaHCO₃",
+   "NaOH",
+   "Na₂CO₃·10H₂O"
+  ],
+  "a": 1,
+  "e": "Baking soda is sodium hydrogencarbonate, NaHCO₃. It is mildly basic and is used as an antacid.",
+  "qh": "बेकिंग सोडा का रासायनिक सूत्र है:",
+  "oh": [
+   "Na₂CO₃",
+   "NaHCO₃",
+   "NaOH",
+   "Na₂CO₃·10H₂O"
+  ],
+  "eh": "बेकिंग सोडा सोडियम हाइड्रोजनकार्बोनेट, NaHCO₃ है। यह हल्का क्षारीय होता है और अम्लता-रोधी की तरह प्रयोग होता है।"
+ },
+ {
+  "id": 139,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "The number of water molecules of crystallisation in washing soda is:",
+  "o": [
+   "5",
+   "7",
+   "10",
+   "2"
+  ],
+  "a": 2,
+  "e": "Washing soda is Na₂CO₃·10H₂O.",
+  "qh": "धावन सोडा में क्रिस्टलन जल के अणुओं की संख्या है:",
+  "oh": [
+   "5",
+   "7",
+   "10",
+   "2"
+  ],
+  "eh": "धावन सोडा Na₂CO₃·10H₂O है।"
+ },
+ {
+  "id": 140,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "Plaster of Paris is obtained by heating gypsum at:",
+  "o": [
+   "373 K",
+   "573 K",
+   "273 K",
+   "1073 K"
+  ],
+  "a": 0,
+  "e": "CaSO₄·2H₂O heated at 373 K gives CaSO₄·½H₂O (Plaster of Paris). Overheating gives anhydrous CaSO₄, which has no setting property.",
+  "qh": "जिप्सम को किस ताप पर गरम करने पर प्लास्टर ऑफ पेरिस प्राप्त होता है?",
+  "oh": [
+   "373 K",
+   "573 K",
+   "273 K",
+   "1073 K"
+  ],
+  "eh": "CaSO₄·2H₂O को 373 K पर गरम करने पर CaSO₄·½H₂O (प्लास्टर ऑफ पेरिस) बनता है। अधिक गरम करने पर निर्जल CaSO₄ बनता है, जिसमें जमने का गुण नहीं होता।"
+ },
+ {
+  "id": 141,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "Bleaching powder is produced by the action of chlorine on:",
+  "o": [
+   "CaO",
+   "Dry slaked lime, Ca(OH)₂",
+   "CaCO₃",
+   "CaCl₂"
+  ],
+  "a": 1,
+  "e": "Ca(OH)₂ + Cl₂ → CaOCl₂ + H₂O.",
+  "qh": "विरंजक चूर्ण (ब्लीचिंग पाउडर) क्लोरीन की किस पर क्रिया से बनता है?",
+  "oh": [
+   "CaO",
+   "शुष्क बुझा चूना, Ca(OH)₂",
+   "CaCO₃",
+   "CaCl₂"
+  ],
+  "eh": "Ca(OH)₂ + Cl₂ → CaOCl₂ + H₂O."
+ },
+ {
+  "id": 142,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "The products of the chlor-alkali process (electrolysis of brine) are:",
+  "o": [
+   "NaOH, Cl₂ and H₂",
+   "Na₂CO₃, Cl₂ and H₂",
+   "NaHCO₃, O₂ and H₂",
+   "NaOH, O₂ and Cl₂"
+  ],
+  "a": 0,
+  "e": "2NaCl + 2H₂O → 2NaOH + Cl₂ + H₂. Cl₂ forms at the anode and H₂ at the cathode.",
+  "qh": "क्लोर-क्षार प्रक्रम (ब्राइन के विद्युत अपघटन) के उत्पाद हैं:",
+  "oh": [
+   "NaOH, Cl₂ और H₂",
+   "Na₂CO₃, Cl₂ और H₂",
+   "NaHCO₃, O₂ और H₂",
+   "NaOH, O₂ और Cl₂"
+  ],
+  "eh": "2NaCl + 2H₂O → 2NaOH + Cl₂ + H₂. Cl₂ एनोड पर और H₂ कैथोड पर बनती है।"
+ },
+ {
+  "id": 143,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "A solution turns red litmus blue. Its pH is likely to be:",
+  "o": [
+   "1",
+   "5",
+   "7",
+   "10"
+  ],
+  "a": 3,
+  "e": "Red litmus turning blue shows the solution is basic, so its pH is greater than 7.",
+  "qh": "एक विलयन लाल लिटमस को नीला कर देता है। उसका pH संभवतः होगा:",
+  "oh": [
+   "1",
+   "5",
+   "7",
+   "10"
+  ],
+  "eh": "लाल लिटमस का नीला होना विलयन के क्षारीय होने को दर्शाता है, अतः pH 7 से अधिक है।"
+ },
+ {
+  "id": 144,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "10 mL of NaOH solution is completely neutralised by 8 mL of a given HCl solution. If 20 mL of the same NaOH solution is taken, the volume of HCl needed is:",
+  "o": [
+   "4 mL",
+   "8 mL",
+   "12 mL",
+   "16 mL"
+  ],
+  "a": 3,
+  "e": "Doubling the NaOH volume doubles the HCl needed: 2 × 8 = 16 mL.",
+  "qh": "10 mL NaOH विलयन को पूर्णतः उदासीन करने के लिए HCl विलयन के 8 mL लगते हैं। उसी NaOH विलयन के 20 mL के लिए HCl का आयतन चाहिए:",
+  "oh": [
+   "4 mL",
+   "8 mL",
+   "12 mL",
+   "16 mL"
+  ],
+  "eh": "NaOH का आयतन दुगुना करने पर HCl भी दुगुना लगेगा: 2 × 8 = 16 mL."
+ },
+ {
+  "id": 145,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "Acid rain has a pH less than:",
+  "o": [
+   "5.6",
+   "7",
+   "6.5",
+   "8.5"
+  ],
+  "a": 0,
+  "e": "Normal rain is slightly acidic because of dissolved CO₂. When its pH falls below 5.6 it is called acid rain.",
+  "qh": "अम्ल वर्षा का pH किस मान से कम होता है?",
+  "oh": [
+   "5.6",
+   "7",
+   "6.5",
+   "8.5"
+  ],
+  "eh": "CO₂ घुलने के कारण सामान्य वर्षा हल्की अम्लीय होती है। pH 5.6 से कम होने पर उसे अम्ल वर्षा कहते हैं।"
+ },
+ {
+  "id": 146,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "Tooth decay starts when the pH of the mouth falls below:",
+  "o": [
+   "5.5",
+   "6.5",
+   "7",
+   "4.5"
+  ],
+  "a": 0,
+  "e": "Below pH 5.5 the acid attacks tooth enamel, which is made of calcium phosphate.",
+  "qh": "मुँह का pH किस मान से कम होने पर दाँतों का क्षय शुरू होता है?",
+  "oh": [
+   "5.5",
+   "6.5",
+   "7",
+   "4.5"
+  ],
+  "eh": "pH 5.5 से कम होने पर अम्ल दाँतों के एनामेल (कैल्शियम फॉस्फेट) को क्षति पहुँचाता है।"
+ },
+ {
+  "id": 147,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "The gas evolved when dilute HCl is added to sodium carbonate, which turns lime water milky, is:",
+  "o": [
+   "H₂",
+   "O₂",
+   "CO₂",
+   "Cl₂"
+  ],
+  "a": 2,
+  "e": "Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂. CO₂ turns lime water milky due to CaCO₃.",
+  "qh": "सोडियम कार्बोनेट में तनु HCl मिलाने पर निकलने वाली गैस, जो चूने के पानी को दूधिया कर देती है, है:",
+  "oh": [
+   "H₂",
+   "O₂",
+   "CO₂",
+   "Cl₂"
+  ],
+  "eh": "Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂. CO₂ चूने के पानी को CaCO₃ बनने के कारण दूधिया कर देती है।"
+ },
+ {
+  "id": 148,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "The aqueous solution of which of the following salts is basic?",
+  "o": [
+   "NaCl",
+   "Na₂CO₃",
+   "NH₄Cl",
+   "KNO₃"
+  ],
+  "a": 1,
+  "e": "Na₂CO₃ is a salt of a strong base (NaOH) and a weak acid (H₂CO₃), so its solution has pH above 7. NaCl and KNO₃ are neutral, and NH₄Cl is acidic.",
+  "qh": "निम्नलिखित में से किस लवण का जलीय विलयन क्षारीय होता है?",
+  "oh": [
+   "NaCl",
+   "Na₂CO₃",
+   "NH₄Cl",
+   "KNO₃"
+  ],
+  "eh": "Na₂CO₃ प्रबल क्षार (NaOH) और दुर्बल अम्ल (H₂CO₃) का लवण है, अतः इसके विलयन का pH 7 से अधिक होता है। NaCl और KNO₃ उदासीन हैं तथा NH₄Cl अम्लीय है।"
+ },
+ {
+  "id": 149,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "NH₄Cl is a salt of a ____ and its aqueous solution is acidic.",
+  "o": [
+   "Strong acid and weak base",
+   "Weak acid and strong base",
+   "Strong acid and strong base",
+   "Weak acid and weak base"
+  ],
+  "a": 0,
+  "e": "NH₄Cl comes from HCl (strong acid) and NH₄OH (weak base), so its solution has pH below 7.",
+  "qh": "NH₄Cl ____ का लवण है और इसका जलीय विलयन अम्लीय होता है।",
+  "oh": [
+   "प्रबल अम्ल और दुर्बल क्षार",
+   "दुर्बल अम्ल और प्रबल क्षार",
+   "प्रबल अम्ल और प्रबल क्षार",
+   "दुर्बल अम्ल और दुर्बल क्षार"
+  ],
+  "eh": "NH₄Cl, HCl (प्रबल अम्ल) और NH₄OH (दुर्बल क्षार) से बनता है, अतः इसके विलयन का pH 7 से कम होता है।"
+ },
+ {
+  "id": 150,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "hard",
+  "q": "Dry HCl gas does not change the colour of dry blue litmus paper because:",
+  "o": [
+   "HCl is a base",
+   "H⁺ ions are produced only in the presence of water",
+   "Litmus is acidic",
+   "HCl is neutral"
+  ],
+  "a": 1,
+  "e": "An acid shows acidic behaviour only when it releases H⁺ ions, and this needs water. Dry HCl gas has no H⁺ ions.",
+  "qh": "शुष्क HCl गैस, शुष्क नीले लिटमस पत्र का रंग नहीं बदलती क्योंकि:",
+  "oh": [
+   "HCl एक क्षार है",
+   "H⁺ आयन केवल जल की उपस्थिति में बनते हैं",
+   "लिटमस अम्लीय होता है",
+   "HCl उदासीन है"
+  ],
+  "eh": "अम्ल तभी अम्लीय गुण दिखाता है जब वह H⁺ आयन मुक्त करे, और इसके लिए जल चाहिए। शुष्क HCl गैस में H⁺ आयन नहीं होते।"
+ },
+ {
+  "id": 151,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "When zinc reacts with dilute H₂SO₄, the gas evolved burns with a:",
+  "o": [
+   "Pop sound",
+   "Yellow sooty flame",
+   "Green flame",
+   "No flame"
+  ],
+  "a": 0,
+  "e": "Zn + H₂SO₄ → ZnSO₄ + H₂. Hydrogen burns with a pop sound when a burning candle is brought near.",
+  "qh": "जिंक की तनु H₂SO₄ से अभिक्रिया पर निकली गैस जलती है:",
+  "oh": [
+   "पॉप ध्वनि के साथ",
+   "पीली कालिखयुक्त ज्वाला से",
+   "हरी ज्वाला से",
+   "बिना ज्वाला के"
+  ],
+  "eh": "Zn + H₂SO₄ → ZnSO₄ + H₂. जलती मोमबत्ती पास लाने पर हाइड्रोजन पॉप ध्वनि के साथ जलती है।"
+ },
+ {
+  "id": 152,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "Baking powder is a mixture of baking soda and:",
+  "o": [
+   "Tartaric acid",
+   "Hydrochloric acid",
+   "Sodium hydroxide",
+   "Calcium sulphate"
+  ],
+  "a": 0,
+  "e": "When heated or moistened, the mixture releases CO₂, which makes bread and cakes soft and spongy.",
+  "qh": "बेकिंग पाउडर बेकिंग सोडा और ____ का मिश्रण है।",
+  "oh": [
+   "टार्टरिक अम्ल",
+   "हाइड्रोक्लोरिक अम्ल",
+   "सोडियम हाइड्रॉक्साइड",
+   "कैल्शियम सल्फेट"
+  ],
+  "eh": "गरम करने या नम होने पर यह मिश्रण CO₂ छोड़ता है, जिससे ब्रेड और केक मुलायम और स्पंजी बनते हैं।"
+ },
+ {
+  "id": 153,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Acids, Bases and Salts",
+  "d": "medium",
+  "q": "On heating, blue copper sulphate crystals (CuSO₄·5H₂O) turn:",
+  "o": [
+   "White",
+   "Black",
+   "Green",
+   "Red"
+  ],
+  "a": 0,
+  "e": "The water of crystallisation is lost and anhydrous CuSO₄ is white. The blue colour returns when water is added.",
+  "qh": "गरम करने पर नीले कॉपर सल्फेट क्रिस्टल (CuSO₄·5H₂O) हो जाते हैं:",
+  "oh": [
+   "सफेद",
+   "काले",
+   "हरे",
+   "लाल"
+  ],
+  "eh": "क्रिस्टलन जल निकल जाता है और निर्जल CuSO₄ सफेद होता है। जल मिलाने पर नीला रंग वापस आ जाता है।"
+ },
+ {
+  "id": 154,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "The 10th term of the AP 2, 7, 12, … is:",
+  "o": [
+   "47",
+   "52",
+   "42",
+   "57"
+  ],
+  "a": 0,
+  "e": "a = 2, d = 5. a₁₀ = a + 9d = 2 + 45 = 47.",
+  "qh": "AP 2, 7, 12, … का 10वाँ पद है:",
+  "oh": [
+   "47",
+   "52",
+   "42",
+   "57"
+  ],
+  "eh": "a = 2, d = 5. a₁₀ = a + 9d = 2 + 45 = 47."
+ },
+ {
+  "id": 155,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "Which term of the AP 3, 8, 13, 18, … is 78?",
+  "o": [
+   "15th",
+   "16th",
+   "17th",
+   "18th"
+  ],
+  "a": 1,
+  "e": "3 + (n − 1)5 = 78 gives n − 1 = 15, so n = 16.",
+  "qh": "AP 3, 8, 13, 18, … का कौन-सा पद 78 है?",
+  "oh": [
+   "15वाँ",
+   "16वाँ",
+   "17वाँ",
+   "18वाँ"
+  ],
+  "eh": "3 + (n − 1)5 = 78 से n − 1 = 15, अतः n = 16."
+ },
+ {
+  "id": 156,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "The common difference of the AP 1/p, (1 − p)/p, (1 − 2p)/p, … is:",
+  "o": [
+   "−1",
+   "1",
+   "p",
+   "−p"
+  ],
+  "a": 0,
+  "e": "d = (1 − p)/p − 1/p = −p/p = −1.",
+  "qh": "AP 1/p, (1 − p)/p, (1 − 2p)/p, … का सार्वअंतर है:",
+  "oh": [
+   "−1",
+   "1",
+   "p",
+   "−p"
+  ],
+  "eh": "d = (1 − p)/p − 1/p = −p/p = −1."
+ },
+ {
+  "id": 157,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "The sum of the first 20 odd natural numbers is:",
+  "o": [
+   "200",
+   "400",
+   "210",
+   "420"
+  ],
+  "a": 1,
+  "e": "S = n² = 20² = 400. (Using S = n/2 [2a + (n − 1)d] = 10 [2 + 38] = 400.)",
+  "qh": "प्रथम 20 विषम प्राकृत संख्याओं का योग है:",
+  "oh": [
+   "200",
+   "400",
+   "210",
+   "420"
+  ],
+  "eh": "S = n² = 20² = 400. (S = n/2 [2a + (n − 1)d] = 10 [2 + 38] = 400)"
+ },
+ {
+  "id": 158,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "The sum of the first 15 multiples of 8 is:",
+  "o": [
+   "960",
+   "480",
+   "1020",
+   "900"
+  ],
+  "a": 0,
+  "e": "8 + 16 + … + 120. a = 8, d = 8, n = 15. S = 15/2 [16 + 14×8] = 15/2 × 128 = 960.",
+  "qh": "8 के प्रथम 15 गुणजों का योग है:",
+  "oh": [
+   "960",
+   "480",
+   "1020",
+   "900"
+  ],
+  "eh": "8 + 16 + … + 120. a = 8, d = 8, n = 15. S = 15/2 [16 + 14×8] = 15/2 × 128 = 960."
+ },
+ {
+  "id": 159,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "If aₙ = 3n + 2, the sum of the first 10 terms is:",
+  "o": [
+   "185",
+   "175",
+   "195",
+   "205"
+  ],
+  "a": 0,
+  "e": "a = 5, d = 3. S₁₀ = 10/2 [2×5 + 9×3] = 5 × 37 = 185.",
+  "qh": "यदि aₙ = 3n + 2 है, तो प्रथम 10 पदों का योग है:",
+  "oh": [
+   "185",
+   "175",
+   "195",
+   "205"
+  ],
+  "eh": "a = 5, d = 3. S₁₀ = 10/2 [2×5 + 9×3] = 5 × 37 = 185."
+ },
+ {
+  "id": 160,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "In an AP the 4th term is 11 and the 9th term is 31. The first term and common difference are:",
+  "o": [
+   "−1 and 4",
+   "1 and 4",
+   "3 and 2",
+   "−3 and 5"
+  ],
+  "a": 0,
+  "e": "a + 3d = 11 and a + 8d = 31 give 5d = 20, so d = 4 and a = −1.",
+  "qh": "एक AP का चौथा पद 11 और नौवाँ पद 31 है। प्रथम पद और सार्वअंतर हैं:",
+  "oh": [
+   "−1 और 4",
+   "1 और 4",
+   "3 और 2",
+   "−3 और 5"
+  ],
+  "eh": "a + 3d = 11 और a + 8d = 31 से 5d = 20, अतः d = 4 और a = −1."
+ },
+ {
+  "id": 161,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "How many two-digit numbers are divisible by 3?",
+  "o": [
+   "28",
+   "29",
+   "30",
+   "31"
+  ],
+  "a": 2,
+  "e": "The numbers are 12, 15, …, 99. 99 = 12 + (n − 1)3 gives n = 30.",
+  "qh": "कितनी दो अंकीय संख्याएँ 3 से विभाज्य हैं?",
+  "oh": [
+   "28",
+   "29",
+   "30",
+   "31"
+  ],
+  "eh": "संख्याएँ 12, 15, …, 99 हैं। 99 = 12 + (n − 1)3 से n = 30."
+ },
+ {
+  "id": 162,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "How many terms of the AP 24, 21, 18, … must be taken so that their sum is 78?",
+  "o": [
+   "4 only",
+   "13 only",
+   "4 or 13",
+   "6 or 11"
+  ],
+  "a": 2,
+  "e": "S = n/2 (51 − 3n) = 78 gives n² − 17n + 52 = 0, so n = 4 or 13. Both work because the terms from the 5th to the 13th add up to zero.",
+  "qh": "AP 24, 21, 18, … के कितने पद लेने पर उनका योग 78 होगा?",
+  "oh": [
+   "केवल 4",
+   "केवल 13",
+   "4 या 13",
+   "6 या 11"
+  ],
+  "eh": "S = n/2 (51 − 3n) = 78 से n² − 17n + 52 = 0, अतः n = 4 या 13. दोनों सही हैं क्योंकि 5वें से 13वें पद तक का योग शून्य है।"
+ },
+ {
+  "id": 163,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "If the sum of the first n terms of an AP is Sₙ = 3n² + 5n, then its 10th term is:",
+  "o": [
+   "62",
+   "58",
+   "350",
+   "66"
+  ],
+  "a": 0,
+  "e": "a₁₀ = S₁₀ − S₉ = (300 + 50) − (243 + 45) = 350 − 288 = 62.",
+  "qh": "यदि किसी AP के प्रथम n पदों का योग Sₙ = 3n² + 5n है, तो उसका 10वाँ पद है:",
+  "oh": [
+   "62",
+   "58",
+   "350",
+   "66"
+  ],
+  "eh": "a₁₀ = S₁₀ − S₉ = (300 + 50) − (243 + 45) = 350 − 288 = 62."
+ },
+ {
+  "id": 164,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "Three numbers in AP have sum 15 and product 80. The largest of them is:",
+  "o": [
+   "5",
+   "6",
+   "8",
+   "10"
+  ],
+  "a": 2,
+  "e": "Take 5 − d, 5, 5 + d. Product 5(25 − d²) = 80 gives d² = 9, so d = ±3. The numbers are 2, 5, 8.",
+  "qh": "AP में तीन संख्याओं का योग 15 और गुणनफल 80 है। इनमें सबसे बड़ी संख्या है:",
+  "oh": [
+   "5",
+   "6",
+   "8",
+   "10"
+  ],
+  "eh": "5 − d, 5, 5 + d लें। गुणनफल 5(25 − d²) = 80 से d² = 9, अतः d = ±3. संख्याएँ 2, 5, 8 हैं।"
+ },
+ {
+  "id": 165,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "If k, 2k − 1 and 2k + 1 are three consecutive terms of an AP, then k is:",
+  "o": [
+   "3",
+   "2",
+   "4",
+   "−3"
+  ],
+  "a": 0,
+  "e": "The middle term is the mean: 2(2k − 1) = k + (2k + 1), so 4k − 2 = 3k + 1 and k = 3.",
+  "qh": "यदि k, 2k − 1 और 2k + 1 किसी AP के तीन क्रमागत पद हैं, तो k का मान है:",
+  "oh": [
+   "3",
+   "2",
+   "4",
+   "−3"
+  ],
+  "eh": "मध्य पद माध्य होता है: 2(2k − 1) = k + (2k + 1), अतः 4k − 2 = 3k + 1 और k = 3."
+ },
+ {
+  "id": 166,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "The middle term of the AP 6, 13, 20, …, 216 is:",
+  "o": [
+   "111",
+   "108",
+   "118",
+   "104"
+  ],
+  "a": 0,
+  "e": "216 = 6 + (n − 1)7 gives n = 31. The middle term is the 16th: 6 + 15×7 = 111.",
+  "qh": "AP 6, 13, 20, …, 216 का मध्य पद है:",
+  "oh": [
+   "111",
+   "108",
+   "118",
+   "104"
+  ],
+  "eh": "216 = 6 + (n − 1)7 से n = 31. मध्य पद 16वाँ है: 6 + 15×7 = 111."
+ },
+ {
+  "id": 167,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "The sum of all three-digit numbers divisible by 7 is:",
+  "o": [
+   "70336",
+   "70000",
+   "71000",
+   "70536"
+  ],
+  "a": 0,
+  "e": "The numbers are 105, 112, …, 994. 994 = 105 + (n − 1)7 gives n = 128. S = 128/2 × (105 + 994) = 64 × 1099 = 70336.",
+  "qh": "तीन अंकीय सभी संख्याएँ जो 7 से विभाज्य हैं, उनका योग है:",
+  "oh": [
+   "70336",
+   "70000",
+   "71000",
+   "70536"
+  ],
+  "eh": "संख्याएँ 105, 112, …, 994 हैं। 994 = 105 + (n − 1)7 से n = 128. S = 128/2 × (105 + 994) = 64 × 1099 = 70336."
+ },
+ {
+  "id": 168,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "The sum of the AP 34 + 32 + 30 + … + 10 is:",
+  "o": [
+   "286",
+   "264",
+   "308",
+   "242"
+  ],
+  "a": 0,
+  "e": "10 = 34 + (n − 1)(−2) gives n = 13. S = 13/2 × (34 + 10) = 13 × 22 = 286.",
+  "qh": "AP 34 + 32 + 30 + … + 10 का योग है:",
+  "oh": [
+   "286",
+   "264",
+   "308",
+   "242"
+  ],
+  "eh": "10 = 34 + (n − 1)(−2) से n = 13. S = 13/2 × (34 + 10) = 13 × 22 = 286."
+ },
+ {
+  "id": 169,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "hard",
+  "q": "Which term of the AP 9, 12, 15, 18, … is 39 more than its 36th term?",
+  "o": [
+   "48th",
+   "49th",
+   "50th",
+   "51st"
+  ],
+  "a": 1,
+  "e": "aₙ − a₃₆ = (n − 36)d = 39, with d = 3, gives n − 36 = 13, so n = 49.",
+  "qh": "AP 9, 12, 15, 18, … का कौन-सा पद अपने 36वें पद से 39 अधिक है?",
+  "oh": [
+   "48वाँ",
+   "49वाँ",
+   "50वाँ",
+   "51वाँ"
+  ],
+  "eh": "aₙ − a₃₆ = (n − 36)d = 39, d = 3 लेने पर n − 36 = 13, अतः n = 49."
+ },
+ {
+  "id": 170,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Arithmetic Progressions",
+  "d": "medium",
+  "q": "Which of the following is NOT an AP?",
+  "o": [
+   "−1, −1.25, −1.5, −1.75",
+   "5, 11, 17, 23",
+   "0, 2, 8, 18",
+   "√2, √8, √18, √32"
+  ],
+  "a": 2,
+  "e": "In 0, 2, 8, 18 the differences are 2, 6, 10, which are not equal. √2, 2√2, 3√2, 4√2 is an AP with d = √2.",
+  "qh": "निम्नलिखित में कौन-सी सूची AP नहीं है?",
+  "oh": [
+   "−1, −1.25, −1.5, −1.75",
+   "5, 11, 17, 23",
+   "0, 2, 8, 18",
+   "√2, √8, √18, √32"
+  ],
+  "eh": "0, 2, 8, 18 में अंतर 2, 6, 10 हैं जो बराबर नहीं हैं। √2, 2√2, 3√2, 4√2 एक AP है जिसका d = √2 है।"
+ },
+ {
+  "id": 171,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Which metal is liquid at room temperature (about 298 K)?",
+  "o": [
+   "Mercury",
+   "Sodium",
+   "Lead",
+   "Zinc"
+  ],
+  "a": 0,
+  "e": "Mercury is a liquid metal at room temperature. (Gallium and caesium melt only slightly above it.)",
+  "qh": "कमरे के ताप (लगभग 298 K) पर कौन-सी धातु द्रव अवस्था में होती है?",
+  "oh": [
+   "मरकरी (पारा)",
+   "सोडियम",
+   "लेड",
+   "जिंक"
+  ],
+  "eh": "मरकरी कमरे के ताप पर द्रव धातु है। (गैलियम और सीज़ियम इससे थोड़े अधिक ताप पर पिघलते हैं।)"
+ },
+ {
+  "id": 172,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "The best conductor of heat and electricity among metals is:",
+  "o": [
+   "Copper",
+   "Silver",
+   "Gold",
+   "Aluminium"
+  ],
+  "a": 1,
+  "e": "Silver is the best conductor; copper is next, which is why copper is used in wires.",
+  "qh": "धातुओं में ऊष्मा और विद्युत का सर्वश्रेष्ठ चालक है:",
+  "oh": [
+   "कॉपर",
+   "सिल्वर",
+   "गोल्ड",
+   "एलुमिनियम"
+  ],
+  "eh": "सिल्वर सर्वश्रेष्ठ चालक है; उसके बाद कॉपर आता है, इसीलिए तारों में कॉपर प्रयोग होता है।"
+ },
+ {
+  "id": 173,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Which of the following non-metals is lustrous?",
+  "o": [
+   "Sulphur",
+   "Iodine",
+   "Phosphorus",
+   "Oxygen"
+  ],
+  "a": 1,
+  "e": "Iodine is a lustrous non-metal, an exception to the rule that non-metals are dull.",
+  "qh": "निम्नलिखित में कौन-सी अधातु चमकीली होती है?",
+  "oh": [
+   "सल्फर",
+   "आयोडीन",
+   "फॉस्फोरस",
+   "ऑक्सीजन"
+  ],
+  "eh": "आयोडीन चमकीली अधातु है, जो अधातुओं के निस्तेज होने के नियम का अपवाद है।"
+ },
+ {
+  "id": 174,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Which allotrope of carbon, a non-metal, conducts electricity?",
+  "o": [
+   "Diamond",
+   "Graphite",
+   "Fullerene C-60 only",
+   "None of these"
+  ],
+  "a": 1,
+  "e": "Graphite has free electrons between its layers, so it is a good conductor. Diamond is the hardest natural substance but does not conduct.",
+  "qh": "कार्बन का कौन-सा अपरूप (अधातु) विद्युत का चालन करता है?",
+  "oh": [
+   "हीरा",
+   "ग्रेफाइट",
+   "केवल फुलेरीन C-60",
+   "इनमें से कोई नहीं"
+  ],
+  "eh": "ग्रेफाइट की परतों के बीच मुक्त इलेक्ट्रॉन होते हैं, अतः यह अच्छा चालक है। हीरा सबसे कठोर प्राकृतिक पदार्थ है पर चालन नहीं करता।"
+ },
+ {
+  "id": 175,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Sodium is stored under kerosene oil because it:",
+  "o": [
+   "Is very unreactive",
+   "Reacts vigorously with air and moisture and may catch fire",
+   "Is soluble in kerosene",
+   "Becomes harder in kerosene"
+  ],
+  "a": 1,
+  "e": "Sodium reacts very vigorously with oxygen and water, so it is kept immersed in kerosene.",
+  "qh": "सोडियम को केरोसिन तेल में डुबोकर रखा जाता है क्योंकि वह:",
+  "oh": [
+   "बहुत अक्रिय है",
+   "वायु और नमी से तीव्र अभिक्रिया करता है और आग पकड़ सकता है",
+   "केरोसिन में घुलनशील है",
+   "केरोसिन में कठोर हो जाता है"
+  ],
+  "eh": "सोडियम ऑक्सीजन और जल से बहुत तीव्र अभिक्रिया करता है, इसलिए उसे केरोसिन में डुबोकर रखा जाता है।"
+ },
+ {
+  "id": 176,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Among Zn, Fe, Cu and Mg, the most reactive metal is:",
+  "o": [
+   "Zn",
+   "Fe",
+   "Cu",
+   "Mg"
+  ],
+  "a": 3,
+  "e": "In the reactivity series the order is Mg > Zn > Fe > Cu.",
+  "qh": "Zn, Fe, Cu और Mg में सबसे अधिक क्रियाशील धातु है:",
+  "oh": [
+   "Zn",
+   "Fe",
+   "Cu",
+   "Mg"
+  ],
+  "eh": "सक्रियता श्रेणी में क्रम Mg > Zn > Fe > Cu है।"
+ },
+ {
+  "id": 177,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "hard",
+  "q": "When iron reacts with steam, the products formed are:",
+  "o": [
+   "FeO and H₂",
+   "Fe₃O₄ and H₂",
+   "Fe₂O₃ and H₂",
+   "Fe(OH)₃ and O₂"
+  ],
+  "a": 1,
+  "e": "3Fe + 4H₂O (steam) → Fe₃O₄ + 4H₂.",
+  "qh": "जब आयरन भाप से अभिक्रिया करता है, तो बनने वाले उत्पाद हैं:",
+  "oh": [
+   "FeO और H₂",
+   "Fe₃O₄ और H₂",
+   "Fe₂O₃ और H₂",
+   "Fe(OH)₃ और O₂"
+  ],
+  "eh": "3Fe + 4H₂O (भाप) → Fe₃O₄ + 4H₂."
+ },
+ {
+  "id": 178,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Which of the following is an amphoteric oxide?",
+  "o": [
+   "Na₂O",
+   "Al₂O₃",
+   "CaO",
+   "MgO"
+  ],
+  "a": 1,
+  "e": "Al₂O₃ reacts with both acids and bases. ZnO is another amphoteric oxide.",
+  "qh": "निम्नलिखित में कौन-सा उभयधर्मी ऑक्साइड है?",
+  "oh": [
+   "Na₂O",
+   "Al₂O₃",
+   "CaO",
+   "MgO"
+  ],
+  "eh": "Al₂O₃ अम्ल और क्षार दोनों से अभिक्रिया करता है। ZnO भी उभयधर्मी ऑक्साइड है।"
+ },
+ {
+  "id": 179,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "hard",
+  "q": "Ionic compounds conduct electricity:",
+  "o": [
+   "In the solid state only",
+   "In the molten state or in aqueous solution",
+   "Never",
+   "Only when heated above 1000 °C"
+  ],
+  "a": 1,
+  "e": "In solid form the ions are held in fixed positions. In the molten state or in solution the ions are free to move and carry current.",
+  "qh": "आयनिक यौगिक विद्युत का चालन करते हैं:",
+  "oh": [
+   "केवल ठोस अवस्था में",
+   "गलित अवस्था में या जलीय विलयन में",
+   "कभी नहीं",
+   "केवल 1000 °C से ऊपर गरम करने पर"
+  ],
+  "eh": "ठोस अवस्था में आयन निश्चित स्थानों पर बँधे रहते हैं। गलित अवस्था या विलयन में आयन गतिशील होते हैं और धारा प्रवाहित करते हैं।"
+ },
+ {
+  "id": 180,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Aqua regia is a freshly prepared mixture of concentrated HCl and concentrated HNO₃ in the ratio:",
+  "o": [
+   "1 : 3",
+   "3 : 1",
+   "1 : 1",
+   "2 : 1"
+  ],
+  "a": 1,
+  "e": "Aqua regia is 3 parts HCl to 1 part HNO₃. It can dissolve gold and platinum.",
+  "qh": "ऐक्वा रेजिया सांद्र HCl और सांद्र HNO₃ का ताज़ा बना मिश्रण है, जिनका अनुपात है:",
+  "oh": [
+   "1 : 3",
+   "3 : 1",
+   "1 : 1",
+   "2 : 1"
+  ],
+  "eh": "ऐक्वा रेजिया में 3 भाग HCl और 1 भाग HNO₃ होता है। यह सोने और प्लैटिनम को घोल सकता है।"
+ },
+ {
+  "id": 181,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "hard",
+  "q": "Highly reactive metals such as sodium, calcium and aluminium are extracted from their ores by:",
+  "o": [
+   "Reduction with carbon",
+   "Heating in air",
+   "Electrolysis of their molten chlorides or oxides",
+   "Roasting"
+  ],
+  "a": 2,
+  "e": "Carbon cannot reduce these metal oxides, so the molten compounds are electrolysed. The metal is deposited at the cathode.",
+  "qh": "सोडियम, कैल्शियम और एलुमिनियम जैसी अत्यधिक क्रियाशील धातुओं को उनके अयस्कों से निकाला जाता है:",
+  "oh": [
+   "कार्बन द्वारा अपचयन से",
+   "वायु में गरम करके",
+   "उनके गलित क्लोराइड या ऑक्साइड के विद्युत अपघटन से",
+   "भर्जन से"
+  ],
+  "eh": "कार्बन इन धातुओं के ऑक्साइड का अपचयन नहीं कर सकता, इसलिए गलित यौगिकों का विद्युत अपघटन किया जाता है। धातु कैथोड पर जमा होती है।"
+ },
+ {
+  "id": 182,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "hard",
+  "q": "Heating a sulphide ore strongly in excess air to convert it into an oxide is called:",
+  "o": [
+   "Calcination",
+   "Roasting",
+   "Smelting",
+   "Refining"
+  ],
+  "a": 1,
+  "e": "Roasting is done for sulphide ores in excess air, e.g. 2ZnS + 3O₂ → 2ZnO + 2SO₂. Calcination is heating a carbonate ore in limited air.",
+  "qh": "सल्फाइड अयस्क को वायु की अधिकता में तेज गरम करके ऑक्साइड में बदलना कहलाता है:",
+  "oh": [
+   "निस्तापन",
+   "भर्जन",
+   "प्रगलन",
+   "परिष्करण"
+  ],
+  "eh": "सल्फाइड अयस्कों को वायु की अधिकता में भर्जित किया जाता है, जैसे 2ZnS + 3O₂ → 2ZnO + 2SO₂. निस्तापन में कार्बोनेट अयस्क को सीमित वायु में गरम किया जाता है।"
+ },
+ {
+  "id": 183,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Coating iron with a layer of zinc to protect it from rusting is called:",
+  "o": [
+   "Galvanisation",
+   "Alloying",
+   "Anodising",
+   "Roasting"
+  ],
+  "a": 0,
+  "e": "Galvanisation protects iron because zinc is more reactive and corrodes first, even if the coating is scratched.",
+  "qh": "जंग से बचाने के लिए लोहे पर जिंक की परत चढ़ाना कहलाता है:",
+  "oh": [
+   "यशदलेपन (गैल्वनीकरण)",
+   "मिश्रधातु बनाना",
+   "एनोडीकरण",
+   "भर्जन"
+  ],
+  "eh": "गैल्वनीकरण लोहे की रक्षा करता है क्योंकि जिंक अधिक क्रियाशील है और परत खरोंच जाने पर भी वही पहले संक्षारित होता है।"
+ },
+ {
+  "id": 184,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "medium",
+  "q": "Solder, used for welding electrical wires together, is an alloy of:",
+  "o": [
+   "Lead and tin",
+   "Copper and zinc",
+   "Copper and tin",
+   "Iron and nickel"
+  ],
+  "a": 0,
+  "e": "Solder is lead and tin and has a low melting point. Brass is copper and zinc; bronze is copper and tin.",
+  "qh": "विद्युत तारों को जोड़ने में प्रयुक्त सोल्डर किसकी मिश्रधातु है?",
+  "oh": [
+   "लेड और टिन",
+   "कॉपर और जिंक",
+   "कॉपर और टिन",
+   "आयरन और निकेल"
+  ],
+  "eh": "सोल्डर लेड और टिन की मिश्रधातु है जिसका गलनांक कम होता है। पीतल कॉपर और जिंक का तथा काँसा कॉपर और टिन का मिश्रण है।"
+ },
+ {
+  "id": 185,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "hard",
+  "q": "In the electrolytic refining of copper, the anode is made of:",
+  "o": [
+   "Pure copper",
+   "Impure copper",
+   "Platinum",
+   "Graphite"
+  ],
+  "a": 1,
+  "e": "The anode is a block of impure copper, the cathode is a thin strip of pure copper, and the electrolyte is acidified copper sulphate. Pure copper deposits on the cathode and impurities collect below the anode as anode mud.",
+  "qh": "कॉपर के विद्युत अपघटनी परिष्करण में एनोड बना होता है:",
+  "oh": [
+   "शुद्ध कॉपर से",
+   "अशुद्ध कॉपर से",
+   "प्लैटिनम से",
+   "ग्रेफाइट से"
+  ],
+  "eh": "एनोड अशुद्ध कॉपर की छड़ होती है, कैथोड शुद्ध कॉपर की पतली पट्टी और विद्युत अपघट्य अम्लीकृत कॉपर सल्फेट। शुद्ध कॉपर कैथोड पर जमता है और अशुद्धियाँ एनोड के नीचे एनोड पंक के रूप में एकत्र होती हैं।"
+ },
+ {
+  "id": 186,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Metals and Non-metals",
+  "d": "hard",
+  "q": "Which of the following metals will NOT displace copper from copper sulphate solution?",
+  "o": [
+   "Zn",
+   "Fe",
+   "Mg",
+   "Ag"
+  ],
+  "a": 3,
+  "e": "Only a metal higher than copper in the reactivity series can displace it. Silver is below copper, so no reaction occurs.",
+  "qh": "निम्नलिखित में से कौन-सी धातु कॉपर सल्फेट विलयन से कॉपर को विस्थापित नहीं करेगी?",
+  "oh": [
+   "Zn",
+   "Fe",
+   "Mg",
+   "Ag"
+  ],
+  "eh": "केवल सक्रियता श्रेणी में कॉपर से ऊपर की धातु ही उसे विस्थापित कर सकती है। सिल्वर कॉपर से नीचे है, अतः कोई अभिक्रिया नहीं होती।"
+ },
+ {
+  "id": 187,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "In △ABC, D is on AB and E is on AC with DE ∥ BC. If AD = 2 cm, DB = 3 cm and AE = 3 cm, then EC is:",
+  "o": [
+   "4.5 cm",
+   "2 cm",
+   "3 cm",
+   "6 cm"
+  ],
+  "a": 0,
+  "e": "By the Basic Proportionality Theorem AD/DB = AE/EC, so 2/3 = 3/EC and EC = 4.5 cm.",
+  "qh": "△ABC में D भुजा AB पर और E भुजा AC पर है तथा DE ∥ BC है। यदि AD = 2 cm, DB = 3 cm और AE = 3 cm है, तो EC है:",
+  "oh": [
+   "4.5 cm",
+   "2 cm",
+   "3 cm",
+   "6 cm"
+  ],
+  "eh": "आधारभूत समानुपातिकता प्रमेय से AD/DB = AE/EC, अतः 2/3 = 3/EC और EC = 4.5 cm."
+ },
+ {
+  "id": 188,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "If two similar triangles have corresponding sides in the ratio 3 : 4, the ratio of their areas is:",
+  "o": [
+   "3 : 4",
+   "9 : 16",
+   "16 : 9",
+   "6 : 8"
+  ],
+  "a": 1,
+  "e": "The ratio of areas of similar triangles equals the square of the ratio of corresponding sides: 3² : 4² = 9 : 16.",
+  "qh": "यदि दो समरूप त्रिभुजों की संगत भुजाओं का अनुपात 3 : 4 है, तो उनके क्षेत्रफलों का अनुपात है:",
+  "oh": [
+   "3 : 4",
+   "9 : 16",
+   "16 : 9",
+   "6 : 8"
+  ],
+  "eh": "समरूप त्रिभुजों के क्षेत्रफलों का अनुपात संगत भुजाओं के अनुपात के वर्ग के बराबर होता है: 3² : 4² = 9 : 16."
+ },
+ {
+  "id": 189,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "The areas of two similar triangles are 81 cm² and 49 cm². The ratio of their corresponding altitudes is:",
+  "o": [
+   "9 : 7",
+   "81 : 49",
+   "7 : 9",
+   "3 : 2"
+  ],
+  "a": 0,
+  "e": "Ratio of areas = (ratio of altitudes)², so the ratio of altitudes = √(81/49) = 9/7.",
+  "qh": "दो समरूप त्रिभुजों के क्षेत्रफल 81 cm² और 49 cm² हैं। उनकी संगत ऊँचाइयों का अनुपात है:",
+  "oh": [
+   "9 : 7",
+   "81 : 49",
+   "7 : 9",
+   "3 : 2"
+  ],
+  "eh": "क्षेत्रफलों का अनुपात = (ऊँचाइयों का अनुपात)², अतः ऊँचाइयों का अनुपात = √(81/49) = 9/7."
+ },
+ {
+  "id": 190,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "A 10 m long ladder reaches a window 8 m above the ground. The distance of the foot of the ladder from the wall is:",
+  "o": [
+   "5 m",
+   "6 m",
+   "7 m",
+   "8 m"
+  ],
+  "a": 1,
+  "e": "By Pythagoras: d² = 10² − 8² = 100 − 64 = 36, so d = 6 m.",
+  "qh": "10 m लंबी सीढ़ी भूमि से 8 m ऊँची खिड़की तक पहुँचती है। सीढ़ी के निचले सिरे की दीवार से दूरी है:",
+  "oh": [
+   "5 m",
+   "6 m",
+   "7 m",
+   "8 m"
+  ],
+  "eh": "पाइथागोरस प्रमेय से: d² = 10² − 8² = 100 − 64 = 36, अतः d = 6 m."
+ },
+ {
+  "id": 191,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "Which of the following sets of sides forms a right-angled triangle?",
+  "o": [
+   "7, 24, 25",
+   "6, 8, 11",
+   "5, 10, 12",
+   "9, 12, 16"
+  ],
+  "a": 0,
+  "e": "7² + 24² = 49 + 576 = 625 = 25². For the others the sum of the squares of the two smaller sides does not equal the square of the largest.",
+  "qh": "निम्नलिखित में से किन भुजाओं से समकोण त्रिभुज बनता है?",
+  "oh": [
+   "7, 24, 25",
+   "6, 8, 11",
+   "5, 10, 12",
+   "9, 12, 16"
+  ],
+  "eh": "7² + 24² = 49 + 576 = 625 = 25². अन्य में दो छोटी भुजाओं के वर्गों का योग सबसे बड़ी भुजा के वर्ग के बराबर नहीं है।"
+ },
+ {
+  "id": 192,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "△ABC ~ △DEF with AB = 6 cm and DE = 9 cm. If the perimeter of △ABC is 20 cm, the perimeter of △DEF is:",
+  "o": [
+   "25 cm",
+   "30 cm",
+   "35 cm",
+   "45 cm"
+  ],
+  "a": 1,
+  "e": "Perimeters of similar triangles are in the ratio of corresponding sides, so perimeter of DEF = 20 × 9/6 = 30 cm.",
+  "qh": "△ABC ~ △DEF, AB = 6 cm और DE = 9 cm है। यदि △ABC का परिमाप 20 cm है, तो △DEF का परिमाप है:",
+  "oh": [
+   "25 cm",
+   "30 cm",
+   "35 cm",
+   "45 cm"
+  ],
+  "eh": "समरूप त्रिभुजों के परिमाप संगत भुजाओं के अनुपात में होते हैं, अतः DEF का परिमाप = 20 × 9/6 = 30 cm."
+ },
+ {
+  "id": 193,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "In △ABC, DE ∥ BC with D on AB, E on AC and AD : DB = 3 : 5. The ratio ar(△ADE) : ar(△ABC) is:",
+  "o": [
+   "9 : 64",
+   "3 : 5",
+   "9 : 25",
+   "3 : 8"
+  ],
+  "a": 0,
+  "e": "△ADE ~ △ABC and AD : AB = 3 : 8, so the ratio of areas = 9 : 64.",
+  "qh": "△ABC में DE ∥ BC है, D भुजा AB पर और E भुजा AC पर है तथा AD : DB = 3 : 5 है। ar(△ADE) : ar(△ABC) है:",
+  "oh": [
+   "9 : 64",
+   "3 : 5",
+   "9 : 25",
+   "3 : 8"
+  ],
+  "eh": "△ADE ~ △ABC और AD : AB = 3 : 8, अतः क्षेत्रफलों का अनुपात = 9 : 64."
+ },
+ {
+  "id": 194,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "ABCD is a trapezium with AB ∥ DC and AB = 2 CD. The diagonals meet at O. The ratio ar(△AOB) : ar(△COD) is:",
+  "o": [
+   "4 : 1",
+   "2 : 1",
+   "1 : 4",
+   "1 : 2"
+  ],
+  "a": 0,
+  "e": "△AOB ~ △COD (AA), with AB : CD = 2 : 1. So the ratio of areas = 2² : 1² = 4 : 1.",
+  "qh": "ABCD एक समलंब है जिसमें AB ∥ DC और AB = 2 CD है। विकर्ण O पर मिलते हैं। ar(△AOB) : ar(△COD) है:",
+  "oh": [
+   "4 : 1",
+   "2 : 1",
+   "1 : 4",
+   "1 : 2"
+  ],
+  "eh": "△AOB ~ △COD (AA), और AB : CD = 2 : 1. अतः क्षेत्रफलों का अनुपात = 2² : 1² = 4 : 1."
+ },
+ {
+  "id": 195,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "A 6 m tall pole casts a 4 m shadow. At the same time a tower casts a 28 m shadow. The height of the tower is:",
+  "o": [
+   "36 m",
+   "42 m",
+   "48 m",
+   "40 m"
+  ],
+  "a": 1,
+  "e": "The triangles formed are similar: h/28 = 6/4, so h = 42 m.",
+  "qh": "6 m ऊँचा खंभा 4 m लंबी छाया बनाता है। उसी समय एक मीनार की छाया 28 m है। मीनार की ऊँचाई है:",
+  "oh": [
+   "36 m",
+   "42 m",
+   "48 m",
+   "40 m"
+  ],
+  "eh": "बनने वाले त्रिभुज समरूप हैं: h/28 = 6/4, अतः h = 42 m."
+ },
+ {
+  "id": 196,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "Points D and E lie on sides AB and AC of △ABC with AD = 1.5 cm, DB = 3 cm, AE = 1 cm and EC = 2 cm. Then:",
+  "o": [
+   "DE ∥ BC",
+   "DE is not parallel to BC",
+   "DE ⊥ BC",
+   "DE = BC"
+  ],
+  "a": 0,
+  "e": "AD/DB = 1.5/3 = 1/2 and AE/EC = 1/2. By the converse of the Basic Proportionality Theorem, DE ∥ BC.",
+  "qh": "△ABC की भुजाओं AB और AC पर बिंदु D और E इस प्रकार हैं कि AD = 1.5 cm, DB = 3 cm, AE = 1 cm और EC = 2 cm है। तब:",
+  "oh": [
+   "DE ∥ BC",
+   "DE, BC के समांतर नहीं है",
+   "DE ⊥ BC",
+   "DE = BC"
+  ],
+  "eh": "AD/DB = 1.5/3 = 1/2 और AE/EC = 1/2. आधारभूत समानुपातिकता प्रमेय के विलोम से DE ∥ BC."
+ },
+ {
+  "id": 197,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "The altitude of an equilateral triangle of side 2a is:",
+  "o": [
+   "√3 a",
+   "2√3 a",
+   "a/√3",
+   "a√2"
+  ],
+  "a": 0,
+  "e": "h² = (2a)² − a² = 3a², so h = √3 a.",
+  "qh": "भुजा 2a वाले समबाहु त्रिभुज की ऊँचाई है:",
+  "oh": [
+   "√3 a",
+   "2√3 a",
+   "a/√3",
+   "a√2"
+  ],
+  "eh": "h² = (2a)² − a² = 3a², अतः h = √3 a."
+ },
+ {
+  "id": 198,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "The diagonals of a rhombus are 16 cm and 12 cm. Its side is:",
+  "o": [
+   "8 cm",
+   "10 cm",
+   "12 cm",
+   "14 cm"
+  ],
+  "a": 1,
+  "e": "Diagonals of a rhombus bisect each other at right angles, so side² = 8² + 6² = 100 and side = 10 cm.",
+  "qh": "एक समचतुर्भुज के विकर्ण 16 cm और 12 cm हैं। उसकी भुजा है:",
+  "oh": [
+   "8 cm",
+   "10 cm",
+   "12 cm",
+   "14 cm"
+  ],
+  "eh": "समचतुर्भुज के विकर्ण एक-दूसरे को समकोण पर समद्विभाजित करते हैं, अतः भुजा² = 8² + 6² = 100 और भुजा = 10 cm."
+ },
+ {
+  "id": 199,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "In △ABC, AD ⊥ BC and AD² = BD × DC. Then ∠BAC is:",
+  "o": [
+   "60°",
+   "90°",
+   "45°",
+   "120°"
+  ],
+  "a": 1,
+  "e": "BD/AD = AD/DC with ∠ADB = ∠CDA = 90°, so △DBA ~ △DAC (SAS). This gives ∠BAD + ∠CAD = ∠BAD + ∠ABD = 90°, so ∠BAC = 90°.",
+  "qh": "△ABC में AD ⊥ BC और AD² = BD × DC है। तब ∠BAC का मान है:",
+  "oh": [
+   "60°",
+   "90°",
+   "45°",
+   "120°"
+  ],
+  "eh": "BD/AD = AD/DC और ∠ADB = ∠CDA = 90°, अतः △DBA ~ △DAC (SAS). इससे ∠BAD + ∠CAD = ∠BAD + ∠ABD = 90°, अतः ∠BAC = 90°."
+ },
+ {
+  "id": 200,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "In right △ABC (right angle at B), BD ⊥ AC. If AD = 4 cm and DC = 9 cm, then BD is:",
+  "o": [
+   "5 cm",
+   "6 cm",
+   "7 cm",
+   "13 cm"
+  ],
+  "a": 1,
+  "e": "△ADB ~ △BDC gives BD² = AD × DC = 36, so BD = 6 cm.",
+  "qh": "समकोण △ABC में (समकोण B पर) BD ⊥ AC है। यदि AD = 4 cm और DC = 9 cm है, तो BD है:",
+  "oh": [
+   "5 cm",
+   "6 cm",
+   "7 cm",
+   "13 cm"
+  ],
+  "eh": "△ADB ~ △BDC से BD² = AD × DC = 36, अतः BD = 6 cm."
+ },
+ {
+  "id": 201,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "The areas of two similar triangles △ABC and △PQR are in the ratio 4 : 9. If AB = 6 cm, then PQ is:",
+  "o": [
+   "4 cm",
+   "9 cm",
+   "13.5 cm",
+   "12 cm"
+  ],
+  "a": 1,
+  "e": "Ratio of sides = √(4/9) = 2/3. So PQ = 6 × 3/2 = 9 cm.",
+  "qh": "दो समरूप त्रिभुजों △ABC और △PQR के क्षेत्रफलों का अनुपात 4 : 9 है। यदि AB = 6 cm है, तो PQ है:",
+  "oh": [
+   "4 cm",
+   "9 cm",
+   "13.5 cm",
+   "12 cm"
+  ],
+  "eh": "भुजाओं का अनुपात = √(4/9) = 2/3. अतः PQ = 6 × 3/2 = 9 cm."
+ },
+ {
+  "id": 202,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "Two poles of heights 6 m and 11 m stand on level ground with their feet 12 m apart. The distance between their tops is:",
+  "o": [
+   "12 m",
+   "13 m",
+   "14 m",
+   "15 m"
+  ],
+  "a": 1,
+  "e": "The height difference is 5 m. Distance² = 12² + 5² = 169, so the distance is 13 m.",
+  "qh": "6 m और 11 m ऊँचे दो खंभे समतल भूमि पर खड़े हैं और उनके आधारों के बीच की दूरी 12 m है। उनके शीर्षों के बीच की दूरी है:",
+  "oh": [
+   "12 m",
+   "13 m",
+   "14 m",
+   "15 m"
+  ],
+  "eh": "ऊँचाइयों का अंतर 5 m है। दूरी² = 12² + 5² = 169, अतः दूरी 13 m है।"
+ },
+ {
+  "id": 203,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "hard",
+  "q": "The sides of a triangle are in the ratio 3 : 4 : 5 and its perimeter is 60 cm. Its area is:",
+  "o": [
+   "150 cm²",
+   "300 cm²",
+   "120 cm²",
+   "200 cm²"
+  ],
+  "a": 0,
+  "e": "The sides are 15, 20, 25 cm. Since 15² + 20² = 25², it is right-angled, so area = ½ × 15 × 20 = 150 cm².",
+  "qh": "एक त्रिभुज की भुजाएँ 3 : 4 : 5 के अनुपात में हैं और उसका परिमाप 60 cm है। उसका क्षेत्रफल है:",
+  "oh": [
+   "150 cm²",
+   "300 cm²",
+   "120 cm²",
+   "200 cm²"
+  ],
+  "eh": "भुजाएँ 15, 20, 25 cm हैं। 15² + 20² = 25² होने से यह समकोण त्रिभुज है, अतः क्षेत्रफल = ½ × 15 × 20 = 150 cm²."
+ },
+ {
+  "id": 204,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Triangles",
+  "d": "medium",
+  "q": "Which of the following pairs of figures is always similar?",
+  "o": [
+   "Any two equilateral triangles",
+   "Any two isosceles triangles",
+   "Any two rectangles",
+   "Any two rhombuses"
+  ],
+  "a": 0,
+  "e": "All angles of an equilateral triangle are 60° and the sides are in the same proportion, so any two are similar. Isosceles triangles, rectangles and rhombuses can have different angles or side ratios.",
+  "qh": "निम्नलिखित में से कौन-से आकार के युग्म सदैव समरूप होते हैं?",
+  "oh": [
+   "कोई भी दो समबाहु त्रिभुज",
+   "कोई भी दो समद्विबाहु त्रिभुज",
+   "कोई भी दो आयत",
+   "कोई भी दो समचतुर्भुज"
+  ],
+  "eh": "समबाहु त्रिभुज के सभी कोण 60° होते हैं और भुजाएँ समान अनुपात में होती हैं, अतः कोई भी दो समरूप हैं। समद्विबाहु त्रिभुज, आयत और समचतुर्भुज के कोण या भुजाओं के अनुपात भिन्न हो सकते हैं।"
+ },
+ {
+  "id": 205,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "The number of covalent bonds in a molecule of ethane (C₂H₆) is:",
+  "o": [
+   "6",
+   "7",
+   "8",
+   "5"
+  ],
+  "a": 1,
+  "e": "Ethane has six C–H bonds and one C–C bond, so 7 covalent bonds in all.",
+  "qh": "एथेन (C₂H₆) के एक अणु में सहसंयोजी आबंधों की संख्या है:",
+  "oh": [
+   "6",
+   "7",
+   "8",
+   "5"
+  ],
+  "eh": "एथेन में छह C–H आबंध और एक C–C आबंध हैं, अतः कुल 7 सहसंयोजी आबंध हैं।"
+ },
+ {
+  "id": 206,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Successive members of a homologous series differ by:",
+  "o": [
+   "CH₂",
+   "CH₃",
+   "C₂H₄",
+   "H₂"
+  ],
+  "a": 0,
+  "e": "Each member differs from the next by a –CH₂– unit, a mass difference of 14 u.",
+  "qh": "किसी सजातीय श्रेणी के क्रमागत सदस्यों में अंतर होता है:",
+  "oh": [
+   "CH₂",
+   "CH₃",
+   "C₂H₄",
+   "H₂"
+  ],
+  "eh": "प्रत्येक सदस्य अगले से –CH₂– इकाई से भिन्न होता है, जो 14 u द्रव्यमान का अंतर है।"
+ },
+ {
+  "id": 207,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "The functional group present in ethanoic acid is:",
+  "o": [
+   "–COOH",
+   "–CHO",
+   "–OH",
+   "–CO–"
+  ],
+  "a": 0,
+  "e": "Ethanoic acid (CH₃COOH) contains the carboxylic acid group –COOH.",
+  "qh": "एथेनोइक अम्ल में उपस्थित प्रातिकारी समूह है:",
+  "oh": [
+   "–COOH",
+   "–CHO",
+   "–OH",
+   "–CO–"
+  ],
+  "eh": "एथेनोइक अम्ल (CH₃COOH) में कार्बोक्सिलिक अम्ल समूह –COOH होता है।"
+ },
+ {
+  "id": 208,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "hard",
+  "q": "The IUPAC name of CH₃–CH₂–CH₂–CHO is:",
+  "o": [
+   "Butanone",
+   "Butanal",
+   "Butanol",
+   "Butanoic acid"
+  ],
+  "a": 1,
+  "e": "Four carbon atoms give 'but-' and the –CHO group gives the suffix '-al', so it is butanal.",
+  "qh": "CH₃–CH₂–CH₂–CHO का IUPAC नाम है:",
+  "oh": [
+   "ब्यूटेनोन",
+   "ब्यूटेनैल",
+   "ब्यूटेनॉल",
+   "ब्यूटेनोइक अम्ल"
+  ],
+  "eh": "चार कार्बन परमाणुओं से 'ब्यूट-' और –CHO समूह से प्रत्यय '-ऐल' मिलता है, अतः यह ब्यूटेनैल है।"
+ },
+ {
+  "id": 209,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "hard",
+  "q": "The number of structural isomers of butane (C₄H₁₀) is:",
+  "o": [
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "a": 1,
+  "e": "The two isomers are straight-chain n-butane and branched 2-methylpropane (isobutane).",
+  "qh": "ब्यूटेन (C₄H₁₀) के संरचनात्मक समावयवियों की संख्या है:",
+  "oh": [
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "eh": "दो समावयवी हैं: सीधी शृंखला वाला n-ब्यूटेन और शाखित 2-मेथिलप्रोपेन (आइसोब्यूटेन)।"
+ },
+ {
+  "id": 210,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "The molecular formula of the next homologue of C₃H₆ is:",
+  "o": [
+   "C₄H₈",
+   "C₄H₁₀",
+   "C₃H₈",
+   "C₄H₆"
+  ],
+  "a": 0,
+  "e": "Adding one CH₂ unit to C₃H₆ gives C₄H₈ (butene).",
+  "qh": "C₃H₆ के अगले सजातीय का आण्विक सूत्र है:",
+  "oh": [
+   "C₄H₈",
+   "C₄H₁₀",
+   "C₃H₈",
+   "C₄H₆"
+  ],
+  "eh": "C₃H₆ में एक CH₂ इकाई जोड़ने पर C₄H₈ (ब्यूटीन) मिलता है।"
+ },
+ {
+  "id": 211,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Soap is the sodium or potassium salt of:",
+  "o": [
+   "Long-chain carboxylic acids",
+   "Sulphuric acid",
+   "Hydrochloric acid",
+   "Short-chain alcohols"
+  ],
+  "a": 0,
+  "e": "Soaps are sodium or potassium salts of long-chain fatty (carboxylic) acids. They are made by saponification.",
+  "qh": "साबुन किसका सोडियम या पोटैशियम लवण होता है?",
+  "oh": [
+   "लंबी शृंखला वाले कार्बोक्सिलिक अम्लों का",
+   "सल्फ्यूरिक अम्ल का",
+   "हाइड्रोक्लोरिक अम्ल का",
+   "छोटी शृंखला वाले ऐल्कोहॉलों का"
+  ],
+  "eh": "साबुन लंबी शृंखला वाले वसीय (कार्बोक्सिलिक) अम्लों के सोडियम या पोटैशियम लवण होते हैं। इन्हें साबुनीकरण से बनाया जाता है।"
+ },
+ {
+  "id": 212,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Ethanol reacts with ethanoic acid in the presence of concentrated H₂SO₄ to form:",
+  "o": [
+   "Ethyl ethanoate",
+   "Methyl ethanoate",
+   "Ethanal",
+   "Ethane"
+  ],
+  "a": 0,
+  "e": "CH₃COOH + C₂H₅OH → CH₃COOC₂H₅ + H₂O. The ester has a sweet, fruity smell.",
+  "qh": "सांद्र H₂SO₄ की उपस्थिति में एथेनॉल, एथेनोइक अम्ल से अभिक्रिया करके बनाता है:",
+  "oh": [
+   "एथिल एथेनोएट",
+   "मेथिल एथेनोएट",
+   "एथेनैल",
+   "एथेन"
+  ],
+  "eh": "CH₃COOH + C₂H₅OH → CH₃COOC₂H₅ + H₂O. एस्टर की गंध मीठी और फलों जैसी होती है।"
+ },
+ {
+  "id": 213,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Vegetable oils are converted into vegetable ghee by hydrogenation using which catalyst?",
+  "o": [
+   "Nickel",
+   "Iron",
+   "Copper",
+   "Zinc"
+  ],
+  "a": 0,
+  "e": "Unsaturated oils add hydrogen in the presence of nickel catalyst to become saturated fats.",
+  "qh": "वनस्पति तेलों को वनस्पति घी में बदलने के लिए हाइड्रोजनीकरण में कौन-सा उत्प्रेरक प्रयुक्त होता है?",
+  "oh": [
+   "निकेल",
+   "आयरन",
+   "कॉपर",
+   "जिंक"
+  ],
+  "eh": "असंतृप्त तेल निकेल उत्प्रेरक की उपस्थिति में हाइड्रोजन जोड़कर संतृप्त वसा बन जाते हैं।"
+ },
+ {
+  "id": 214,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "The general formula of alkynes is:",
+  "o": [
+   "CₙH₂ₙ₊₂",
+   "CₙH₂ₙ",
+   "CₙH₂ₙ₋₂",
+   "CₙHₙ"
+  ],
+  "a": 2,
+  "e": "Alkynes contain a carbon–carbon triple bond, e.g. C₂H₂ and C₃H₄, so the formula is CₙH₂ₙ₋₂.",
+  "qh": "ऐल्काइनों का सामान्य सूत्र है:",
+  "oh": [
+   "CₙH₂ₙ₊₂",
+   "CₙH₂ₙ",
+   "CₙH₂ₙ₋₂",
+   "CₙHₙ"
+  ],
+  "eh": "ऐल्काइनों में कार्बन-कार्बन त्रिबंध होता है, जैसे C₂H₂ और C₃H₄, अतः सूत्र CₙH₂ₙ₋₂ है।"
+ },
+ {
+  "id": 215,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Which of the following hydrocarbons undergoes addition reactions?",
+  "o": [
+   "C₂H₆",
+   "C₂H₄",
+   "CH₄",
+   "C₃H₈"
+  ],
+  "a": 1,
+  "e": "Unsaturated hydrocarbons such as ethene (C₂H₄) have a double bond and undergo addition. C₂H₆, CH₄ and C₃H₈ are saturated.",
+  "qh": "निम्नलिखित में कौन-सा हाइड्रोकार्बन योगात्मक अभिक्रिया करता है?",
+  "oh": [
+   "C₂H₆",
+   "C₂H₄",
+   "CH₄",
+   "C₃H₈"
+  ],
+  "eh": "एथीन (C₂H₄) जैसे असंतृप्त हाइड्रोकार्बन में द्विबंध होता है और वे योगात्मक अभिक्रिया करते हैं। C₂H₆, CH₄ और C₃H₈ संतृप्त हैं।"
+ },
+ {
+  "id": 216,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "hard",
+  "q": "In the cleansing action of soap, the hydrocarbon (hydrophobic) tail of soap molecules attaches to:",
+  "o": [
+   "Water",
+   "Oil or grease",
+   "Both equally",
+   "Neither"
+  ],
+  "a": 1,
+  "e": "The hydrophobic tail dissolves in oil and grease, while the ionic (hydrophilic) head stays in water. Micelles form and carry the dirt away.",
+  "qh": "साबुन की सफाई क्रिया में साबुन अणुओं की हाइड्रोकार्बन (जलविरोधी) पूँछ किससे जुड़ती है?",
+  "oh": [
+   "जल से",
+   "तेल या चिकनाई से",
+   "दोनों से समान रूप से",
+   "किसी से नहीं"
+  ],
+  "eh": "जलविरोधी पूँछ तेल और चिकनाई में घुलती है जबकि आयनिक (जलस्नेही) सिरा जल में रहता है। मिसेल बनते हैं और मैल को बहा ले जाते हैं।"
+ },
+ {
+  "id": 217,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "hard",
+  "q": "Heating ethanol with excess concentrated H₂SO₄ at 443 K gives:",
+  "o": [
+   "Ethene",
+   "Ethane",
+   "Ethanal",
+   "Ethanoic acid"
+  ],
+  "a": 0,
+  "e": "Conc. H₂SO₄ acts as a dehydrating agent: CH₃CH₂OH → CH₂=CH₂ + H₂O.",
+  "qh": "एथेनॉल को सांद्र H₂SO₄ की अधिकता के साथ 443 K पर गरम करने पर बनता है:",
+  "oh": [
+   "एथीन",
+   "एथेन",
+   "एथेनैल",
+   "एथेनोइक अम्ल"
+  ],
+  "eh": "सांद्र H₂SO₄ निर्जलीकारक का काम करता है: CH₃CH₂OH → CH₂=CH₂ + H₂O."
+ },
+ {
+  "id": 218,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Ethanol on oxidation with alkaline KMnO₄ (or acidified K₂Cr₂O₇) gives:",
+  "o": [
+   "Ethanoic acid",
+   "Ethene",
+   "Ethyl ethanoate",
+   "Methane"
+  ],
+  "a": 0,
+  "e": "Oxidising agents convert ethanol to ethanoic acid: CH₃CH₂OH → CH₃COOH.",
+  "qh": "क्षारीय KMnO₄ (या अम्लीकृत K₂Cr₂O₇) द्वारा ऑक्सीकरण करने पर एथेनॉल देता है:",
+  "oh": [
+   "एथेनोइक अम्ल",
+   "एथीन",
+   "एथिल एथेनोएट",
+   "मेथेन"
+  ],
+  "eh": "ऑक्सीकारक एथेनॉल को एथेनोइक अम्ल में बदल देते हैं: CH₃CH₂OH → CH₃COOH."
+ },
+ {
+  "id": 219,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Denatured alcohol is ethanol mixed with a small amount of:",
+  "o": [
+   "Methanol (a poison)",
+   "Water",
+   "Glucose",
+   "Acetic acid"
+  ],
+  "a": 0,
+  "e": "Poisonous methanol (and dyes) are added so that the ethanol is unfit for drinking.",
+  "qh": "विकृत ऐल्कोहॉल (डिनेचर्ड अल्कोहल) वह एथेनॉल है जिसमें थोड़ी मात्रा मिलाई जाती है:",
+  "oh": [
+   "मेथेनॉल (एक विष) की",
+   "जल की",
+   "ग्लूकोज़ की",
+   "ऐसीटिक अम्ल की"
+  ],
+  "eh": "विषैला मेथेनॉल (और रंजक) मिलाया जाता है ताकि एथेनॉल पीने योग्य न रहे।"
+ },
+ {
+  "id": 220,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "In diamond, each carbon atom is bonded to how many other carbon atoms?",
+  "o": [
+   "2",
+   "3",
+   "4",
+   "6"
+  ],
+  "a": 2,
+  "e": "Each carbon forms four strong covalent bonds in a rigid three-dimensional network, making diamond very hard.",
+  "qh": "हीरे में प्रत्येक कार्बन परमाणु अन्य कितने कार्बन परमाणुओं से जुड़ा होता है?",
+  "oh": [
+   "2",
+   "3",
+   "4",
+   "6"
+  ],
+  "eh": "प्रत्येक कार्बन एक दृढ़ त्रिविमीय जालक में चार प्रबल सहसंयोजी आबंध बनाता है, जिससे हीरा बहुत कठोर होता है।"
+ },
+ {
+  "id": 221,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "medium",
+  "q": "Unsaturated hydrocarbons burn in air with:",
+  "o": [
+   "A clean blue flame",
+   "A yellow sooty flame",
+   "A green flame",
+   "No flame"
+  ],
+  "a": 1,
+  "e": "Unsaturated hydrocarbons have a higher carbon percentage, so combustion is incomplete and gives a yellow, sooty flame. Saturated ones burn with a clean blue flame.",
+  "qh": "असंतृप्त हाइड्रोकार्बन वायु में जलते हैं:",
+  "oh": [
+   "साफ नीली ज्वाला से",
+   "पीली कालिखयुक्त ज्वाला से",
+   "हरी ज्वाला से",
+   "बिना ज्वाला के"
+  ],
+  "eh": "असंतृप्त हाइड्रोकार्बन में कार्बन का प्रतिशत अधिक होता है, अतः अपूर्ण दहन होता है और पीली कालिखयुक्त ज्वाला मिलती है। संतृप्त हाइड्रोकार्बन साफ नीली ज्वाला से जलते हैं।"
+ },
+ {
+  "id": 222,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Carbon and its Compounds",
+  "d": "hard",
+  "q": "The total number of covalent bonds in a molecule of ethene (C₂H₄) is:",
+  "o": [
+   "5",
+   "6",
+   "7",
+   "4"
+  ],
+  "a": 1,
+  "e": "Ethene has four C–H bonds and one C=C double bond (which counts as two covalent bonds), so 4 + 2 = 6.",
+  "qh": "एथीन (C₂H₄) के एक अणु में कुल सहसंयोजी आबंधों की संख्या है:",
+  "oh": [
+   "5",
+   "6",
+   "7",
+   "4"
+  ],
+  "eh": "एथीन में चार C–H आबंध और एक C=C द्विबंध (जो दो सहसंयोजी आबंध गिना जाता है) हैं, अतः 4 + 2 = 6."
+ },
+ {
+  "id": 223,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "medium",
+  "q": "The distance between the points (−5, 7) and (−1, 3) is:",
+  "o": [
+   "4√2",
+   "8",
+   "4",
+   "2√2"
+  ],
+  "a": 0,
+  "e": "d = √[(−1 + 5)² + (3 − 7)²] = √(16 + 16) = √32 = 4√2.",
+  "qh": "बिंदुओं (−5, 7) और (−1, 3) के बीच की दूरी है:",
+  "oh": [
+   "4√2",
+   "8",
+   "4",
+   "2√2"
+  ],
+  "eh": "d = √[(−1 + 5)² + (3 − 7)²] = √(16 + 16) = √32 = 4√2."
+ },
+ {
+  "id": 224,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "medium",
+  "q": "The distance of the point (3, −4) from the origin is:",
+  "o": [
+   "5",
+   "7",
+   "1",
+   "25"
+  ],
+  "a": 0,
+  "e": "d = √(3² + (−4)²) = √25 = 5.",
+  "qh": "बिंदु (3, −4) की मूलबिंदु से दूरी है:",
+  "oh": [
+   "5",
+   "7",
+   "1",
+   "25"
+  ],
+  "eh": "d = √(3² + (−4)²) = √25 = 5."
+ },
+ {
+  "id": 225,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "medium",
+  "q": "The mid-point of the line segment joining (−6, 10) and (8, −4) is:",
+  "o": [
+   "(1, 3)",
+   "(2, 6)",
+   "(−1, −3)",
+   "(7, 3)"
+  ],
+  "a": 0,
+  "e": "Mid-point = ((−6 + 8)/2, (10 − 4)/2) = (1, 3).",
+  "qh": "(−6, 10) और (8, −4) को मिलाने वाले रेखाखंड का मध्य-बिंदु है:",
+  "oh": [
+   "(1, 3)",
+   "(2, 6)",
+   "(−1, −3)",
+   "(7, 3)"
+  ],
+  "eh": "मध्य-बिंदु = ((−6 + 8)/2, (10 − 4)/2) = (1, 3)."
+ },
+ {
+  "id": 226,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The point which divides the line segment joining (4, −3) and (8, 5) internally in the ratio 3 : 1 is:",
+  "o": [
+   "(7, 3)",
+   "(5, −1)",
+   "(6, 1)",
+   "(7, −3)"
+  ],
+  "a": 0,
+  "e": "x = (3×8 + 1×4)/4 = 7 and y = (3×5 + 1×(−3))/4 = 3. The point is (7, 3).",
+  "qh": "(4, −3) और (8, 5) को मिलाने वाले रेखाखंड को 3 : 1 के अनुपात में अंतः विभाजित करने वाला बिंदु है:",
+  "oh": [
+   "(7, 3)",
+   "(5, −1)",
+   "(6, 1)",
+   "(7, −3)"
+  ],
+  "eh": "x = (3×8 + 1×4)/4 = 7 और y = (3×5 + 1×(−3))/4 = 3. बिंदु (7, 3) है।"
+ },
+ {
+  "id": 227,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The value(s) of x for which the distance between (x, 2) and (9, 8) is 10 units are:",
+  "o": [
+   "1 or 17",
+   "−1 or 17",
+   "1 or −17",
+   "9 only"
+  ],
+  "a": 0,
+  "e": "(9 − x)² + 36 = 100 gives (9 − x)² = 64, so 9 − x = ±8 and x = 1 or 17.",
+  "qh": "x के वे मान जिनके लिए (x, 2) और (9, 8) के बीच की दूरी 10 इकाई है:",
+  "oh": [
+   "1 या 17",
+   "−1 या 17",
+   "1 या −17",
+   "केवल 9"
+  ],
+  "eh": "(9 − x)² + 36 = 100 से (9 − x)² = 64, अतः 9 − x = ±8 और x = 1 या 17."
+ },
+ {
+  "id": 228,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The point on the x-axis which is equidistant from (2, −5) and (−2, 9) is:",
+  "o": [
+   "(−7, 0)",
+   "(7, 0)",
+   "(0, −7)",
+   "(0, 7)"
+  ],
+  "a": 0,
+  "e": "Let the point be (x, 0). (x − 2)² + 25 = (x + 2)² + 81 gives −8x = 56, so x = −7. Check: both distances are √106.",
+  "qh": "x-अक्ष पर वह बिंदु जो (2, −5) और (−2, 9) से समदूरस्थ है:",
+  "oh": [
+   "(−7, 0)",
+   "(7, 0)",
+   "(0, −7)",
+   "(0, 7)"
+  ],
+  "eh": "बिंदु (x, 0) मानें। (x − 2)² + 25 = (x + 2)² + 81 से −8x = 56, अतः x = −7. जाँच: दोनों दूरियाँ √106 हैं।"
+ },
+ {
+  "id": 229,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "medium",
+  "q": "The centroid of the triangle with vertices (1, 2), (3, −4) and (5, 8) is:",
+  "o": [
+   "(3, 2)",
+   "(9, 6)",
+   "(2, 3)",
+   "(3, 6)"
+  ],
+  "a": 0,
+  "e": "Centroid = ((1 + 3 + 5)/3, (2 − 4 + 8)/3) = (3, 2).",
+  "qh": "शीर्षों (1, 2), (3, −4) और (5, 8) वाले त्रिभुज का केंद्रक है:",
+  "oh": [
+   "(3, 2)",
+   "(9, 6)",
+   "(2, 3)",
+   "(3, 6)"
+  ],
+  "eh": "केंद्रक = ((1 + 3 + 5)/3, (2 − 4 + 8)/3) = (3, 2)."
+ },
+ {
+  "id": 230,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The area of the triangle with vertices (1, −1), (−4, 6) and (−3, −5) is:",
+  "o": [
+   "24 sq. units",
+   "48 sq. units",
+   "12 sq. units",
+   "26 sq. units"
+  ],
+  "a": 0,
+  "e": "Area = ½ |1(6 + 5) + (−4)(−5 + 1) + (−3)(−1 − 6)| = ½ |11 + 16 + 21| = 24.",
+  "qh": "शीर्षों (1, −1), (−4, 6) और (−3, −5) वाले त्रिभुज का क्षेत्रफल है:",
+  "oh": [
+   "24 वर्ग इकाई",
+   "48 वर्ग इकाई",
+   "12 वर्ग इकाई",
+   "26 वर्ग इकाई"
+  ],
+  "eh": "क्षेत्रफल = ½ |1(6 + 5) + (−4)(−5 + 1) + (−3)(−1 − 6)| = ½ |11 + 16 + 21| = 24."
+ },
+ {
+  "id": 231,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The points (7, −2), (5, 1) and (3, k) are collinear if k is:",
+  "o": [
+   "4",
+   "−4",
+   "3",
+   "5"
+  ],
+  "a": 0,
+  "e": "For collinear points the area is zero: 7(1 − k) + 5(k + 2) + 3(−2 − 1) = 0 gives 8 − 2k = 0, so k = 4.",
+  "qh": "बिंदु (7, −2), (5, 1) और (3, k) संरेख होंगे यदि k का मान है:",
+  "oh": [
+   "4",
+   "−4",
+   "3",
+   "5"
+  ],
+  "eh": "संरेख बिंदुओं के लिए क्षेत्रफल शून्य होता है: 7(1 − k) + 5(k + 2) + 3(−2 − 1) = 0 से 8 − 2k = 0, अतः k = 4."
+ },
+ {
+  "id": 232,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The x-axis divides the line segment joining (−4, −6) and (−1, 7) in the ratio:",
+  "o": [
+   "6 : 7",
+   "7 : 6",
+   "1 : 2",
+   "2 : 1"
+  ],
+  "a": 0,
+  "e": "Let the ratio be k : 1. On the x-axis y = 0, so (7k − 6)/(k + 1) = 0 gives k = 6/7. The ratio is 6 : 7 (internally).",
+  "qh": "x-अक्ष, (−4, −6) और (−1, 7) को मिलाने वाले रेखाखंड को किस अनुपात में विभाजित करता है?",
+  "oh": [
+   "6 : 7",
+   "7 : 6",
+   "1 : 2",
+   "2 : 1"
+  ],
+  "eh": "अनुपात k : 1 मानें। x-अक्ष पर y = 0, अतः (7k − 6)/(k + 1) = 0 से k = 6/7. अनुपात 6 : 7 (अंतः) है।"
+ },
+ {
+  "id": 233,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The point on the y-axis which is equidistant from (−5, −2) and (3, 2) is:",
+  "o": [
+   "(0, −2)",
+   "(0, 2)",
+   "(−2, 0)",
+   "(2, 0)"
+  ],
+  "a": 0,
+  "e": "Let the point be (0, y). 25 + (y + 2)² = 9 + (y − 2)² gives 8y = −16, so y = −2. Both distances are 5.",
+  "qh": "y-अक्ष पर वह बिंदु जो (−5, −2) और (3, 2) से समदूरस्थ है:",
+  "oh": [
+   "(0, −2)",
+   "(0, 2)",
+   "(−2, 0)",
+   "(2, 0)"
+  ],
+  "eh": "बिंदु (0, y) मानें। 25 + (y + 2)² = 9 + (y − 2)² से 8y = −16, अतः y = −2. दोनों दूरियाँ 5 हैं।"
+ },
+ {
+  "id": 234,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "Three vertices of a parallelogram ABCD are A(1, 2), B(4, 3) and C(6, 6). The fourth vertex D is:",
+  "o": [
+   "(3, 5)",
+   "(5, 3)",
+   "(9, 7)",
+   "(1, 1)"
+  ],
+  "a": 0,
+  "e": "Diagonals bisect each other, so D = A + C − B = (1 + 6 − 4, 2 + 6 − 3) = (3, 5).",
+  "qh": "समांतर चतुर्भुज ABCD के तीन शीर्ष A(1, 2), B(4, 3) और C(6, 6) हैं। चौथा शीर्ष D है:",
+  "oh": [
+   "(3, 5)",
+   "(5, 3)",
+   "(9, 7)",
+   "(1, 1)"
+  ],
+  "eh": "विकर्ण एक-दूसरे को समद्विभाजित करते हैं, अतः D = A + C − B = (1 + 6 − 4, 2 + 6 − 3) = (3, 5)."
+ },
+ {
+  "id": 235,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The point P which divides the segment joining A(−1, 7) and B(4, −3) in the ratio 2 : 3 is:",
+  "o": [
+   "(1, 3)",
+   "(3, 1)",
+   "(−1, 3)",
+   "(1, −3)"
+  ],
+  "a": 0,
+  "e": "x = (2×4 + 3×(−1))/5 = 1 and y = (2×(−3) + 3×7)/5 = 3. P = (1, 3).",
+  "qh": "A(−1, 7) और B(4, −3) को मिलाने वाले रेखाखंड को 2 : 3 में विभाजित करने वाला बिंदु P है:",
+  "oh": [
+   "(1, 3)",
+   "(3, 1)",
+   "(−1, 3)",
+   "(1, −3)"
+  ],
+  "eh": "x = (2×4 + 3×(−1))/5 = 1 और y = (2×(−3) + 3×7)/5 = 3. P = (1, 3)."
+ },
+ {
+  "id": 236,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The distance between (a cos θ + b sin θ, 0) and (0, a sin θ − b cos θ) is:",
+  "o": [
+   "√(a² + b²)",
+   "a² + b²",
+   "a + b",
+   "√(a² − b²)"
+  ],
+  "a": 0,
+  "e": "d² = (a cos θ + b sin θ)² + (a sin θ − b cos θ)² = a²(cos²θ + sin²θ) + b²(sin²θ + cos²θ) = a² + b².",
+  "qh": "(a cos θ + b sin θ, 0) और (0, a sin θ − b cos θ) के बीच की दूरी है:",
+  "oh": [
+   "√(a² + b²)",
+   "a² + b²",
+   "a + b",
+   "√(a² − b²)"
+  ],
+  "eh": "d² = (a cos θ + b sin θ)² + (a sin θ − b cos θ)² = a²(cos²θ + sin²θ) + b²(sin²θ + cos²θ) = a² + b²."
+ },
+ {
+  "id": 237,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The triangle with vertices (1, 1), (−1, −1) and (−√3, √3) is:",
+  "o": [
+   "Equilateral",
+   "Isosceles but not equilateral",
+   "Right-angled",
+   "Scalene"
+  ],
+  "a": 0,
+  "e": "All three sides come out as √8 = 2√2: (1,1)–(−1,−1), (−1,−1)–(−√3,√3) and (1,1)–(−√3,√3). So it is equilateral.",
+  "qh": "शीर्षों (1, 1), (−1, −1) और (−√3, √3) वाला त्रिभुज है:",
+  "oh": [
+   "समबाहु",
+   "समद्विबाहु पर समबाहु नहीं",
+   "समकोण",
+   "विषमबाहु"
+  ],
+  "eh": "तीनों भुजाएँ √8 = 2√2 आती हैं: (1,1)–(−1,−1), (−1,−1)–(−√3,√3) और (1,1)–(−√3,√3). अतः यह समबाहु है।"
+ },
+ {
+  "id": 238,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "medium",
+  "q": "The centre of a circle whose diameter has end-points (3, 4) and (−5, 2) is:",
+  "o": [
+   "(−1, 3)",
+   "(1, 3)",
+   "(−4, 3)",
+   "(−2, 6)"
+  ],
+  "a": 0,
+  "e": "The centre is the mid-point of the diameter: ((3 − 5)/2, (4 + 2)/2) = (−1, 3).",
+  "qh": "उस वृत्त का केंद्र जिसके व्यास के सिरे (3, 4) और (−5, 2) हैं:",
+  "oh": [
+   "(−1, 3)",
+   "(1, 3)",
+   "(−4, 3)",
+   "(−2, 6)"
+  ],
+  "eh": "केंद्र व्यास का मध्य-बिंदु होता है: ((3 − 5)/2, (4 + 2)/2) = (−1, 3)."
+ },
+ {
+  "id": 239,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "The points (−1, −2), (1, 0), (−1, 2) and (−3, 0) taken in order form a:",
+  "o": [
+   "Square",
+   "Rhombus but not a square",
+   "Rectangle but not a square",
+   "Parallelogram only"
+  ],
+  "a": 0,
+  "e": "All four sides are 2√2. The diagonals (−1,−2)–(−1,2) and (1,0)–(−3,0) are both 4, so the equal sides and equal diagonals make it a square.",
+  "qh": "बिंदु (−1, −2), (1, 0), (−1, 2) और (−3, 0) को क्रम से मिलाने पर बनता है:",
+  "oh": [
+   "वर्ग",
+   "समचतुर्भुज पर वर्ग नहीं",
+   "आयत पर वर्ग नहीं",
+   "केवल समांतर चतुर्भुज"
+  ],
+  "eh": "चारों भुजाएँ 2√2 हैं। विकर्ण (−1,−2)–(−1,2) और (1,0)–(−3,0) दोनों 4 हैं, अतः बराबर भुजाओं और बराबर विकर्णों से यह वर्ग है।"
+ },
+ {
+  "id": 240,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Coordinate Geometry",
+  "d": "hard",
+  "q": "If P(x, y) is equidistant from A(5, 1) and B(−1, 5), then:",
+  "o": [
+   "3x = 2y",
+   "2x = 3y",
+   "x = y",
+   "x + y = 6"
+  ],
+  "a": 0,
+  "e": "(x − 5)² + (y − 1)² = (x + 1)² + (y − 5)² simplifies to −10x − 2y = 2x − 10y, so 12x = 8y, i.e. 3x = 2y.",
+  "qh": "यदि P(x, y), A(5, 1) और B(−1, 5) से समदूरस्थ है, तो:",
+  "oh": [
+   "3x = 2y",
+   "2x = 3y",
+   "x = y",
+   "x + y = 6"
+  ],
+  "eh": "(x − 5)² + (y − 1)² = (x + 1)² + (y − 5)² को सरल करने पर −10x − 2y = 2x − 10y, अतः 12x = 8y, अर्थात् 3x = 2y."
+ },
+ {
+  "id": 241,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "hard",
+  "q": "The oxygen released during photosynthesis comes from:",
+  "o": [
+   "Water",
+   "Carbon dioxide",
+   "Glucose",
+   "Chlorophyll"
+  ],
+  "a": 0,
+  "e": "Light energy splits water molecules into hydrogen and oxygen. The oxygen is released and the hydrogen reduces CO₂ to carbohydrate.",
+  "qh": "प्रकाश संश्लेषण में निकलने वाली ऑक्सीजन आती है:",
+  "oh": [
+   "जल से",
+   "कार्बन डाइऑक्साइड से",
+   "ग्लूकोज़ से",
+   "क्लोरोफिल से"
+  ],
+  "eh": "प्रकाश ऊर्जा जल के अणुओं को हाइड्रोजन और ऑक्सीजन में विखंडित करती है। ऑक्सीजन मुक्त होती है और हाइड्रोजन CO₂ का अपचयन करके कार्बोहाइड्रेट बनाती है।"
+ },
+ {
+  "id": 242,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "Stomata open when their guard cells:",
+  "o": [
+   "Lose water and shrink",
+   "Take in water and swell",
+   "Release carbon dioxide only",
+   "Stop photosynthesis"
+  ],
+  "a": 1,
+  "e": "When water flows into the guard cells they swell and the stomatal pore opens. When they lose water the pore closes.",
+  "qh": "रंध्र तब खुलते हैं जब उनकी द्वार कोशिकाएँ:",
+  "oh": [
+   "जल खोकर सिकुड़ती हैं",
+   "जल लेकर फूलती हैं",
+   "केवल कार्बन डाइऑक्साइड छोड़ती हैं",
+   "प्रकाश संश्लेषण बंद कर देती हैं"
+  ],
+  "eh": "द्वार कोशिकाओं में जल आने पर वे फूल जाती हैं और रंध्र छिद्र खुल जाता है। जल निकलने पर छिद्र बंद हो जाता है।"
+ },
+ {
+  "id": 243,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "Which enzyme in saliva begins the digestion of starch?",
+  "o": [
+   "Salivary amylase",
+   "Pepsin",
+   "Trypsin",
+   "Lipase"
+  ],
+  "a": 0,
+  "e": "Salivary amylase breaks down starch into sugar (maltose) in the mouth.",
+  "qh": "लार में उपस्थित कौन-सा एंजाइम मंड (स्टार्च) का पाचन शुरू करता है?",
+  "oh": [
+   "लार एमिलेस",
+   "पेप्सिन",
+   "ट्रिप्सिन",
+   "लाइपेस"
+  ],
+  "eh": "लार एमिलेस मुँह में स्टार्च को शर्करा (माल्टोज़) में तोड़ देता है।"
+ },
+ {
+  "id": 244,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The hydrochloric acid secreted in the stomach:",
+  "o": [
+   "Digests fats",
+   "Creates an acidic medium for pepsin and kills bacteria",
+   "Absorbs water",
+   "Emulsifies fats"
+  ],
+  "a": 1,
+  "e": "HCl makes the medium acidic so that pepsin can act on proteins, and it kills many bacteria that enter with food.",
+  "qh": "आमाशय में स्रावित हाइड्रोक्लोरिक अम्ल:",
+  "oh": [
+   "वसा का पाचन करता है",
+   "पेप्सिन के लिए अम्लीय माध्यम बनाता है और जीवाणुओं को नष्ट करता है",
+   "जल का अवशोषण करता है",
+   "वसा का इमल्सीकरण करता है"
+  ],
+  "eh": "HCl माध्यम को अम्लीय बनाता है जिससे पेप्सिन प्रोटीन पर क्रिया कर सके, और भोजन के साथ आए कई जीवाणुओं को नष्ट करता है।"
+ },
+ {
+  "id": 245,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The main function of bile juice is to:",
+  "o": [
+   "Digest proteins",
+   "Emulsify fats",
+   "Digest starch",
+   "Absorb water"
+  ],
+  "a": 1,
+  "e": "Bile, made in the liver, breaks large fat globules into smaller ones (emulsification) and makes the food alkaline for pancreatic enzymes.",
+  "qh": "पित्त रस का मुख्य कार्य है:",
+  "oh": [
+   "प्रोटीन का पाचन",
+   "वसा का इमल्सीकरण",
+   "मंड का पाचन",
+   "जल का अवशोषण"
+  ],
+  "eh": "यकृत में बनने वाला पित्त वसा की बड़ी गोलिकाओं को छोटी गोलिकाओं में तोड़ता है (इमल्सीकरण) और भोजन को क्षारीय बनाता है ताकि अग्न्याशयी एंजाइम कार्य कर सकें।"
+ },
+ {
+  "id": 246,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The inner wall of the small intestine has villi in order to:",
+  "o": [
+   "Secrete bile",
+   "Increase the surface area for absorption",
+   "Digest proteins",
+   "Store food"
+  ],
+  "a": 1,
+  "e": "Finger-like villi greatly increase the surface area, and they are rich in blood vessels, so digested food is absorbed efficiently.",
+  "qh": "छोटी आँत की भीतरी दीवार में दीर्घरोम (विलाई) होते हैं ताकि:",
+  "oh": [
+   "पित्त स्रावित हो",
+   "अवशोषण के लिए पृष्ठीय क्षेत्रफल बढ़े",
+   "प्रोटीन का पाचन हो",
+   "भोजन संचित हो"
+  ],
+  "eh": "अंगुली जैसे दीर्घरोम पृष्ठीय क्षेत्रफल को बहुत बढ़ा देते हैं और रक्त वाहिकाओं से भरे होते हैं, जिससे पचे भोजन का कुशल अवशोषण होता है।"
+ },
+ {
+  "id": 247,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The first step of breakdown of glucose into pyruvate occurs in the:",
+  "o": [
+   "Cytoplasm",
+   "Mitochondria",
+   "Nucleus",
+   "Chloroplast"
+  ],
+  "a": 0,
+  "e": "Glucose (6C) is broken down to pyruvate (3C) in the cytoplasm of the cell. Further steps differ in the presence or absence of oxygen.",
+  "qh": "ग्लूकोज़ का पायरूवेट में टूटने का पहला चरण होता है:",
+  "oh": [
+   "कोशिकाद्रव्य में",
+   "माइटोकॉन्ड्रिया में",
+   "केंद्रक में",
+   "क्लोरोप्लास्ट में"
+  ],
+  "eh": "ग्लूकोज़ (6C) कोशिका के कोशिकाद्रव्य में पायरूवेट (3C) में टूटता है। आगे के चरण ऑक्सीजन की उपस्थिति या अनुपस्थिति पर निर्भर करते हैं।"
+ },
+ {
+  "id": 248,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "During heavy exercise, when oxygen is insufficient, our muscle cells produce:",
+  "o": [
+   "Lactic acid",
+   "Ethanol and CO₂",
+   "Acetic acid",
+   "Glycerol"
+  ],
+  "a": 0,
+  "e": "Pyruvate is converted to lactic acid by anaerobic respiration, and its build-up causes muscle cramps.",
+  "qh": "भारी व्यायाम के समय जब ऑक्सीजन अपर्याप्त होती है, तब हमारी पेशी कोशिकाएँ बनाती हैं:",
+  "oh": [
+   "लैक्टिक अम्ल",
+   "एथेनॉल और CO₂",
+   "ऐसीटिक अम्ल",
+   "ग्लिसरॉल"
+  ],
+  "eh": "अवायवीय श्वसन में पायरूवेट लैक्टिक अम्ल में बदल जाता है, और इसके जमा होने से पेशियों में ऐंठन होती है।"
+ },
+ {
+  "id": 249,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "hard",
+  "q": "The energy released by breaking the terminal phosphate bond of one mole of ATP is about:",
+  "o": [
+   "30.5 kJ/mol",
+   "3.05 kJ/mol",
+   "305 kJ/mol",
+   "0.305 kJ/mol"
+  ],
+  "a": 0,
+  "e": "ATP → ADP + Pi releases about 30.5 kJ/mol, which fuels muscle contraction, protein synthesis and other cell activities.",
+  "qh": "ATP के एक मोल के अंतिम फॉस्फेट बंध को तोड़ने पर लगभग कितनी ऊर्जा मुक्त होती है?",
+  "oh": [
+   "30.5 kJ/mol",
+   "3.05 kJ/mol",
+   "305 kJ/mol",
+   "0.305 kJ/mol"
+  ],
+  "eh": "ATP → ADP + Pi से लगभग 30.5 kJ/mol ऊर्जा मुक्त होती है, जो पेशी संकुचन, प्रोटीन संश्लेषण और अन्य कोशिकीय क्रियाओं को ऊर्जा देती है।"
+ },
+ {
+  "id": 250,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "hard",
+  "q": "The blood vessel that carries oxygenated blood from the lungs to the heart is the:",
+  "o": [
+   "Pulmonary vein",
+   "Pulmonary artery",
+   "Vena cava",
+   "Aorta"
+  ],
+  "a": 0,
+  "e": "The pulmonary vein carries oxygen-rich blood to the left atrium. The pulmonary artery is the exception that carries deoxygenated blood from the heart to the lungs.",
+  "qh": "फेफड़ों से हृदय तक ऑक्सीजनित रक्त ले जाने वाली रक्त वाहिका है:",
+  "oh": [
+   "फुफ्फुसीय शिरा",
+   "फुफ्फुसीय धमनी",
+   "महाशिरा",
+   "महाधमनी"
+  ],
+  "eh": "फुफ्फुसीय शिरा ऑक्सीजन युक्त रक्त को बाएँ आलिंद तक लाती है। फुफ्फुसीय धमनी अपवाद है जो हृदय से फेफड़ों तक विऑक्सीजनित रक्त ले जाती है।"
+ },
+ {
+  "id": 251,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The normal systolic/diastolic blood pressure of a healthy adult is about:",
+  "o": [
+   "120/80 mm Hg",
+   "80/120 mm Hg",
+   "140/90 mm Hg",
+   "100/60 mm Hg"
+  ],
+  "a": 0,
+  "e": "Normal blood pressure is about 120 mm Hg (systolic) over 80 mm Hg (diastolic).",
+  "qh": "एक स्वस्थ वयस्क का सामान्य सिस्टोलिक/डायस्टोलिक रक्तदाब लगभग होता है:",
+  "oh": [
+   "120/80 mm Hg",
+   "80/120 mm Hg",
+   "140/90 mm Hg",
+   "100/60 mm Hg"
+  ],
+  "eh": "सामान्य रक्तदाब लगभग 120 mm Hg (सिस्टोलिक) और 80 mm Hg (डायस्टोलिक) होता है।"
+ },
+ {
+  "id": 252,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "hard",
+  "q": "Lymph carries:",
+  "o": [
+   "Digested and absorbed fat from the intestine",
+   "Only oxygen",
+   "Only red blood cells",
+   "Urine"
+  ],
+  "a": 0,
+  "e": "Lymph is a colourless fluid that carries digested and absorbed fat from the intestine and drains excess fluid from the tissue spaces back to the blood.",
+  "qh": "लसीका (लिम्फ) ले जाती है:",
+  "oh": [
+   "आँत से पचा और अवशोषित वसा",
+   "केवल ऑक्सीजन",
+   "केवल लाल रक्त कणिकाएँ",
+   "मूत्र"
+  ],
+  "eh": "लसीका एक रंगहीन द्रव है जो आँत से पचे और अवशोषित वसा को ले जाती है तथा ऊतकों के अतिरिक्त द्रव को वापस रक्त में पहुँचाती है।"
+ },
+ {
+  "id": 253,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "Which tissue transports water and minerals from the roots to the leaves in plants?",
+  "o": [
+   "Xylem",
+   "Phloem",
+   "Cambium",
+   "Epidermis"
+  ],
+  "a": 0,
+  "e": "Xylem carries water and minerals upward. Phloem carries food made in the leaves (translocation).",
+  "qh": "पौधों में जड़ों से पत्तियों तक जल और खनिज कौन-सा ऊतक पहुँचाता है?",
+  "oh": [
+   "जाइलम",
+   "फ्लोएम",
+   "एधा (कैम्बियम)",
+   "बाह्यत्वचा"
+  ],
+  "eh": "जाइलम जल और खनिजों को ऊपर पहुँचाता है। फ्लोएम पत्तियों में बने भोजन का स्थानांतरण करता है।"
+ },
+ {
+  "id": 254,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "hard",
+  "q": "The main driving force for the upward movement of water in tall trees is:",
+  "o": [
+   "Root pressure only",
+   "Transpiration pull",
+   "Gravity",
+   "Translocation"
+  ],
+  "a": 1,
+  "e": "Evaporation of water from the leaves (transpiration) creates a suction that pulls the water column up through the xylem.",
+  "qh": "ऊँचे वृक्षों में जल के ऊपर चढ़ने का मुख्य प्रेरक बल है:",
+  "oh": [
+   "केवल मूल दाब",
+   "वाष्पोत्सर्जन खिंचाव",
+   "गुरुत्वाकर्षण",
+   "स्थानांतरण"
+  ],
+  "eh": "पत्तियों से जल का वाष्पीकरण (वाष्पोत्सर्जन) एक चूषण बल बनाता है जो जाइलम में जल स्तंभ को ऊपर खींचता है।"
+ },
+ {
+  "id": 255,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The structural and functional unit of the kidney is the:",
+  "o": [
+   "Neuron",
+   "Nephron",
+   "Nucleus",
+   "Alveolus"
+  ],
+  "a": 1,
+  "e": "Each kidney has about a million nephrons, each with a glomerulus, Bowman's capsule and a long renal tubule.",
+  "qh": "वृक्क की संरचनात्मक और क्रियात्मक इकाई है:",
+  "oh": [
+   "न्यूरॉन",
+   "नेफ्रॉन",
+   "केंद्रक",
+   "कूपिका (वायुकोष्ठिका)"
+  ],
+  "eh": "प्रत्येक वृक्क में लगभग दस लाख नेफ्रॉन होते हैं, जिनमें ग्लोमेरुलस, बोमन संपुट और लंबी वृक्क नलिका होती है।"
+ },
+ {
+  "id": 256,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "hard",
+  "q": "In a nephron, the selective reabsorption of glucose, amino acids and salts takes place in the:",
+  "o": [
+   "Glomerulus",
+   "Bowman's capsule",
+   "Renal tubule",
+   "Urethra"
+  ],
+  "a": 2,
+  "e": "Filtration takes place at the glomerulus and Bowman's capsule. Useful substances are then reabsorbed back into the blood as the filtrate flows along the renal tubule.",
+  "qh": "नेफ्रॉन में ग्लूकोज़, अमीनो अम्ल और लवणों का वरणात्मक पुनरावशोषण होता है:",
+  "oh": [
+   "ग्लोमेरुलस में",
+   "बोमन संपुट में",
+   "वृक्क नलिका में",
+   "मूत्रमार्ग में"
+  ],
+  "eh": "निस्यंदन ग्लोमेरुलस और बोमन संपुट में होता है। फिर निस्यंद के वृक्क नलिका में बहते समय उपयोगी पदार्थ वापस रक्त में अवशोषित हो जाते हैं।"
+ },
+ {
+  "id": 257,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "The exchange of gases in the lungs takes place in the:",
+  "o": [
+   "Bronchi",
+   "Trachea",
+   "Alveoli",
+   "Larynx"
+  ],
+  "a": 2,
+  "e": "Alveoli are tiny, thin-walled air sacs surrounded by blood capillaries, giving a very large surface for gas exchange.",
+  "qh": "फेफड़ों में गैसों का विनिमय होता है:",
+  "oh": [
+   "श्वसनिकाओं में",
+   "श्वास नली में",
+   "कूपिकाओं (ऐल्वियोलाई) में",
+   "स्वर यंत्र में"
+  ],
+  "eh": "कूपिकाएँ पतली दीवार वाली छोटी वायुकोष्ठिकाएँ हैं जो रुधिर कोशिकाओं से घिरी होती हैं, जिससे गैस विनिमय के लिए बहुत बड़ा पृष्ठ मिलता है।"
+ },
+ {
+  "id": 258,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Life Processes",
+  "d": "medium",
+  "q": "Which blood vessels have thick, elastic walls because blood flows through them under high pressure?",
+  "o": [
+   "Veins",
+   "Arteries",
+   "Capillaries",
+   "Lymph vessels"
+  ],
+  "a": 1,
+  "e": "Arteries carry blood away from the heart under high pressure, so their walls are thick and elastic.",
+  "qh": "किन रक्त वाहिकाओं की दीवारें मोटी और लचीली होती हैं क्योंकि उनमें रक्त उच्च दाब पर बहता है?",
+  "oh": [
+   "शिराएँ",
+   "धमनियाँ",
+   "केशिकाएँ",
+   "लसीका वाहिकाएँ"
+  ],
+  "eh": "धमनियाँ रक्त को हृदय से दूर उच्च दाब पर ले जाती हैं, इसलिए उनकी दीवारें मोटी और लचीली होती हैं।"
+ },
+ {
+  "id": 259,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "The value of sin 30° + cos 60° is:",
+  "o": [
+   "1",
+   "1/2",
+   "√3",
+   "0"
+  ],
+  "a": 0,
+  "e": "sin 30° = 1/2 and cos 60° = 1/2, so the sum is 1.",
+  "qh": "sin 30° + cos 60° का मान है:",
+  "oh": [
+   "1",
+   "1/2",
+   "√3",
+   "0"
+  ],
+  "eh": "sin 30° = 1/2 और cos 60° = 1/2, अतः योग 1 है।"
+ },
+ {
+  "id": 260,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "If sin A = 3/5 and A is acute, then tan A is:",
+  "o": [
+   "3/4",
+   "4/3",
+   "5/3",
+   "4/5"
+  ],
+  "a": 0,
+  "e": "cos A = √(1 − 9/25) = 4/5. tan A = sin A / cos A = 3/4.",
+  "qh": "यदि sin A = 3/5 और A न्यून कोण है, तो tan A का मान है:",
+  "oh": [
+   "3/4",
+   "4/3",
+   "5/3",
+   "4/5"
+  ],
+  "eh": "cos A = √(1 − 9/25) = 4/5. tan A = sin A / cos A = 3/4."
+ },
+ {
+  "id": 261,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "The value of sin 45° + cos 45° is:",
+  "o": [
+   "√2",
+   "1",
+   "2",
+   "√2/2"
+  ],
+  "a": 0,
+  "e": "sin 45° = cos 45° = 1/√2, so the sum is 2/√2 = √2.",
+  "qh": "sin 45° + cos 45° का मान है:",
+  "oh": [
+   "√2",
+   "1",
+   "2",
+   "√2/2"
+  ],
+  "eh": "sin 45° = cos 45° = 1/√2, अतः योग 2/√2 = √2 है।"
+ },
+ {
+  "id": 262,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "1 + tan²θ is equal to:",
+  "o": [
+   "sec²θ",
+   "cosec²θ",
+   "cot²θ",
+   "sin²θ"
+  ],
+  "a": 0,
+  "e": "Dividing sin²θ + cos²θ = 1 by cos²θ gives tan²θ + 1 = sec²θ.",
+  "qh": "1 + tan²θ बराबर है:",
+  "oh": [
+   "sec²θ",
+   "cosec²θ",
+   "cot²θ",
+   "sin²θ"
+  ],
+  "eh": "sin²θ + cos²θ = 1 को cos²θ से भाग देने पर tan²θ + 1 = sec²θ मिलता है।"
+ },
+ {
+  "id": 263,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "If sec θ = 13/12 (θ acute), then sin θ is:",
+  "o": [
+   "5/13",
+   "12/13",
+   "5/12",
+   "13/5"
+  ],
+  "a": 0,
+  "e": "cos θ = 12/13, so sin θ = √(1 − 144/169) = 5/13.",
+  "qh": "यदि sec θ = 13/12 (θ न्यून) है, तो sin θ का मान है:",
+  "oh": [
+   "5/13",
+   "12/13",
+   "5/12",
+   "13/5"
+  ],
+  "eh": "cos θ = 12/13, अतः sin θ = √(1 − 144/169) = 5/13."
+ },
+ {
+  "id": 264,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "The value of sin 60° cos 30° + sin 30° cos 60° is:",
+  "o": [
+   "1",
+   "0",
+   "3/4",
+   "√3"
+  ],
+  "a": 0,
+  "e": "(√3/2)(√3/2) + (1/2)(1/2) = 3/4 + 1/4 = 1.",
+  "qh": "sin 60° cos 30° + sin 30° cos 60° का मान है:",
+  "oh": [
+   "1",
+   "0",
+   "3/4",
+   "√3"
+  ],
+  "eh": "(√3/2)(√3/2) + (1/2)(1/2) = 3/4 + 1/4 = 1."
+ },
+ {
+  "id": 265,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "The value of (1 − tan² 45°)/(1 + tan² 45°) is:",
+  "o": [
+   "0",
+   "1",
+   "−1",
+   "1/2"
+  ],
+  "a": 0,
+  "e": "tan 45° = 1, so the expression is (1 − 1)/(1 + 1) = 0. (This equals cos 90°.)",
+  "qh": "(1 − tan² 45°)/(1 + tan² 45°) का मान है:",
+  "oh": [
+   "0",
+   "1",
+   "−1",
+   "1/2"
+  ],
+  "eh": "tan 45° = 1, अतः व्यंजक (1 − 1)/(1 + 1) = 0 है। (यह cos 90° के बराबर है।)"
+ },
+ {
+  "id": 266,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If sin 2A = cos(A − 18°), where 2A is an acute angle, then A is:",
+  "o": [
+   "36°",
+   "18°",
+   "54°",
+   "30°"
+  ],
+  "a": 0,
+  "e": "cos(A − 18°) = sin(90° − A + 18°) = sin(108° − A). So 2A = 108° − A, which gives 3A = 108° and A = 36°.",
+  "qh": "यदि sin 2A = cos(A − 18°) है, जहाँ 2A न्यून कोण है, तो A का मान है:",
+  "oh": [
+   "36°",
+   "18°",
+   "54°",
+   "30°"
+  ],
+  "eh": "cos(A − 18°) = sin(90° − A + 18°) = sin(108° − A). अतः 2A = 108° − A, जिससे 3A = 108° और A = 36°."
+ },
+ {
+  "id": 267,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "The value of tan 15° tan 25° tan 30° tan 65° tan 75° is:",
+  "o": [
+   "1/√3",
+   "1",
+   "√3",
+   "0"
+  ],
+  "a": 0,
+  "e": "tan 75° = cot 15° and tan 65° = cot 25°, so tan 15° tan 75° = 1 and tan 25° tan 65° = 1. What remains is tan 30° = 1/√3.",
+  "qh": "tan 15° tan 25° tan 30° tan 65° tan 75° का मान है:",
+  "oh": [
+   "1/√3",
+   "1",
+   "√3",
+   "0"
+  ],
+  "eh": "tan 75° = cot 15° और tan 65° = cot 25°, अतः tan 15° tan 75° = 1 और tan 25° tan 65° = 1. शेष बचता है tan 30° = 1/√3."
+ },
+ {
+  "id": 268,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "(sin θ − 2 sin³θ)/(2 cos³θ − cos θ) is equal to:",
+  "o": [
+   "tan θ",
+   "cot θ",
+   "sec θ",
+   "sin 2θ"
+  ],
+  "a": 0,
+  "e": "Numerator = sin θ (1 − 2 sin²θ) = sin θ cos 2θ. Denominator = cos θ (2 cos²θ − 1) = cos θ cos 2θ. The ratio is tan θ.",
+  "qh": "(sin θ − 2 sin³θ)/(2 cos³θ − cos θ) बराबर है:",
+  "oh": [
+   "tan θ",
+   "cot θ",
+   "sec θ",
+   "sin 2θ"
+  ],
+  "eh": "अंश = sin θ (1 − 2 sin²θ) = sin θ cos 2θ. हर = cos θ (2 cos²θ − 1) = cos θ cos 2θ. अनुपात tan θ है।"
+ },
+ {
+  "id": 269,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "(1 + cot²θ)(1 − cos θ)(1 + cos θ) is equal to:",
+  "o": [
+   "1",
+   "0",
+   "sin²θ",
+   "cos²θ"
+  ],
+  "a": 0,
+  "e": "1 + cot²θ = cosec²θ and (1 − cos θ)(1 + cos θ) = sin²θ. The product is cosec²θ × sin²θ = 1.",
+  "qh": "(1 + cot²θ)(1 − cos θ)(1 + cos θ) बराबर है:",
+  "oh": [
+   "1",
+   "0",
+   "sin²θ",
+   "cos²θ"
+  ],
+  "eh": "1 + cot²θ = cosec²θ और (1 − cos θ)(1 + cos θ) = sin²θ. गुणनफल cosec²θ × sin²θ = 1 है।"
+ },
+ {
+  "id": 270,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If sec θ + tan θ = x, then sec θ − tan θ is:",
+  "o": [
+   "1/x",
+   "x",
+   "x²",
+   "1 − x"
+  ],
+  "a": 0,
+  "e": "(sec θ + tan θ)(sec θ − tan θ) = sec²θ − tan²θ = 1, so sec θ − tan θ = 1/x.",
+  "qh": "यदि sec θ + tan θ = x है, तो sec θ − tan θ का मान है:",
+  "oh": [
+   "1/x",
+   "x",
+   "x²",
+   "1 − x"
+  ],
+  "eh": "(sec θ + tan θ)(sec θ − tan θ) = sec²θ − tan²θ = 1, अतः sec θ − tan θ = 1/x."
+ },
+ {
+  "id": 271,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If 7 sin²θ + 3 cos²θ = 4 and θ is acute, then tan θ is:",
+  "o": [
+   "1/√3",
+   "√3",
+   "1",
+   "0"
+  ],
+  "a": 0,
+  "e": "7s + 3(1 − s) = 4 gives 4s = 1, so sin²θ = 1/4 and sin θ = 1/2. Hence θ = 30° and tan θ = 1/√3.",
+  "qh": "यदि 7 sin²θ + 3 cos²θ = 4 और θ न्यून कोण है, तो tan θ का मान है:",
+  "oh": [
+   "1/√3",
+   "√3",
+   "1",
+   "0"
+  ],
+  "eh": "7s + 3(1 − s) = 4 से 4s = 1, अतः sin²θ = 1/4 और sin θ = 1/2. इसलिए θ = 30° और tan θ = 1/√3."
+ },
+ {
+  "id": 272,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If cot θ = 7/8, then (1 + sin θ)(1 − sin θ) / [(1 + cos θ)(1 − cos θ)] is:",
+  "o": [
+   "49/64",
+   "64/49",
+   "7/8",
+   "8/7"
+  ],
+  "a": 0,
+  "e": "The expression is cos²θ / sin²θ = cot²θ = (7/8)² = 49/64.",
+  "qh": "यदि cot θ = 7/8 है, तो (1 + sin θ)(1 − sin θ) / [(1 + cos θ)(1 − cos θ)] का मान है:",
+  "oh": [
+   "49/64",
+   "64/49",
+   "7/8",
+   "8/7"
+  ],
+  "eh": "व्यंजक cos²θ / sin²θ = cot²θ = (7/8)² = 49/64 है।"
+ },
+ {
+  "id": 273,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "medium",
+  "q": "In △ABC, right-angled at B, AB = 24 cm and BC = 7 cm. Then sin A is:",
+  "o": [
+   "7/25",
+   "24/25",
+   "7/24",
+   "25/7"
+  ],
+  "a": 0,
+  "e": "AC = √(24² + 7²) = 25. sin A = BC/AC = 7/25.",
+  "qh": "△ABC में B पर समकोण है, AB = 24 cm और BC = 7 cm है। तब sin A का मान है:",
+  "oh": [
+   "7/25",
+   "24/25",
+   "7/24",
+   "25/7"
+  ],
+  "eh": "AC = √(24² + 7²) = 25. sin A = BC/AC = 7/25."
+ },
+ {
+  "id": 274,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If 3 cot A = 4, then (1 − tan²A)/(1 + tan²A) is:",
+  "o": [
+   "7/25",
+   "25/7",
+   "9/16",
+   "16/25"
+  ],
+  "a": 0,
+  "e": "tan A = 3/4, so tan²A = 9/16. The ratio is (7/16)/(25/16) = 7/25. (It equals cos²A − sin²A.)",
+  "qh": "यदि 3 cot A = 4 है, तो (1 − tan²A)/(1 + tan²A) का मान है:",
+  "oh": [
+   "7/25",
+   "25/7",
+   "9/16",
+   "16/25"
+  ],
+  "eh": "tan A = 3/4, अतः tan²A = 9/16. अनुपात (7/16)/(25/16) = 7/25 है। (यह cos²A − sin²A के बराबर है।)"
+ },
+ {
+  "id": 275,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If sin θ + cos θ = √2 and θ is acute, then θ is:",
+  "o": [
+   "30°",
+   "45°",
+   "60°",
+   "90°"
+  ],
+  "a": 1,
+  "e": "Squaring: 1 + 2 sin θ cos θ = 2, so sin θ cos θ = 1/2. Then (sin θ − cos θ)² = 1 − 1 = 0, so sin θ = cos θ and θ = 45°.",
+  "qh": "यदि sin θ + cos θ = √2 और θ न्यून कोण है, तो θ का मान है:",
+  "oh": [
+   "30°",
+   "45°",
+   "60°",
+   "90°"
+  ],
+  "eh": "वर्ग करने पर 1 + 2 sin θ cos θ = 2, अतः sin θ cos θ = 1/2. तब (sin θ − cos θ)² = 1 − 1 = 0, अतः sin θ = cos θ और θ = 45°."
+ },
+ {
+  "id": 276,
+  "s": "Math",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Introduction to Trigonometry",
+  "d": "hard",
+  "q": "If cos A + cos²A = 1, then sin²A + sin⁴A is:",
+  "o": [
+   "1",
+   "0",
+   "2",
+   "1/2"
+  ],
+  "a": 0,
+  "e": "cos A = 1 − cos²A = sin²A. So sin²A + sin⁴A = cos A + cos²A = 1.",
+  "qh": "यदि cos A + cos²A = 1 है, तो sin²A + sin⁴A का मान है:",
+  "oh": [
+   "1",
+   "0",
+   "2",
+   "1/2"
+  ],
+  "eh": "cos A = 1 − cos²A = sin²A. अतः sin²A + sin⁴A = cos A + cos²A = 1."
+ },
+ {
+  "id": 277,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "In a neuron, information is acquired at the tips of the:",
+  "o": [
+   "Dendrites",
+   "Axon",
+   "Myelin sheath",
+   "Cell body"
+  ],
+  "a": 0,
+  "e": "Information is acquired at the dendrite tips, travels as an electrical impulse to the cell body and along the axon, and is passed on at the axon end.",
+  "qh": "न्यूरॉन में सूचना किसके सिरों पर ग्रहण की जाती है?",
+  "oh": [
+   "डेंड्राइट के",
+   "तंत्रिकाक्ष (ऐक्सॉन) के",
+   "माइलिन आवरण के",
+   "कोशिका काय के"
+  ],
+  "eh": "सूचना डेंड्राइट के सिरों पर ग्रहण होती है, विद्युत आवेग के रूप में कोशिका काय और ऐक्सॉन से होकर जाती है और ऐक्सॉन के अंत पर आगे दी जाती है।"
+ },
+ {
+  "id": 278,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "The gap between two neurons is called a:",
+  "o": [
+   "Synapse",
+   "Node",
+   "Axon",
+   "Myelin sheath"
+  ],
+  "a": 0,
+  "e": "At the synapse a chemical signal crosses the gap and starts a new impulse in the next neuron.",
+  "qh": "दो न्यूरॉनों के बीच के रिक्त स्थान को कहते हैं:",
+  "oh": [
+   "सिनैप्स (अंतर्ग्रथन)",
+   "नोड",
+   "ऐक्सॉन",
+   "माइलिन आवरण"
+  ],
+  "eh": "सिनैप्स पर रासायनिक संकेत रिक्त स्थान को पार करके अगले न्यूरॉन में नया आवेग उत्पन्न करता है।"
+ },
+ {
+  "id": 279,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Reflex actions such as pulling the hand away from a hot object are mainly controlled by the:",
+  "o": [
+   "Spinal cord",
+   "Cerebrum",
+   "Cerebellum",
+   "Hypothalamus"
+  ],
+  "a": 0,
+  "e": "The reflex arc passes through the spinal cord, so the response is very fast, without waiting for the brain to decide.",
+  "qh": "गरम वस्तु से हाथ हटा लेने जैसी प्रतिवर्ती क्रियाएँ मुख्यतः किसके द्वारा नियंत्रित होती हैं?",
+  "oh": [
+   "मेरुरज्जु",
+   "प्रमस्तिष्क",
+   "अनुमस्तिष्क",
+   "हाइपोथैलेमस"
+  ],
+  "eh": "प्रतिवर्ती चाप मेरुरज्जु से होकर गुजरता है, इसलिए प्रतिक्रिया बहुत तेज़ होती है और मस्तिष्क के निर्णय की प्रतीक्षा नहीं करनी पड़ती।"
+ },
+ {
+  "id": 280,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Which part of the brain maintains posture and balance of the body?",
+  "o": [
+   "Cerebellum",
+   "Cerebrum",
+   "Medulla",
+   "Pituitary"
+  ],
+  "a": 0,
+  "e": "The cerebellum, in the hind-brain, coordinates precision of voluntary actions and keeps posture and balance, such as walking in a straight line.",
+  "qh": "मस्तिष्क का कौन-सा भाग शरीर की मुद्रा और संतुलन बनाए रखता है?",
+  "oh": [
+   "अनुमस्तिष्क",
+   "प्रमस्तिष्क",
+   "मेडुला",
+   "पीयूष ग्रंथि"
+  ],
+  "eh": "पश्च मस्तिष्क का अनुमस्तिष्क ऐच्छिक क्रियाओं की परिशुद्धता का समन्वय करता है और मुद्रा तथा संतुलन बनाए रखता है, जैसे सीधी रेखा में चलना।"
+ },
+ {
+  "id": 281,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Involuntary actions such as blood pressure, salivation and vomiting are controlled by the:",
+  "o": [
+   "Medulla",
+   "Cerebrum",
+   "Cerebellum",
+   "Pituitary gland"
+  ],
+  "a": 0,
+  "e": "The medulla in the hind-brain controls these involuntary actions.",
+  "qh": "रक्तदाब, लार स्रावण और उल्टी जैसी अनैच्छिक क्रियाएँ किसके द्वारा नियंत्रित होती हैं?",
+  "oh": [
+   "मेडुला",
+   "प्रमस्तिष्क",
+   "अनुमस्तिष्क",
+   "पीयूष ग्रंथि"
+  ],
+  "eh": "पश्च मस्तिष्क का मेडुला इन अनैच्छिक क्रियाओं को नियंत्रित करता है।"
+ },
+ {
+  "id": 282,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "The main thinking part of the brain, which also controls voluntary actions and stores memory, is the:",
+  "o": [
+   "Cerebrum",
+   "Cerebellum",
+   "Medulla",
+   "Spinal cord"
+  ],
+  "a": 0,
+  "e": "The cerebrum (fore-brain) is the main thinking region and has centres for hearing, smell, sight, memory and voluntary muscle movement.",
+  "qh": "मस्तिष्क का मुख्य सोचने वाला भाग, जो ऐच्छिक क्रियाओं को भी नियंत्रित करता है और स्मृति संचित करता है, है:",
+  "oh": [
+   "प्रमस्तिष्क",
+   "अनुमस्तिष्क",
+   "मेडुला",
+   "मेरुरज्जु"
+  ],
+  "eh": "प्रमस्तिष्क (अग्र मस्तिष्क) मुख्य विचार केंद्र है और इसमें श्रवण, गंध, दृष्टि, स्मृति तथा ऐच्छिक पेशी गति के केंद्र होते हैं।"
+ },
+ {
+  "id": 283,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Insulin, which regulates the level of blood sugar, is secreted by the:",
+  "o": [
+   "Pancreas",
+   "Liver",
+   "Thyroid",
+   "Adrenal gland"
+  ],
+  "a": 0,
+  "e": "When blood sugar rises the pancreas secretes more insulin, which lowers it. This is a feedback mechanism.",
+  "qh": "रक्त शर्करा के स्तर को नियंत्रित करने वाला इंसुलिन किसके द्वारा स्रावित होता है?",
+  "oh": [
+   "अग्न्याशय",
+   "यकृत",
+   "थायरॉइड",
+   "अधिवृक्क ग्रंथि"
+  ],
+  "eh": "रक्त शर्करा बढ़ने पर अग्न्याशय अधिक इंसुलिन स्रावित करता है, जो उसे घटाता है। यह एक पुनर्निवेश (फीडबैक) क्रियाविधि है।"
+ },
+ {
+  "id": 284,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Deficiency of iodine in the diet causes:",
+  "o": [
+   "Goitre",
+   "Diabetes",
+   "Dwarfism",
+   "Gigantism"
+  ],
+  "a": 0,
+  "e": "Iodine is needed to make thyroxine. Without it the thyroid gland swells, causing goitre.",
+  "qh": "आहार में आयोडीन की कमी से होता है:",
+  "oh": [
+   "घेंघा (गॉयटर)",
+   "मधुमेह",
+   "बौनापन",
+   "महाकायता"
+  ],
+  "eh": "थायरॉक्सिन बनाने के लिए आयोडीन चाहिए। इसके बिना थायरॉइड ग्रंथि फूल जाती है, जिससे घेंघा होता है।"
+ },
+ {
+  "id": 285,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Growth hormone is secreted by the:",
+  "o": [
+   "Pituitary gland",
+   "Thyroid gland",
+   "Pancreas",
+   "Adrenal gland"
+  ],
+  "a": 0,
+  "e": "The pituitary gland secretes growth hormone. Too little in childhood causes dwarfism.",
+  "qh": "वृद्धि हार्मोन किसके द्वारा स्रावित होता है?",
+  "oh": [
+   "पीयूष ग्रंथि",
+   "थायरॉइड ग्रंथि",
+   "अग्न्याशय",
+   "अधिवृक्क ग्रंथि"
+  ],
+  "eh": "वृद्धि हार्मोन पीयूष ग्रंथि द्वारा स्रावित होता है। बचपन में इसकी कमी से बौनापन होता है।"
+ },
+ {
+  "id": 286,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "The hormone that prepares the body for 'fight or flight' in an emergency is:",
+  "o": [
+   "Adrenaline",
+   "Insulin",
+   "Thyroxine",
+   "Oestrogen"
+  ],
+  "a": 0,
+  "e": "Adrenaline from the adrenal glands increases heart rate and breathing and sends more blood to the muscles.",
+  "qh": "आपातकाल में शरीर को 'लड़ो या भागो' के लिए तैयार करने वाला हार्मोन है:",
+  "oh": [
+   "ऐड्रीनलीन",
+   "इंसुलिन",
+   "थायरॉक्सिन",
+   "ऐस्ट्रोजन"
+  ],
+  "eh": "अधिवृक्क ग्रंथियों से निकलने वाला ऐड्रीनलीन हृदय गति और श्वसन दर बढ़ाता है और पेशियों तक अधिक रक्त पहुँचाता है।"
+ },
+ {
+  "id": 287,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "The hormone responsible for the bending of a plant shoot towards light is:",
+  "o": [
+   "Auxin",
+   "Gibberellin",
+   "Cytokinin",
+   "Abscisic acid"
+  ],
+  "a": 0,
+  "e": "Auxin collects on the shaded side and makes those cells grow longer, so the shoot bends towards light (phototropism).",
+  "qh": "पौधे के प्ररोह के प्रकाश की ओर झुकने के लिए उत्तरदायी हार्मोन है:",
+  "oh": [
+   "ऑक्सिन",
+   "जिबरेलिन",
+   "साइटोकाइनिन",
+   "ऐब्सिसिक अम्ल"
+  ],
+  "eh": "ऑक्सिन छाया वाले भाग में एकत्र होता है और वहाँ की कोशिकाओं को लंबा करता है, जिससे प्ररोह प्रकाश की ओर मुड़ता है (प्रकाशानुवर्तन)।"
+ },
+ {
+  "id": 288,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Which plant hormone promotes cell division and is found in high concentration in fruits and seeds?",
+  "o": [
+   "Cytokinin",
+   "Auxin",
+   "Abscisic acid",
+   "Ethylene"
+  ],
+  "a": 0,
+  "e": "Cytokinins promote cell division and are abundant in areas of rapid division such as fruits and seeds.",
+  "qh": "कौन-सा पादप हार्मोन कोशिका विभाजन को बढ़ावा देता है और फलों तथा बीजों में अधिक मात्रा में पाया जाता है?",
+  "oh": [
+   "साइटोकाइनिन",
+   "ऑक्सिन",
+   "ऐब्सिसिक अम्ल",
+   "एथिलीन"
+  ],
+  "eh": "साइटोकाइनिन कोशिका विभाजन को बढ़ावा देते हैं और फलों व बीजों जैसे तीव्र विभाजन वाले क्षेत्रों में प्रचुर होते हैं।"
+ },
+ {
+  "id": 289,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "hard",
+  "q": "Which plant hormone inhibits growth and causes wilting of leaves?",
+  "o": [
+   "Abscisic acid",
+   "Gibberellin",
+   "Auxin",
+   "Cytokinin"
+  ],
+  "a": 0,
+  "e": "Abscisic acid is a growth inhibitor. It causes stomata to close and leaves to wilt.",
+  "qh": "कौन-सा पादप हार्मोन वृद्धि को रोकता है और पत्तियों के मुरझाने का कारण बनता है?",
+  "oh": [
+   "ऐब्सिसिक अम्ल",
+   "जिबरेलिन",
+   "ऑक्सिन",
+   "साइटोकाइनिन"
+  ],
+  "eh": "ऐब्सिसिक अम्ल वृद्धि का संदमक है। यह रंध्रों को बंद करता है और पत्तियों को मुरझाता है।"
+ },
+ {
+  "id": 290,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "The growth of plant roots towards water is called:",
+  "o": [
+   "Phototropism",
+   "Geotropism",
+   "Hydrotropism",
+   "Chemotropism"
+  ],
+  "a": 2,
+  "e": "Growth in response to water is hydrotropism. Chemotropism is the response to chemicals, such as a pollen tube growing towards the ovule.",
+  "qh": "पौधों की जड़ों का जल की ओर वृद्धि करना कहलाता है:",
+  "oh": [
+   "प्रकाशानुवर्तन",
+   "गुरुत्वानुवर्तन",
+   "जलानुवर्तन",
+   "रसायनानुवर्तन"
+  ],
+  "eh": "जल की ओर वृद्धि को जलानुवर्तन कहते हैं। रसायनानुवर्तन रसायनों के प्रति अनुक्रिया है, जैसे परागनलिका का बीजांड की ओर बढ़ना।"
+ },
+ {
+  "id": 291,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "hard",
+  "q": "The leaves of the sensitive plant (touch-me-not) fold up on touch because of:",
+  "o": [
+   "Growth in the leaf cells",
+   "A change in turgor pressure in the cells",
+   "Cell division",
+   "Photosynthesis"
+  ],
+  "a": 1,
+  "e": "The plant cells at the leaf base lose water quickly, so they shrink and the leaf droops. This is a movement due to change in cell volume, not growth.",
+  "qh": "छुईमुई की पत्तियाँ छूने पर मुड़ जाती हैं, इसका कारण है:",
+  "oh": [
+   "पत्ती की कोशिकाओं में वृद्धि",
+   "कोशिकाओं में स्फीति दाब का परिवर्तन",
+   "कोशिका विभाजन",
+   "प्रकाश संश्लेषण"
+  ],
+  "eh": "पत्ती के आधार की कोशिकाएँ तेज़ी से जल खो देती हैं, इसलिए वे सिकुड़ जाती हैं और पत्ती झुक जाती है। यह कोशिका के आयतन में परिवर्तन से होने वाली गति है, वृद्धि नहीं।"
+ },
+ {
+  "id": 292,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "The brain is protected from shocks by the bony box called the cranium and:",
+  "o": [
+   "A fluid-filled balloon (cerebrospinal fluid)",
+   "Muscles",
+   "Fat only",
+   "Blood"
+  ],
+  "a": 0,
+  "e": "The brain lies inside the cranium, and inside this it is surrounded by a fluid-filled balloon (cerebrospinal fluid) that acts as a shock absorber.",
+  "qh": "मस्तिष्क की सुरक्षा अस्थिमय बॉक्स क्रेनियम (कपाल) और ____ द्वारा होती है।",
+  "oh": [
+   "द्रव से भरा गुब्बारा (प्रमस्तिष्कमेरु द्रव)",
+   "पेशियों",
+   "केवल वसा",
+   "रक्त"
+  ],
+  "eh": "मस्तिष्क कपाल के भीतर होता है और उसके अंदर द्रव से भरे गुब्बारे (प्रमस्तिष्कमेरु द्रव) से घिरा रहता है जो आघात अवशोषक का काम करता है।"
+ },
+ {
+  "id": 293,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Deficiency of insulin leads to:",
+  "o": [
+   "Diabetes (high blood sugar)",
+   "Goitre",
+   "Dwarfism",
+   "Gigantism"
+  ],
+  "a": 0,
+  "e": "Without enough insulin blood sugar stays high, causing diabetes. It can be treated with insulin injections.",
+  "qh": "इंसुलिन की कमी से होता है:",
+  "oh": [
+   "मधुमेह (उच्च रक्त शर्करा)",
+   "घेंघा",
+   "बौनापन",
+   "महाकायता"
+  ],
+  "eh": "पर्याप्त इंसुलिन न होने पर रक्त शर्करा अधिक बनी रहती है और मधुमेह होता है। इसका उपचार इंसुलिन के इंजेक्शन से किया जा सकता है।"
+ },
+ {
+  "id": 294,
+  "s": "Science",
+  "c": [
+   10,
+   10
+  ],
+  "ch": "Control and Coordination",
+  "d": "medium",
+  "q": "Testosterone, the male sex hormone that brings about changes at puberty, is secreted by the:",
+  "o": [
+   "Testes",
+   "Pituitary gland",
+   "Adrenal gland",
+   "Thyroid gland"
+  ],
+  "a": 0,
+  "e": "Testosterone from the testes causes changes such as a deeper voice and facial hair at puberty. In females oestrogen is secreted by the ovaries.",
+  "qh": "टेस्टोस्टेरॉन, जो किशोरावस्था में परिवर्तन लाता है, किसके द्वारा स्रावित होता है?",
+  "oh": [
+   "वृषण",
+   "पीयूष ग्रंथि",
+   "अधिवृक्क ग्रंथि",
+   "थायरॉइड ग्रंथि"
+  ],
+  "eh": "वृषण से निकलने वाला टेस्टोस्टेरॉन किशोरावस्था में भारी आवाज़ और चेहरे पर बाल जैसे परिवर्तन लाता है। महिलाओं में ऐस्ट्रोजन अंडाशय द्वारा स्रावित होता है।"
  }
 ]
