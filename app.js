@@ -349,6 +349,26 @@
             } catch (e) {}
         };
 
+        // Daily site visits + unique visitors (used by the admin Analytics chart). Best effort, needs the notes_bazar_daily rule.
+        (function trackVisit() {
+            try {
+                if (/^#admin/i.test(location.hash || '')) return;
+                const n = new Date(), p2 = x => (x < 10 ? '0' : '') + x;
+                const day = n.getFullYear() + '-' + p2(n.getMonth() + 1) + '-' + p2(n.getDate());
+                const sk = 'nb_visit_' + day;
+                if (sessionStorage.getItem(sk)) return;
+                sessionStorage.setItem(sk, '1');
+                const inc = JSON.stringify({ '.sv': { increment: 1 } });
+                const put = k => fetch(DBURL + '/notes_bazar_daily/' + day + '/' + k + '.json', { method: 'PUT', body: inc, keepalive: true }).catch(() => {});
+                setTimeout(() => {
+                    put('v');
+                    let first = false;
+                    try { first = !localStorage.getItem('nb_uv_' + day); if (first) { for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k && k.indexOf('nb_uv_') === 0) localStorage.removeItem(k); } localStorage.setItem('nb_uv_' + day, '1'); } } catch (e) {}
+                    if (first) put('u');
+                }, 2500);
+            } catch (e) {}
+        })();
+
         function makeCard(item) {
             const card = document.createElement('div');
             card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-md transition-all duration-300 flex flex-col justify-between hover-rgb-glow";
@@ -1358,7 +1378,7 @@
         };
         window.adminLogout = async function() { lockSafe(); window.privateItems = [];
             try { const { auth, signOut } = await loadSdk(); await signOut(auth); } catch (e) {}
-            document.getElementById('adminDashboardModal').classList.add('hidden');
+            document.getElementById('adminDashboardModal').classList.add('hidden'); document.body.classList.remove('a-open');
             window.messages = [];
             window.loadCloudData();
         };
@@ -1738,15 +1758,20 @@ function sha256(str) {
 
         window.openAdminDashboard = async function() {
             document.getElementById('adminDashboardModal').classList.remove('hidden');
+            document.body.classList.add('a-open');
             renderAdmin();
             await loadMessages();
+            renderAdmin();
             await loadPrivate();
             await window.loadAllRemaining();
+            try { if (homeStats === null) await loadStats(); } catch (e) {}
             renderAdmin();
             window.migrateOldFiles();
         };
 
         window.closeAdminDashboard = function() { lockSafe(); 
+            document.body.classList.remove('a-open');
+            if (window.NBAdmin && window.NBAdmin.closeAll) window.NBAdmin.closeAll();
             document.getElementById('adminDashboardModal').classList.add('hidden'); 
             window.loadCloudData(); 
         };
@@ -1755,12 +1780,18 @@ function sha256(str) {
         let adminTab = 'overview';
         let adminType = 'all';
         const ADMIN_TABS = [
-            { id: 'overview', label: 'Overview', icon: 'fa-chart-pie' },
-            { id: 'uploads', label: 'Uploads', icon: 'fa-cloud' },
-            { id: 'support', label: 'Support', icon: 'fa-headset' },
+            { id: 'overview', label: 'Dashboard', icon: 'fa-house' },
+            { id: 'uploads', label: 'Manage Notes', icon: 'fa-file-lines' },
+            { id: 'categories', label: 'Manage Categories', icon: 'fa-layer-group' },
+            { id: 'users', label: 'View Users', icon: 'fa-users' },
+            { id: 'analytics', label: 'Analytics', icon: 'fa-chart-column' },
+            { id: 'settings', label: 'Settings', icon: 'fa-gear' },
+            { id: 'appearance', label: 'Appearance', icon: 'fa-palette' },
+            { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
+            { id: 'support', label: 'Support', icon: 'fa-circle-question' },
             { id: 'complain', label: 'Complaints', icon: 'fa-circle-exclamation' },
             { id: 'wish', label: 'User Requests', icon: 'fa-lightbulb' },
-            { id: 'safe', label: 'Safe', icon: 'fa-lock' }
+            { id: 'safe', label: 'Safe Folder', icon: 'fa-lock' }
         ];
         const TYPE_STYLE = {
             note: { cls: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300', label: 'Note' },
@@ -1775,7 +1806,7 @@ function sha256(str) {
         const ago = ts => { if (!ts) return ''; const m = Math.max(0, Math.floor((Date.now() - ts) / 60000)); if (m < 1) return 'just now'; if (m < 60) return m + ' min'; const h = Math.floor(m / 60); if (h < 24) return h + ' h'; const d = Math.floor(h / 24); return d + ' d'; };
         const fmtDate = ts => ts ? new Date(ts).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
-        window.adminSwitchTab = function(t) { adminTab = t; renderAdmin(); const b = document.querySelector('#adminDashboardModal .overflow-y-auto'); if (b) b.scrollTop = 0; };
+        window.adminSwitchTab = function(t) { adminTab = t; renderAdmin(); const b = document.getElementById('aBody'); if (b) b.scrollTop = 0; };
         window.adminSetType = function(t) { adminType = t; renderAdmin(); };
         window.adminRender = function() { renderAdmin(); };
 
@@ -1842,34 +1873,7 @@ function sha256(str) {
             const count = { overview: 0, uploads: items.length + window.privateItems.length, support: of('support').length, complain: of('complain').length, wish: of('wish').length };
             const pend = { support: of('support').filter(m => !m.reply).length, complain: of('complain').filter(m => !m.reply).length, wish: of('wish').filter(m => !m.reply).length };
 
-            // tabs
-            document.getElementById('adminTabs').innerHTML = ADMIN_TABS.map(t => {
-                const active = t.id === adminTab;
-                const badge = (t.id === 'overview' || t.id === 'safe') ? '' : `<span class="${active ? 'bg-white/25' : 'bg-slate-200 dark:bg-slate-700'} text-[10px] px-1.5 py-0.5 rounded-full">${count[t.id]}</span>${pend[t.id] ? `<span class="w-2 h-2 rounded-full bg-amber-400"></span>` : ''}`;
-                return `<button onclick="adminSwitchTab('${t.id}')" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${active ? 'dynamic-btn text-white shadow' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}"><i class="fa-solid ${t.icon}"></i>${t.label}${badge}</button>`;
-            }).join('');
             ADMIN_TABS.forEach(t => { const el = document.getElementById('adminPanel-' + t.id); if (el) el.classList.toggle('hidden', t.id !== adminTab); });
-
-            if (adminTab === 'overview') {
-                const stat = (label, val, icon, color) => `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center gap-3"><div class="${color} text-white w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0"><i class="fa-solid ${icon}"></i></div><div><div class="text-2xl font-extrabold leading-none">${val}</div><div class="text-[11px] text-slate-500 mt-1">${label}</div></div></div>`;
-                document.getElementById('adminStats').innerHTML =
-                    stat('Public / Private', items.length + ' / ' + window.privateItems.length, 'fa-cloud', 'bg-indigo-500') +
-                    stat('Notes / Books / PYQ', `${items.filter(i => (i.type || 'note') === 'note').length}/${items.filter(i => i.type === 'book').length}/${items.filter(i => i.type === 'pyq').length}`, 'fa-layer-group', 'bg-emerald-500') +
-                    stat('Support + Complaints', of('support').length + of('complain').length, 'fa-headset', 'bg-blue-500') +
-                    stat('User requests', of('wish').length, 'fa-lightbulb', 'bg-teal-500');
-                const pl = [...pending].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
-                document.getElementById('adminPending').innerHTML = pl.length ? pl.map(m => {
-                    const st = MSG_STYLE[m.type] || MSG_STYLE.support;
-                    return `<button onclick="adminSwitchTab('${m.type in MSG_STYLE ? m.type : 'support'}')" class="w-full text-left bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 flex items-start gap-3 hover:border-indigo-400"><span class="${st.color} text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0"><i class="fa-solid ${st.icon}"></i></span><span class="min-w-0 flex-1"><span class="block text-xs font-bold">${esc(st.label)} • ${esc(m.name || 'Anonymous')}</span><span class="block text-[11px] text-slate-500 truncate">${esc(m.message)}</span></span><span class="shrink-0 text-right"><span class="block text-[10px] font-bold text-amber-600">${m.createdAt ? 'Waiting ' + ago(m.createdAt) : 'Pending'}</span><span class="block text-[10px] text-slate-400 mt-0.5">Open <i class="fa-solid fa-chevron-right"></i></span></span></button>`;
-                }).join('') : `<p class="text-xs text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-center">All messages have been answered 🎉</p>`;
-                const pc = document.getElementById('adminPendingCount'); if (pc) { pc.textContent = pending.length; pc.classList.toggle('hidden', !pending.length); }
-                const lc = document.getElementById('adminLatestCount'); if (lc) { lc.textContent = items.length; lc.classList.toggle('hidden', !items.length); }
-                const latest = [...items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
-                document.getElementById('adminLatest').innerHTML = latest.length ? latest.map(i => {
-                    const ts = TYPE_STYLE[i.type || 'note'] || TYPE_STYLE.note;
-                    return `<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 flex items-center gap-3"><span class="text-[10px] font-extrabold uppercase px-2 py-1 rounded-lg ${ts.cls}">${ts.label}</span><span class="min-w-0 flex-1"><span class="block text-xs font-bold truncate">${esc(i.title)}</span><span class="block text-[10px] text-slate-400">${esc(i.className || '')} • ${esc(i.subject || '')}${i.createdAt ? ' • ' + fmtDate(i.createdAt) : ''}</span></span><button onclick="openPreview(${jsArg(i.id)})" class="text-indigo-600 text-xs font-semibold px-2" title="Preview" aria-label="Preview ${esc(i.title)}"><i class="fa-solid fa-eye"></i></button></div>`;
-                }).join('') : `<p class="text-xs text-slate-400 text-center p-4">Nothing uploaded yet.</p>`;
-            }
 
             if (adminTab === 'uploads') {
                 const tchips = [['all', 'All'], ['note', 'Notes'], ['book', 'Books'], ['pyq', 'PYQ']];
@@ -1895,10 +1899,42 @@ function sha256(str) {
                 const st = MSG_STYLE[ty];
                 document.getElementById('adminList-' + ty).innerHTML = list.length ? list.map(msgCard).join('') : `<div class="text-center text-xs text-slate-400 py-14 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700"><i class="fa-solid ${st.icon} text-2xl mb-2 block"></i>No ${st.label.toLowerCase()} yet.</div>`;
             });
+            // new dashboard shell (sidebar, top bar, overview, categories, users, analytics, settings...)
+            try { if (window.NBAdmin && window.NBAdmin.render) window.NBAdmin.render(adminTab, admCtx()); } catch (e) { console.error('admin ui', e); }
         }
         // old names still used by the rest of the code
         function renderAdminTable() { renderAdmin(); }
         function renderAdminMessagesTable() { renderAdmin(); }
+
+        // ---------- bridge used by admin.js (the new dashboard UI) ----------
+        const admCtx = () => ({ items: window.allItems || [], priv: window.privateItems || [], msgs: window.messages || [], stats: homeStats || {}, statsLoaded: homeStats !== null, tab: adminTab, privateError, search: (document.getElementById('adminSearch') || {}).value || '' });
+        window.NBA = {
+            ctx: admCtx,
+            sdk: loadSdk,
+            dburl: DBURL,
+            chapter: getChapter,
+            refresh: () => refreshAfterChange(),
+            ensureStats: () => { if (homeStats !== null) return Promise.resolve(); if (!window.__nbStatsP) window.__nbStatsP = loadStats().catch(() => {}).then(() => { window.__nbStatsP = null; renderAdmin(); }); return window.__nbStatsP; },
+            email: async () => { try { const { auth } = await loadSdk(); return (auth.currentUser && auth.currentUser.email) || ''; } catch (e) { return ''; } },
+            token: async () => { try { const { auth } = await loadSdk(); return auth.currentUser ? await auth.currentUser.getIdToken() : ''; } catch (e) { return ''; } },
+            resetPassword: async () => { const { auth, sendPasswordResetEmail } = await loadSdk(); if (!auth.currentUser || !auth.currentUser.email) throw new Error('Not signed in'); await sendPasswordResetEmail(auth, auth.currentUser.email); return auth.currentUser.email; },
+            // rename a Subject across every item (public + private) with ONE multi-path update
+            renameSubject: async (from, to) => {
+                const { db, ref, update, auth } = await loadSdk();
+                if (!auth.currentUser) throw new Error('Admin session expired. Please log in again.');
+                try { await window.loadAllRemaining(); } catch (e) {}
+                const up = {};
+                (window.allItems || []).forEach(i => { if ((i.subject || 'General') === from) up['notes_bazar_data/' + i.id + '/subject'] = to; });
+                (window.privateItems || []).forEach(i => { if ((i.subject || 'General') === from) up['notes_bazar_private/items/' + i.id + '/subject'] = to; });
+                const n = Object.keys(up).length;
+                if (!n) return 0;
+                await update(ref(db), up);
+                await refreshAfterChange();
+                return n;
+            },
+            sectionOpen: () => adminTab
+        };
+
 
         window.deleteCloudItem = async function(id) {
             const it = findAnyItem(id), priv = !!(it && it.private);

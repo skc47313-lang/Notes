@@ -282,11 +282,6 @@ body:has(#pwaBar.show) #toTopBtn{bottom:96px}
 }
 /* every modal fits the real visible screen on phones (address bar aware) */
 [id$="Modal"]>div{max-height:calc(100dvh - 16px)}
-#adminDashboardModal>div{height:calc(100dvh - 16px)}
-#adminDashboardModal .dynamic-bg{flex-wrap:wrap}
-#adminTabs,#adminTypeChips{-webkit-overflow-scrolling:touch}
-#adminStats>*{min-width:0}
-#adminDashboardModal .overflow-y-auto{overscroll-behavior:contain}
 /* header: never let icons wrap or collide on narrow phones */
 header .max-w-7xl{min-width:0}
 @media (max-width:380px){
@@ -771,37 +766,8 @@ html body #downloadsModal>div{max-width:none!important;width:100%!important;heig
    Admin Dashboard redesign (CSS-only for JS-rendered parts, so every
    existing action keeps working)
    ============================================================ */
-html body #adminDashboardModal{padding:8px!important}
-html body #adminDashboardModal>div{background:var(--nb-surface-2);border-radius:20px;max-width:72rem;width:100%;height:calc(100dvh - 16px);overflow:hidden;border:1px solid var(--nb-border)}
-#adminDashboardModal .dynamic-bg{padding:12px 16px;flex-wrap:nowrap;align-items:center}
-#adminDashboardModal .dynamic-bg h3{font-size:16px;letter-spacing:-.01em}
-#adminDashboardModal .dynamic-bg>div:first-child>div:first-child{width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:15px}
-.adm-actions{gap:6px}
-.adm-hb{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;min-width:38px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s}
-.adm-hb:hover{background:rgba(255,255,255,.28)}
-.adm-hb:active{transform:scale(.96)}
-.adm-hb:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.adm-hb-main{background:#fff;color:#5b21b6;border-color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.adm-hb-main:hover{background:#f5f3ff}
-.adm-hb-x{padding:0}
-.adm-sep{width:1px;height:22px;background:rgba(255,255,255,.3);margin:0 2px}
-.adm-hl{display:none}
-@media (min-width:640px){ .adm-hl{display:inline} .adm-hb{padding:0 14px} .adm-hb-x{padding:0} }
-@media (max-width:420px){ #adminDashboardModal .dynamic-bg p{display:none} .adm-sep{display:none} }
 
 /* tabs */
-#adminTabs{padding:10px 14px;gap:6px;background:var(--nb-surface);border-bottom:1px solid var(--nb-border);scrollbar-width:none}
-#adminTabs::-webkit-scrollbar{display:none}
-#adminTabs>*{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border-radius:11px;font-size:12.5px;font-weight:700;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
-#adminTabs>*:focus-visible{outline:2px solid var(--theme-primary,#6366f1);outline-offset:2px}
-
-/* content area + KPI cards */
-#adminDashboardModal .flex-1.overflow-y-auto{overflow-x:hidden;padding:16px}
-@media (min-width:768px){ #adminDashboardModal .flex-1.overflow-y-auto{padding:24px} }
-#adminStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-@media (min-width:768px){ #adminStats{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px} }
-#adminStats>*{min-width:0;min-height:84px;background:var(--nb-surface)!important;border:1px solid var(--nb-border)!important;border-radius:16px!important;box-shadow:0 1px 3px rgba(15,23,42,.06)!important;padding:14px!important;overflow-wrap:anywhere;color:var(--nb-text)}
-#adminStats>* i{flex:none}
 
 /* overview columns */
 .adm-cols{align-items:start}
@@ -809,19 +775,11 @@ html body #adminDashboardModal>div{background:var(--nb-surface-2);border-radius:
 .adm-card>h4{padding-bottom:10px;margin-bottom:12px!important;border-bottom:1px solid var(--nb-border)}
 
 /* rows / cards in every list */
-#adminPending>*,#adminLatest>*,#adminList-support>*,#adminList-complain>*,#adminList-wish>*,#adminItemsGrid>*{min-width:0;overflow-wrap:anywhere;border-radius:14px}
 #adminList-support>*,#adminList-complain>*,#adminList-wish>*,#adminItemsGrid>*{background:var(--nb-surface);border:1px solid var(--nb-border);box-shadow:0 1px 3px rgba(15,23,42,.05)}
-#adminPending>*,#adminLatest>*{border:1px solid var(--nb-border);background:var(--nb-surface-2,#f8fafc)}
-#adminDashboardModal button{min-height:32px}
-@media (max-width:640px){ #adminDashboardModal .flex-1 button:not(.adm-hb){min-height:36px} }
 #adminDashboardModal table{display:block;max-width:100%;overflow-x:auto}
 #adminDashboardModal img{max-width:100%}
 
 /* empty states (works for an empty container) */
-#adminPending:empty,#adminLatest:empty,#adminList-support:empty,#adminList-complain:empty,#adminList-wish:empty,#adminItemsGrid:empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:28px 12px;text-align:center;color:var(--nb-muted);font-size:12.5px}
-#adminPending:empty::before{content:"\2713";width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:800;color:#059669;background:#d1fae5}
-#adminPending:empty::after{content:"All caught up \2014 nothing is waiting for a reply";font-weight:600}
-#adminLatest:empty::after{content:"No uploads yet"}
 #adminList-support:empty::after,#adminList-complain:empty::after,#adminList-wish:empty::after{content:"Nothing here yet"}
 #adminItemsGrid:empty::after{content:"No resources found"}
 
@@ -839,6 +797,3 @@ html body #adminDashboardModal>div{background:var(--nb-surface-2);border-radius:
 
 .adm-count{margin-left:8px;min-width:22px;height:22px;padding:0 7px;border-radius:999px;display:inline-grid;place-items:center;font-size:11px;font-weight:800;background:var(--nb-hover);color:var(--nb-muted)}
 .adm-count.hidden{display:none}
-#adminPending>button{min-height:56px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
-#adminPending>button:hover{box-shadow:0 2px 8px rgba(99,102,241,.15)}
-#adminPending>button:focus-visible{outline:2px solid var(--theme-primary,#6366f1);outline-offset:2px}
