@@ -159,6 +159,105 @@ window.NB_BSEB = {
                 'मेरे बिना तुम प्रभु – रेनर मारिया रिल्के'
             ] }
         ]
+    }    ,
+    /* ---------------- Class 8 : Hindi (Kislay Bhag-3, BSEB / SCERT Bihar). 23 lessons, checked against two online contents lists. ---------------- */
+    '8|hindi': {
+        book: 'Kislay Bhag-3 (किसलय भाग-3), the BSEB / SCERT Bihar Class 8 Hindi textbook (gadya and padya lessons). Also Class 8 level Hindi grammar (vyakaran).',
+        groups: [
+            { g: 'किसलय भाग-3', tp: 'किसलय भाग-3', c: [
+                'तू जिन्दा है तो', 'ईदगाह', 'कर्मवीर', 'बालगोबिन भगत', 'हुंडरू का जलप्रपात', 'बिहारी के दोहे',
+                'ठेस', 'बच्चे की दुआ', 'अशोक का शास्त्र-त्याग', 'ईर्ष्या : तू न गई मेरे मन से', 'कबीर के पद', 'विक्रमशिला',
+                'दीदी की डायरी', 'पीपल', 'दीनबन्धु \'निराला\'', 'खेमा', 'खुशबू रचते हैं हाथ', 'हौसले की उड़ान',
+                'जननायक कर्पूरी ठाकुर', 'झाँसी की रानी', 'चिकित्सा का चक्कर', 'सुदामा चरित', 'राह भटके हिरन के बच्चे को'
+            ] }
+        ]
+    },
+
+    /* ---------------- Class 10 : Non-Hindi. Questions come from the CLASS 8 Hindi book, Kislay Bhag-3 (same 23 lessons). ---------------- */
+    '10|nonhindi': {
+        book: 'Kislay Bhag-3 (किसलय भाग-3), the BSEB / SCERT Bihar CLASS 8 Hindi textbook. The Class 10 Non-Hindi paper is set only from this book (and Class 8 level Hindi grammar), not from the Class 10 Godhuli book.',
+        groups: [
+            { g: 'किसलय भाग-3 (कक्षा 8 की पुस्तक)', tp: 'किसलय भाग-3', c: [
+                'तू जिन्दा है तो', 'ईदगाह', 'कर्मवीर', 'बालगोबिन भगत', 'हुंडरू का जलप्रपात', 'बिहारी के दोहे',
+                'ठेस', 'बच्चे की दुआ', 'अशोक का शास्त्र-त्याग', 'ईर्ष्या : तू न गई मेरे मन से', 'कबीर के पद', 'विक्रमशिला',
+                'दीदी की डायरी', 'पीपल', 'दीनबन्धु \'निराला\'', 'खेमा', 'खुशबू रचते हैं हाथ', 'हौसले की उड़ान',
+                'जननायक कर्पूरी ठाकुर', 'झाँसी की रानी', 'चिकित्सा का चक्कर', 'सुदामा चरित', 'राह भटके हिरन के बच्चे को'
+            ] }
+        ]
+    },
+
+    /* ---------------- Class 10 : English (Panorama Part-II, BSEB / SCERT Bihar). Prose + poetry from two online contents lists. ---------------- */
+    '10|english': {
+        approx: true,
+        book: 'Panorama Part-II (English), the BSEB / SCERT Bihar Class 10 English textbook, with its Prose section and Poetry section, plus Class 10 level English grammar and writing',
+        groups: [
+            { g: 'Prose', tp: 'Panorama Part-II (Prose)', c: [
+                'The Pace for Living', 'Me and the Ecology Bit', 'Gillu', 'What is Wrong with Indian Films',
+                'Acceptance Speech', 'Once Upon a Time', 'The Unity of Indian Culture', 'Little Girls Wiser than Men'
+            ] },
+            { g: 'Poetry', tp: 'Panorama Part-II (Poetry)', c: [
+                'God Made the Country', 'Ode on Solitude', 'Polythene Bag', 'Thinner than a Crescent',
+                'The Empty Heart', 'Koel', 'The Sleeping Porter', 'Martha'
+            ] }
+        ]
+    },
+
+    /* ---------------- Class 10 : Maithili (BSEB / SCERT Bihar). 12 gadya + 12 padya + 7 Mithila Vibhuti = 31 lessons.
+       List typed from a search-result screenshot and matched with a second site; a few titles had spelling noise, so approx stays on.
+       If you see a wrong spelling, just fix it in the list below. ---------------- */
+    '10|maithili': {
+        approx: true,
+        book: 'BSEB / SCERT Bihar Class 10 Maithili: Praveshika Maithili Gadya-Padya Sangrah (gadya khand and padya khand) and Mithila Vibhuti (lives of great people of Mithila)',
+        groups: [
+            { g: 'गद्य खंड', tp: 'मैथिली गद्य खंड', c: [
+                'मिथिलाक सांस्कृतिक सीमा', 'राष्ट्रभाषा ओ मातृभाषा', 'जवाहर : जेहन देखलहुँ जेहन पओलहुँ', 'चन्द्रमुखी', 'भोजन', 'पर्यावरण',
+                'भारतीय संविधान निर्माता डॉ. बी. आर. अम्बेदकर', 'क्रेक', 'भारतीय स्वतंत्रता संग्राम एवं संवैधानिक रूपरेखा',
+                'लेभराह अन्हारमे एकटा इजोत', 'बाबाक आत्मीयता', 'भरि छिपा भात'
+            ] },
+            { g: 'पद्य खंड', tp: 'मैथिली पद्य खंड', c: [
+                'शिवगीत', 'समय – साल', 'भावि भरदुतिया विधान हे', 'हड़ आब भेल वर्षा', 'एद्सक कालनाग', 'कर्मवीर',
+                'जय जवान : जय किसान', 'वंदना', 'बच्चा', 'रौदी अछि', 'हाथ', 'माँ'
+            ] },
+            { g: 'मिथिला विभूति', tp: 'मिथिला विभूति', c: [
+                'जनक आ याज्ञवल्क्य', 'विद्यापति', 'चंदा झा', 'सुभद्र झा', 'डॉ. लक्ष्मण झा', 'माँगन खबास', 'गोदावरी दत्त'
+            ] }
+        ]
+    }    ,
+    /* ---------------- Class 12 : Hindi (Digant Bhag-2, BSEB / SCERT Bihar). 13 gadya + 13 padya (two online lists agree), plus the Pratipurti stories. ---------------- */
+    '12|hindi': {
+        book: 'Digant Bhag-2 (दिगंत भाग-2), the BSEB / SCERT Bihar Class 12 Hindi textbook with gadya khand and padya khand, the story book Pratipurti Bhag-2 (प्रतिपूर्ति भाग-2) and Class 12 Hindi grammar (vyakaran)',
+        groups: [
+            { g: 'गद्य खंड (दिगंत भाग-2)', tp: 'दिगंत भाग-2 गद्य खंड', c: [
+                'बातचीत', 'उसने कहा था', 'संपूर्ण क्रांति', 'अर्द्धनारीश्वर', 'रोज', 'एक लेख और एक पत्र', 'ओ सदानीरा',
+                'सिपाही की माँ', 'प्रगीत और समाज', 'जूठन', 'हँसते हुए मेरा अकेलापन', 'तिरिछ', 'शिक्षा'
+            ] },
+            { g: 'पद्य खंड (दिगंत भाग-2)', tp: 'दिगंत भाग-2 पद्य खंड', c: [
+                'कड़बक', 'सूरदास के पद', 'तुलसीदास के पद', 'छप्पय', 'कवित्त', 'तुमुल कोलाहल कलह में', 'पुत्र वियोग',
+                'उषा', 'जन-जन का चेहरा एक', 'अधिनायक', 'प्यारे नन्हें बेटे को', 'हार-जीत', 'गाँव का घर'
+            ] },
+            { g: 'प्रतिपूर्ति भाग-2 (कहानियाँ)', tp: 'प्रतिपूर्ति भाग-2', c: [
+                'रस्सी का टुकड़ा', 'क्लर्क की मौत', 'पेशगी'
+            ] },
+            { g: 'हिंदी व्याकरण', tp: 'हिंदी व्याकरण', c: [
+                'वर्ण तथा वर्ण विचार', 'समास', 'उपसर्ग और प्रत्यय', 'पर्यायवाची शब्द', 'विलोम शब्द', 'सर्वनाम', 'लिंग',
+                'एक शब्द के लिए अनेक शब्द', 'कुछ प्रमुख लोकोक्तियाँ (कहावतें) और मुहावरे'
+            ] }
+        ]
+    },
+
+    /* ---------------- Class 12 : English (Rainbow Part-2, BSEB / SCERT Bihar). 11 prose + 10 poems (two online lists agree). ---------------- */
+    '12|english': {
+        book: 'Rainbow Part-2 (English), the BSEB / SCERT Bihar Class 12 English textbook, with its Prose and Poetry sections, plus Class 12 English grammar and writing (Rainbow Part-3 topics). NOT the NCERT Flamingo / Vistas books',
+        groups: [
+            { g: 'Prose', tp: 'Rainbow Part-2 (Prose)', c: [
+                'Indian Civilization and Culture', 'Bharat is My Home', 'A Pinch of Snuff', 'I Have a Dream', 'Ideas That Have Helped Mankind',
+                'The Artist', 'A Child Born', 'How Free is the Press', 'The Earth', 'India Through a Traveller\u2019s Eyes', 'A Marriage Proposal'
+            ] },
+            { g: 'Poetry', tp: 'Rainbow Part-2 (Poetry)', c: [
+                'Sweetest Love I Do Not Goe', 'Song of Myself', 'Now the Leaves are Falling Fast', 'Ode to Autumn', 'An Epitaph',
+                'The Soldier', 'Macavity: The Mystery Cat', 'Fire-Hymn', 'Snake', 'My Grandmother\u2019s House'
+            ] }
+        ]
     }
 
     /* Add more lists here, for example:

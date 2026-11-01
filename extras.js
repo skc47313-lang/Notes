@@ -1185,17 +1185,19 @@
             '<div class="nbq-bar"><i style="width:' + Math.round((QZ.idx + (locked ? 1 : 0)) / QZ.list.length * 100) + '%"></i></div><div class="nbq-q" id="nbqQ"></div><div id="nbqOpts"></div>';
         $('nbqBody').innerHTML = h;
         $('nbqQ').textContent = q.q;
+        if (q.qh) { var qh = document.createElement('div'); qh.className = 'nbq-hi nbq-hq'; qh.textContent = q.qh; $('nbqQ').appendChild(qh); }          // Both: Hindi question right below the English one
         var ob = $('nbqOpts');
         q.o.forEach(function (o, i) {
             var b = document.createElement('button'); b.type = 'button'; b.className = 'nbq-opt';
             var l = document.createElement('span'); l.textContent = String.fromCharCode(65 + i); var t = document.createElement('div'); t.textContent = o;
+            if (q.oh && q.oh[i]) { var th = document.createElement('div'); th.className = 'nbq-hi'; th.textContent = q.oh[i]; t.appendChild(th); }
             b.appendChild(l); b.appendChild(t);
             if (mock) b.setAttribute('aria-pressed', sel === i ? 'true' : 'false');
             if (locked) { b.disabled = true; if (i === q.a) b.classList.add('right'); else if (i === sel) b.classList.add('wrong'); }
             b.addEventListener('click', function () { if (locked) return; QZ.ans[QZ.idx] = i; quizShow(); });
             ob.appendChild(b);
         });
-        if (locked && q.e) { var ex = document.createElement('div'); ex.className = 'nbq-exp'; ex.textContent = (sel === q.a ? 'Correct! ' : 'Not quite. ') + q.e; $('nbqBody').appendChild(ex); }
+        if (locked && q.e) { var ex = document.createElement('div'); ex.className = 'nbq-exp'; ex.textContent = (sel === q.a ? 'Correct! ' : 'Not quite. ') + q.e; if (q.eh) { var eh = document.createElement('div'); eh.className = 'nbq-hi'; eh.textContent = (sel === q.a ? 'सही! ' : 'सही नहीं। ') + q.eh; ex.appendChild(eh); } $('nbqBody').appendChild(ex); }
         var last = QZ.idx === QZ.list.length - 1;
         var nav = NB.mk('<div class="nbq-nav">' + (mock ? '<button type="button" id="nbqPrev"' + (QZ.idx ? '' : ' disabled') + '>Previous</button>' : '') +
             '<button type="button" class="pri" id="nbqNext"' + (!mock && !locked ? ' disabled' : '') + '>' + (last ? 'Finish' : 'Next') + '</button></div>');
@@ -1216,9 +1218,10 @@
         QZ.list.forEach(function (q, i) {
             var ok = QZ.ans[i] === q.a, d = document.createElement('div'); d.className = 'nbq-rev ' + (ok ? 'ok' : 'bad');
             var a = document.createElement('b'); a.textContent = (i + 1) + '. ' + q.q; d.appendChild(a);
-            var y = document.createElement('div'); y.textContent = 'Your answer: ' + (QZ.ans[i] >= 0 ? q.o[QZ.ans[i]] : 'Not answered') + (ok ? ' ✓' : ''); d.appendChild(y);
-            if (!ok) { var c = document.createElement('div'); c.textContent = 'Correct answer: ' + q.o[q.a]; d.appendChild(c); }
-            if (q.e) { var e = document.createElement('div'); e.style.opacity = '.8'; e.textContent = q.e; d.appendChild(e); }
+            if (q.qh) { var ah = document.createElement('div'); ah.className = 'nbq-hi'; ah.textContent = q.qh; d.appendChild(ah); }
+            var y = document.createElement('div'); y.textContent = 'Your answer: ' + (QZ.ans[i] >= 0 ? q.o[QZ.ans[i]] : 'Not answered') + (QZ.ans[i] >= 0 && q.oh ? ' / ' + q.oh[QZ.ans[i]] : '') + (ok ? ' ✓' : ''); d.appendChild(y);
+            if (!ok) { var c = document.createElement('div'); c.textContent = 'Correct answer: ' + q.o[q.a] + (q.oh ? ' / ' + q.oh[q.a] : ''); d.appendChild(c); }
+            if (q.e) { var e = document.createElement('div'); e.style.opacity = '.8'; e.textContent = q.e + (q.eh ? ' / ' + q.eh : ''); d.appendChild(e); }
             rv.appendChild(d);
         });
         $('nbqAgain').addEventListener('click', quizStart); $('nbqNew').addEventListener('click', quizSetup); $('nbqHistR').addEventListener('click', NB.openTestHistory);
@@ -1228,20 +1231,25 @@
        AI Test Maker: chat with Bazar AI, get a mock test on ANY topic, then take it
        with the same practice / mock engine as the built-in question bank.
        ===================================================================== */
-    var AIT = { hist: [], busy: false, qs: null, title: '', subj: '', last: 0 };
-    function aiSystem(cls, n) {
+    var AIT = { hist: [], busy: false, qs: null, title: '', subj: '', last: 0, lang: 'auto' };
+    function aiSystem(cls, n, lang) {
+        var both = lang === 'Both';
         return 'You are the AI Test Maker inside Notes Bazar, a study app for Indian school students. The student is in Class ' + cls + '. ' +
             'Make exactly ' + n + ' multiple-choice questions (unless the student asks for another number, maximum 25) on ANY topic the student asks for. The topic does NOT have to be in the school syllabus: general knowledge, current affairs, sports, technology, coding, history, movies, careers, competitive exams, hobbies and everything else are allowed. ' +
             'Use the class only to judge difficulty (easy words and simple ideas for small classes). For school topics follow CBSE / NCERT style; for other topics use common, well-established facts. Each question has 4 options and exactly one correct answer, and you must be sure that the answer is right; do not invent facts. Only refuse topics that are harmful, illegal or sexual, and then reply in one friendly sentence and suggest another topic. ' +
-            'Write the questions in the same language the student writes in (English, Hindi or Hinglish). ' +
+            (both ? 'LANGUAGE RULE (very important): BILINGUAL test. Write EVERY question twice: first in English and then the same question in Hindi (Devanagari script). Put the English question in "q", its Hindi translation in "qh", the 4 English options in "o", the same 4 options in Hindi in "oh" (same order, so the correct index "a" is the same), the English explanation in "e" and the Hindi explanation in "eh". The Hindi must say exactly what the English says. "q", "o", "e" contain only English; "qh", "oh", "eh" contain only Hindi (numbers, symbols and chemical formulas can stay as they are). Never leave a Hindi field empty. '
+                : lang === 'English' ? 'LANGUAGE RULE (very important): write EVERYTHING in English only, even if the student writes in Hindi. '
+                : lang === 'Hindi' ? 'LANGUAGE RULE (very important): write EVERYTHING in Hindi using Devanagari script only, even if the student writes in English. '
+                : 'Write the questions in the same language the student writes in (English, Hindi or Hinglish). ') +
             'WHEN THE TOPIC IS CLEAR reply with ONLY a JSON object and nothing else (no markdown fences, no extra words): ' +
-            '{"title":"short title","subject":"subject name","questions":[{"q":"question text","o":["option A","option B","option C","option D"],"a":0,"e":"one short line explaining the answer"}]} ' +
+            (both ? '{"title":"short title","subject":"subject name","questions":[{"q":"English question","qh":"same question in Hindi","o":["English option A","English option B","English option C","English option D"],"oh":["Hindi option A","Hindi option B","Hindi option C","Hindi option D"],"a":0,"e":"one short English line explaining the answer","eh":"the same line in Hindi"}]} '
+                : '{"title":"short title","subject":"subject name","questions":[{"q":"question text","o":["option A","option B","option C","option D"],"a":0,"e":"one short line explaining the answer"}]} ') +
             'where "a" is the index 0-3 of the correct option; vary the position of the correct answer. ' +
             'If the topic is missing or too vague, or the student only chats or asks something else, answer in one or two short friendly sentences and ask which topic they want tested. ' +
             'If the student asks to change the test (harder, easier, more questions, another topic), make a new full JSON test.';
     }
     /* take the JSON out of the reply, even when the AI added words around it or the reply was cut off */
-    function aiParseTest(txt) {
+    function aiParseTest(txt, need) {
         txt = String(txt || '').replace(/```(?:json)?/gi, '');
         var i = txt.indexOf('{'); if (i < 0) return null;
         var obj = null, j = txt.lastIndexOf('}');
@@ -1266,15 +1274,23 @@
             if (!q || typeof q.q !== 'string' || !Array.isArray(q.o)) return;
             var o = q.o.map(function (v) { return String(v == null ? '' : v).trim().slice(0, 160); }).filter(Boolean).slice(0, 6), a = parseInt(q.a, 10);
             if (o.length < 2 || !(a >= 0 && a < o.length)) return;
-            qs.push({ q: q.q.trim().slice(0, 300), o: o, a: a, e: typeof q.e === 'string' ? q.e.trim().slice(0, 240) : '' });
+            var item = { q: q.q.trim().slice(0, 300), o: o, a: a, e: typeof q.e === 'string' ? q.e.trim().slice(0, 240) : '' };
+            if (typeof q.qh === 'string' && q.qh.trim() && Array.isArray(q.oh)) {          // Hindi copy of the question: kept only when it has the same number of options
+                var oh = q.oh.map(function (v) { return String(v == null ? '' : v).trim().slice(0, 200); }).filter(Boolean).slice(0, 6);
+                if (oh.length === o.length) { item.qh = q.qh.trim().slice(0, 360); item.oh = oh; item.eh = typeof q.eh === 'string' ? q.eh.trim().slice(0, 280) : ''; }
+            }
+            qs.push(item);
         });
+        if (need) qs = qs.filter(function (q) { return q.qh; });                              // a "Both" test keeps only the questions that really have Hindi
         if (qs.length < 3) return null;
         return { title: String(obj.title || 'AI test').slice(0, 60), subject: String(obj.subject || 'AI test').slice(0, 30), qs: qs.slice(0, 25) };
     }
     function aiPick() {                                          // fresh option order every attempt
         return shuffle(AIT.qs).map(function (q) {
             var idx = shuffle(q.o.map(function (_, i) { return i; }));
-            return { q: q.q, s: AIT.subj, e: q.e, o: idx.map(function (i) { return q.o[i]; }), a: idx.indexOf(q.a) };
+            var r = { q: q.q, s: AIT.subj, e: q.e, o: idx.map(function (i) { return q.o[i]; }), a: idx.indexOf(q.a) };
+            if (q.qh && q.oh && q.oh.length === q.o.length) { r.qh = q.qh; r.eh = q.eh || ''; r.oh = idx.map(function (i) { return q.oh[i]; }); }
+            return r;
         });
     }
     function aiBubble(role, text) {
@@ -1301,11 +1317,12 @@
         if (typeof window.nbCallAi !== 'function') { aiBubble('bot', 'The AI is still loading. Please try again in a moment.'); return; }
         AIT.busy = true; aiBubble('me', text);
         var wait = aiBubble('bot', 'Thinking…'); wait.classList.add('wait');
-        var n = parseInt(($('nbaiN') || {}).value, 10) || 10, go = $('nbaiGo'); if (go) go.disabled = true;
+        var n = parseInt(($('nbaiN') || {}).value, 10) || 10, go = $('nbaiGo'), lg = ($('nbaiL') || {}).value || AIT.lang || 'auto'; AIT.lang = lg; if (go) go.disabled = true;
         AIT.hist.push({ role: 'user', content: text }); AIT.hist = AIT.hist.slice(-8);
         try {
-            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n) }].concat(AIT.hist), { timeout: 60000 });
-            var t = aiParseTest(out);
+            if (lg === 'Both' && n > 15) n = 15;                  // a bilingual test is twice as long, so keep it shorter
+            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n, lg) }].concat(AIT.hist), { timeout: lg === 'Both' ? 90000 : 60000 });
+            var t = aiParseTest(out, lg === 'Both');
             if (wait.parentNode) wait.remove();
             if (t) {
                 AIT.qs = t.qs; AIT.title = t.title; AIT.subj = t.subject;
@@ -1314,7 +1331,7 @@
                 aiReady();
             } else {
                 var shown = String(out || '').replace(/```[\s\S]*?```/g, '').trim();
-                if (/^\s*[\[{]/.test(shown) || !shown) shown = 'I could not build a proper test from that. Try again with a topic, for example "Photosynthesis" or "Algebra – linear equations".';
+                if (/^\s*[\[{]/.test(shown) || !shown) shown = lg === 'Both' ? 'I could not build the English + Hindi test this time. Please send the topic again, or try fewer questions.' : 'I could not build a proper test from that. Try again with a topic, for example "Photosynthesis" or "Algebra – linear equations".';
                 AIT.hist.push({ role: 'assistant', content: shown.slice(0, 300) });
                 aiBubble('bot', shown.slice(0, 600));
             }
@@ -1328,12 +1345,14 @@
         var body = $('nbqBody'), last = LSX.get('nb_ai_test', null);
         body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Test Maker</h3><p class="nbo-sub">Any topic, even outside your syllabus. Bazar AI makes the test in seconds.</p>' +
             '<div class="nbai-set"><label>Questions<select id="nbaiN" class="nbo-in"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>' +
-            '<label>Class<select id="nbaiC" class="nbo-in">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return '<option value="' + n + '"' + (n === QZ.cls ? ' selected' : '') + '>Class ' + n + '</option>'; }).join('') + '</select></label></div>' +
+            '<label>Class<select id="nbaiC" class="nbo-in">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return '<option value="' + n + '"' + (n === QZ.cls ? ' selected' : '') + '>Class ' + n + '</option>'; }).join('') + '</select></label>' +
+            '<label>Language<select id="nbaiL" class="nbo-in">' + [['auto', 'Same as I write'], ['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Both', 'English + हिंदी (Both)']].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === (AIT.lang || 'auto') ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label></div>' +
             '<div class="nbai-chat" id="nbaiChat" aria-live="polite"></div>' +
             '<div class="nbai-chips" id="nbaiChips"></div>' +
             '<form class="nbai-form" id="nbaiForm" autocomplete="off"><input id="nbaiIn" class="nbo-in" maxlength="400" placeholder="Topic, e.g. Photosynthesis, Class 10" aria-label="Topic for your test"><button type="submit" id="nbaiGo" class="nbai-send" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button></form>' +
             '<button type="button" class="nbo-skip" id="nbaiBack">Back to tests</button>';
         $('nbaiC').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); });
+        $('nbaiL').addEventListener('change', function () { AIT.lang = this.value; });
         AIT.hist = []; AIT.qs = null;
         aiBubble('bot', 'Hi! Which topic do you want to be tested on? It can be any chapter or subject, or anything outside your syllabus too (GK, current affairs, sports, coding, history…). You can also tell me the level (easy / hard).');
         var sug = ['Photosynthesis', 'Algebra: linear equations', 'Indian Constitution', 'General knowledge', 'Cricket World Cups', 'Basics of Python coding', 'विज्ञान: प्रकाश'];
@@ -1362,7 +1381,7 @@
     function thSave(secs) {
         try {
             var ai = QZ.src === 'ai', score = 0, a;
-            var qs = QZ.list.map(function (q, i) { if (QZ.ans[i] === q.a) score++; return { q: q.q, o: q.o, a: q.a, e: q.e || '', s: q.s || '', x: QZ.ans[i] }; });
+            var qs = QZ.list.map(function (q, i) { if (QZ.ans[i] === q.a) score++; var r = { q: q.q, o: q.o, a: q.a, e: q.e || '', s: q.s || '', x: QZ.ans[i] }; if (q.qh) { r.qh = q.qh; r.oh = q.oh; r.eh = q.eh || ''; } return r; });
             var title = ai ? String(QZ.aiTitle || 'AI test') : ('Practice · ' + QZ.subj);
             a = thAll(); a.unshift({ id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4), t: Date.now(), title: title.slice(0, 60), subj: ai ? (AIT.subj || 'AI test') : QZ.subj, cls: QZ.cls, mode: QZ.mode, src: QZ.src, score: score, total: qs.length, secs: secs, qs: qs });
             thPut(a);
@@ -1421,10 +1440,10 @@
         r.qs.forEach(function (q, i) {
             var st = q.x === q.a ? 'right' : (q.x >= 0 ? 'wrong' : 'skip');
             if (TH.f !== 'all' && TH.f !== st) return;
-            h += '<div class="th-q th-' + st + '"><div class="th-qq"><b>' + (i + 1) + '.</b> ' + E(q.q) + '</div>' + q.o.map(function (o, j) {
+            h += '<div class="th-q th-' + st + '"><div class="th-qq"><b>' + (i + 1) + '.</b> ' + E(q.q) + (q.qh ? '<div class="nbq-hi nbq-hq">' + E(q.qh) + '</div>' : '') + '</div>' + q.o.map(function (o, j) {
                 var c = j === q.a ? 'ok' : (j === q.x ? 'bad' : '');
-                return '<div class="th-o ' + c + '"><span>' + letters[j] + '</span><div>' + E(o) + '</div>' + (j === q.a ? '<em>✓ Correct</em>' : (j === q.x ? '<em>✗ Your answer</em>' : '')) + '</div>';
-            }).join('') + (st === 'skip' ? '<div class="th-note">You did not answer this one.</div>' : '') + (q.e ? '<div class="th-exp"><b>Why:</b> ' + E(q.e) + '</div>' : '') +
+                return '<div class="th-o ' + c + '"><span>' + letters[j] + '</span><div>' + E(o) + (q.oh && q.oh[j] ? '<div class="nbq-hi">' + E(q.oh[j]) + '</div>' : '') + '</div>' + (j === q.a ? '<em>✓ Correct</em>' : (j === q.x ? '<em>✗ Your answer</em>' : '')) + '</div>';
+            }).join('') + (st === 'skip' ? '<div class="th-note">You did not answer this one.</div>' : '') + (q.e ? '<div class="th-exp"><b>Why:</b> ' + E(q.e) + (q.eh ? '<div class="nbq-hi">' + E(q.eh) + '</div>' : '') + '</div>' : '') +
                 (st !== 'right' ? '<button type="button" class="th-why" data-a="why" data-i="' + i + '">🤖 Explain simply</button><div class="th-ai" id="thAi' + i + '"></div>' : '') + '</div>';
         });
         h += '<button type="button" class="th-del th-delone" data-a="del">Delete this test</button>';
@@ -1432,9 +1451,9 @@
     }
     function thRetake(only) {
         var r = thAll().filter(function (x) { return x.id === TH.id; })[0]; if (!r) return;
-        var all = r.qs.map(function (q) { return { q: q.q, o: q.o, a: q.a, e: q.e, bad: q.x !== q.a }; }), list = only ? all.filter(function (q) { return q.bad; }) : all;
+        var all = r.qs.map(function (q) { return { q: q.q, o: q.o, a: q.a, e: q.e, qh: q.qh, oh: q.oh, eh: q.eh, bad: q.x !== q.a }; }), list = only ? all.filter(function (q) { return q.bad; }) : all;
         if (list.length < 3) list = list.concat(all.filter(function (q) { return !q.bad; })).slice(0, Math.max(3, list.length));      // the quiz needs at least 3 questions
-        AIT.qs = list.map(function (q) { return { q: q.q, o: q.o, a: q.a, e: q.e }; });
+        AIT.qs = list.map(function (q) { return { q: q.q, o: q.o, a: q.a, e: q.e, qh: q.qh, oh: q.oh, eh: q.eh }; });
         AIT.title = (only ? 'Mistakes: ' : 'Retest: ') + String(r.title).replace(/^(Retest|Mistakes): /, '').slice(0, 40); AIT.subj = r.subj || 'Test';
         QZ.cls = r.cls || QZ.cls; NB.close('nbTh'); if (!$('nbQz')) buildQuiz(); NB.open('nbQz'); aiStartTest(r.mode === 'mock' ? 'mock' : 'practice');
     }
@@ -1491,6 +1510,7 @@
         '.qpw .qp-meta{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;border-top:1.5px solid #111;border-bottom:1.5px solid #111;padding:5px 0;margin:8px 0 14px;font-weight:600;font-size:12px}' +
         '.qpw .qp-q{margin:0 0 12px;page-break-inside:avoid;break-inside:avoid}.qpw .qp-qt{display:flex;gap:10px;justify-content:space-between}' +
         '.qpw .qp-m{white-space:nowrap;font-weight:700;font-size:12px}' +
+        '.qpw .qp-hq{margin:7px 0 0;padding-top:6px;border-top:1px dashed #bbb}.qpw .qp-hi{margin:4px 0 0;padding-top:4px;border-top:1px dashed #a5b4fc}' +
         '.qpw .qp-o{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 16px;margin:4px 0 0 22px}' +
         '.qpw .qp-a{margin:6px 0 0 22px;padding:5px 9px;background:#eef2ff;border-left:3px solid #6366f1;font-size:12.5px}.qpw .qp-a.qp-k{margin-left:0}' +
         '.qpw .qp-sum{margin:0 0 12px;font-weight:600;line-height:1.9}.qpw .qp-brk{page-break-before:always;break-before:page}' +
@@ -1516,7 +1536,19 @@
             secs: ['Khand A: Vastunishth prashn (har ek 1 ank)', 'Khand B: Laghu uttariya prashn (har ek 2 ank)', 'Khand C: Dirgh uttariya prashn (har ek 5 ank)'],
             inst: 'Sabhi prashn anivarya hain. Khand A me 80 vastunishth prashn (har ek 1 ank), Khand B me 15 laghu uttariya prashn (har ek 2 ank) aur Khand C me 10 dirgh uttariya prashn (har ek 5 ank) hain.' }
     };
-    function qpLab(lang) { return QP_L[lang] || QP_L.English; }
+    /* "Both" = English first, Hindi below it. Labels become "English / हिंदी". */
+    function qpLab(lang) {
+        if (lang !== 'Both') return QP_L[lang] || QP_L.English;
+        if (QP_L.Both) return QP_L.Both;
+        var e = QP_L.English, h = QP_L.Hindi, j = function (a, b) { return a + ' / ' + b; }, o = {};
+        ['cls', 'total', 'time', 'min', 'hrs', 'name', 'date', 'ans', 'key', 'set'].forEach(function (k) { o[k] = j(e[k], h[k]); });
+        o.types = {}; Object.keys(e.types).forEach(function (k) { o.types[k] = j(e.types[k], h.types[k]); });
+        o.secs = e.secs.map(function (x, i) { return j(x, h.secs[i]); });
+        o.inst = e.inst + ' ' + h.inst;
+        QP_L.Both = o; return o;
+    }
+    var QP_LANGSUBJ = { hindi: 1, english: 1, maithili: 1, sanskrit: 1, nonhindi: 1 };   // language subjects never get the "Both" option
+    function qpLim(o, n) { return o.lang === 'Both' ? Math.max(2, Math.ceil(n / 2)) : n; }   // a bilingual question is twice as long, so fewer per AI call
     var QP_OTHER = ['other', 'Other / any topic', 'अन्य विषय', 'Anya vishay'];
     var QP_NONHINDI = ['nonhindi', 'Non-Hindi', 'गैर-हिंदी', 'Non-Hindi'];   // BSEB Class 10 only: its questions come from the Class 8 Hindi book
     function qpSubjList(cls) { var l = (cls <= 8 ? QP_SUBJ.low : (cls <= 10 ? QP_SUBJ.mid : QP_SUBJ.high)).slice(); if (cls === 10) l.push(QP_NONHINDI); return l.concat([QP_OTHER]); }
@@ -1526,13 +1558,13 @@
     function qpBoardName(subj) { var b = qpBoard(subj); return b === 'ncert' ? 'NCERT' : (b === 'bseb' ? 'BSEB / SCERT Bihar' : ''); }
     function qpBoardLine(subj, what) {
         var n = qpBoardName(subj);
-        if (subj === 'nonhindi') return '<i class="fa-solid fa-book"></i> ' + what + ' will come from the <b>Class 8 Hindi book (Kislay Bhag-8)</b> of BSEB / SCERT Bihar';
+        if (subj === 'nonhindi') return '<i class="fa-solid fa-book"></i> ' + what + ' will come from the <b>Class 8 Hindi book (Kislay Bhag-3)</b> of BSEB / SCERT Bihar';
         return n ? '<i class="fa-solid fa-book"></i> ' + what + ' will follow <b>' + n + '</b> books' : what + ' will follow the best matching textbook';
     }
     /* chapter lists + book names for the Bihar board come from bseb-chapters.js */
     function qpBookRule(o) {
         var e = (window.NB_BSEB || {})[o.cls + '|' + o.subj], t = '';
-        if (o.subj === 'nonhindi') return 'NON-HINDI RULE (very important): this is the BSEB Class 10 Non-Hindi (Hindi for non-Hindi students) paper. Take everything ONLY from the Class 8 Hindi textbook of BSEB / SCERT Bihar (Kislay Bhag-8): its lessons, poems, vocabulary and Hindi grammar at Class 8 level, even though the student is in Class 10. Do NOT use the Class 10 Hindi book (Godhuli) or any other book. ';
+        if (o.subj === 'nonhindi') return 'NON-HINDI RULE (very important): this is the BSEB Class 10 Non-Hindi (Hindi for non-Hindi students) paper. Take everything ONLY from the Class 8 Hindi textbook of BSEB / SCERT Bihar (Kislay Bhag-3): its lessons, poems, vocabulary and Hindi grammar at Class 8 level, even though the student is in Class 10. Do NOT use the Class 10 Hindi book (Godhuli) or any other book. The 23 lessons of Kislay Bhag-3, in order: ' + ((e && e.groups) ? e.groups[0].c.join(' | ') : '') + '. If the topic names one of these lessons, make every question only from that real lesson (its story / poem, author, characters, theme, difficult words, grammar). ';
         if (!e || !e.groups) return o.subj === 'sst' ? 'SOCIAL SCIENCE RULE: in the Bihar board, Social Science is taught from separate SCERT Bihar books (History, Geography, Political Science / Civics, Economics and, in the higher classes, Disaster Management). If the topic starts with the name of a part, take everything only from that book and that chapter. Never use NCERT / CBSE content. ' : '';
         t = 'BOOK RULE (very important): the books are ' + (e.book || 'the BSEB / SCERT Bihar books of this class') + '. Use ONLY these Bihar board books and their real chapters, never NCERT / CBSE or any other book. ';
         if (e.groups.length > 1) t += 'The chapter name may start with the part (book) it belongs to; then take everything only from that part and that chapter. ';
@@ -1540,9 +1572,10 @@
         return t;
     }
     function qpSubjFind(cls, key) { var l = qpSubjList(cls), i; for (i = 0; i < l.length; i++) if (l[i][0] === key) return l[i]; return l[0]; }
-    function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1]); }
+    function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Both' ? (s[1] === s[2] ? s[1] : s[1] + ' / ' + s[2]) : (o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1])); }
     function qpLangRule(lang, subj) {
         if (lang === 'Hindi' && subj === 'maithili') return 'LANGUAGE RULE (very important): the subject is Maithili, so write EVERYTHING in Maithili language using Devanagari script only (मैथिली). Every question, option, explanation and answer must be in Devanagari. Do NOT use English/Roman letters or Hinglish.';
+        if (lang === 'Both') return 'LANGUAGE RULE (very important): BILINGUAL paper. Write EVERY question twice: first in English and then the same question in Hindi (Devanagari script). Put the English question in "q" and its exact Hindi translation in "qh"; for multiple-choice put the 4 English options in "o" and the same 4 options in Hindi in "oh" (same order, so the correct index is the same); put the English explanation in "e" and the Hindi explanation in "eh"; for written questions put the English model answer in "ans" and the Hindi model answer in "ansh". The Hindi must say exactly the same thing as the English. Fields "q", "o", "e", "ans" must contain only English; fields "qh", "oh", "eh", "ansh" must contain only Hindi in Devanagari (numbers, symbols and chemical formulas may stay as they are). Never leave a Hindi field empty.';
         if (lang === 'Hindi') return 'LANGUAGE RULE (very important): write EVERYTHING in Hindi using Devanagari script only (हिंदी). Every question, every option, every explanation and every answer must be in Devanagari. Do NOT write Hindi words in English/Roman letters and do NOT answer in English or Hinglish. Only unavoidable symbols, numbers and chemical formulas may use Roman letters.';
         if (lang === 'Hinglish') return 'LANGUAGE RULE (very important): write everything in Hinglish, meaning simple Hindi written in English (Roman) letters, like "Bharat ki rajdhani kya hai?". Do not use Devanagari script.';
         return 'LANGUAGE RULE (very important): write EVERYTHING in English only. If the topic is given in Hindi or any other language, understand it and write the questions, options and answers in English. Do not use Devanagari or Hindi words.';
@@ -1561,6 +1594,13 @@
     function qpPick(a, n) { var c = a.slice(), out = [], i; while (c.length && out.length < n) { i = Math.floor(Math.random() * c.length); out.push(c.splice(i, 1)[0]); } return out; }
     function qpShuf(n) { var a = [], i, j, t; for (i = 0; i < n; i++) a.push(i + 1); for (i = n - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
     function qpLangOk(qs, lang) {                                // did the AI really write in the chosen language?
+        if (lang === 'Both') {                                   // English fields must be English, Hindi fields must be Hindi
+            var te = '', th = '', de, le, dh, lh;
+            qs.forEach(function (q) { te += ' ' + q.q + ' ' + (q.o ? q.o.join(' ') : '') + ' ' + (q.ans || '') + ' ' + (q.e || ''); th += ' ' + (q.qh || '') + ' ' + (q.oh ? q.oh.join(' ') : '') + ' ' + (q.ansh || '') + ' ' + (q.eh || ''); });
+            de = (te.match(/[\u0900-\u097F]/g) || []).length; le = (te.match(/[A-Za-z]/g) || []).length;
+            dh = (th.match(/[\u0900-\u097F]/g) || []).length; lh = (th.match(/[A-Za-z]/g) || []).length;
+            return (de + le === 0 || de / (de + le) <= 0.1) && (dh + lh === 0 || dh / (dh + lh) >= 0.4);
+        }
         var t = '';
         qs.forEach(function (q) { t += ' ' + q.q + ' ' + (q.o ? q.o.join(' ') : '') + ' ' + (q.ans || '') + ' ' + (q.e || ''); });
         var dev = (t.match(/[\u0900-\u097F]/g) || []).length, lat = (t.match(/[A-Za-z]/g) || []).length, tot = dev + lat;
@@ -1569,7 +1609,7 @@
     }
     function qpTitleOf(txt, lang) {
         var m = /"title"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(String(txt || '')); if (!m) return '';
-        try { var t = JSON.parse('"' + m[1] + '"').trim().slice(0, 120); return t && qpLangOk([{ q: t }], lang) ? t : ''; } catch (e) { return ''; }
+        try { var t = JSON.parse('"' + m[1] + '"').trim().slice(0, 120); return t && (lang === 'Both' || qpLangOk([{ q: t }], lang)) ? t : ''; } catch (e) { return ''; }
     }
     function qpSyllabus(o) {
         var b = qpBoard(o.subj), sn = o.subjN ? o.subjN[1] : o.topic, t = '';
@@ -1583,7 +1623,7 @@
     }
     function qpPrompt(o, n, done, c) {
         var mcq = o.type === 'mcq', needA = o.ans !== 'none', sn = o.subjN && o.subj !== 'other' ? o.subjN[1] : '';
-        var what = o.model ? (o.subj === 'nonhindi' ? 'the full Non-Hindi syllabus (all lessons of the Class 8 Hindi book Kislay Bhag-8)' : 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)') : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
+        var what = o.model ? (o.subj === 'nonhindi' ? 'the full Non-Hindi syllabus (all lessons of the Class 8 Hindi book Kislay Bhag-3)' : 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)') : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
         var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students (Bihar and all India). Make a question paper for Class ' + o.cls + ' on ' + what + '. Difficulty: ' + o.level + '. ' + qpLangRule(o.lang, o.subj) + ' ' + qpSyllabus(o) +
             'Be sure every answer is correct; never invent facts. ';
         if (mcq) s += 'Make EXACTLY ' + n + ' multiple-choice questions. Each has 4 options and exactly one correct option; vary the position of the correct option. Do not put "A)" or "B)" labels inside the option text. ';
@@ -1593,8 +1633,11 @@
         if (c.N) s += 'This is part of a Model Set that must cover the WHOLE syllabus. Divide the textbook into ' + c.N + ' equal parts in chapter order and take the questions of THIS batch from part ' + c.seg + ' of ' + c.N + ', each question from a different concept. ';
         s += 'Variation code ' + c.seed + ': use it so this paper is different from any other paper on the same subject (different concepts, examples, names and numbers). ';
         s += 'Reply with ONLY one JSON object and nothing else (no markdown fences, no extra words): ';
-        var ti = o.model ? '' : '"title":"short paper title in ' + (o.lang === 'Hinglish' ? 'Hinglish' : o.lang) + '",';
-        if (mcq) s += '{' + ti + '"questions":[{"q":"question text","o":["option 1","option 2","option 3","option 4"]' + (needA ? ',"a":0,"e":"one short line explaining the answer"' : '') + '}]} ' + (needA ? 'where "a" is the index 0-3 of the correct option. ' : '');
+        var both = o.lang === 'Both';
+        var ti = o.model ? '' : '"title":"' + (both ? 'short paper title in English / the same title in Hindi' : 'short paper title in ' + (o.lang === 'Hinglish' ? 'Hinglish' : o.lang)) + '",';
+        if (mcq && both) s += '{' + ti + '"questions":[{"q":"English question","qh":"same question in Hindi","o":["English option 1","English option 2","English option 3","English option 4"],"oh":["Hindi option 1","Hindi option 2","Hindi option 3","Hindi option 4"]' + (needA ? ',"a":0,"e":"one short English line explaining the answer","eh":"the same line in Hindi"' : '') + '}]} ' + (needA ? 'where "a" is the index 0-3 of the correct option. ' : '');
+        else if (both) s += '{' + ti + '"questions":[{"q":"English question","qh":"same question in Hindi","m":2' + (needA ? ',"ans":"English model answer (use \\n for new lines)","ansh":"same model answer in Hindi (use \\n for new lines)"' : '') + '}]} where "m" is the marks. ';
+        else if (mcq) s += '{' + ti + '"questions":[{"q":"question text","o":["option 1","option 2","option 3","option 4"]' + (needA ? ',"a":0,"e":"one short line explaining the answer"' : '') + '}]} ' + (needA ? 'where "a" is the index 0-3 of the correct option. ' : '');
         else s += '{' + ti + '"questions":[{"q":"question text","m":2' + (needA ? ',"ans":"model answer (use \\n for new lines)"' : '') + '}]} where "m" is the marks. ';
         var avoid = done.slice(-40).map(function (q) { return q.q.slice(0, 70); }).concat((c.avoid || []).slice(0, 30));
         if (avoid.length) s += 'These questions already exist, so do NOT repeat or paraphrase them: ' + avoid.map(function (q) { return '"' + q + '"'; }).join('; ') + '. ';
@@ -1604,7 +1647,7 @@
     function qpStatus(t) { var e = $('qpSt'); if (e) e.textContent = t || ''; }
     /* one chain of AI calls that makes `target` new questions into ctx.pool (several chains may share one pool) */
     async function qpGenSec(o, target, ctx) {
-        var mine = 0, fails = 0, langFails = 0, call = 0, lim = ctx.lim || QP_LIM[o.type], msg = '', c, n, out, raw, fresh, tt;
+        var mine = 0, fails = 0, langFails = 0, call = 0, lim = qpLim(o, ctx.lim || QP_LIM[o.type]), msg = '', c, n, out, raw, fresh, tt;
         while (mine < target && fails < 4) {
             if (ctx.run !== QP.run) return null;
             n = Math.min(lim, target - mine);
@@ -1619,7 +1662,7 @@
             raw = qpObjs(out);
             if (raw === null) { if (!ctx.pool.length) msg = String(out || '').replace(/```[\s\S]*?```/g, '').trim().slice(0, 300); break; }
             fresh = qpNorm(raw, o);
-            if (fresh.length && !qpLangOk(fresh, o.lang)) { fails++; if (++langFails >= 3) { if (!ctx.pool.length) msg = 'The AI could not write this paper in ' + o.lang + ' right now. Please tap "Make question paper" again.'; break; } continue; }
+            if (fresh.length && !qpLangOk(fresh, o.lang)) { fails++; if (++langFails >= 3) { if (!ctx.pool.length) msg = 'The AI could not write this paper in ' + (o.lang === 'Both' ? 'English and Hindi' : o.lang) + ' right now. Please tap "Make question paper" again.'; break; } continue; }
             fresh = fresh.filter(function (q) { var k = qpKey(q.q); if (!k || ctx.seen[k]) return false; ctx.seen[k] = 1; return true; });
             if (!fresh.length) { fails++; continue; }
             if (!o.title && !o.model && (tt = qpTitleOf(out, o.lang))) o.title = tt;
@@ -1633,7 +1676,7 @@
         var run = ++QP.run, pool = [], seen = {}, hist = qpHistGet(o), r;
         if (o.type === 'model') return qpGenModel(o, run, hist);
         r = await qpGenSec(o, o.count, { run: run, pool: pool, seen: seen, seed: qpSeed(), avoid: qpPick(hist, 30), lim: QP_LIM[o.type],
-            prog: function (f) { qpStatus('Making questions ' + (pool.length + 1) + ' to ' + Math.min(o.count, pool.length + QP_LIM[o.type]) + ' of ' + o.count + '…' + (f ? ' (trying again)' : '')); } });
+            prog: function (f) { qpStatus('Making questions ' + (pool.length + 1) + ' to ' + Math.min(o.count, pool.length + qpLim(o, QP_LIM[o.type])) + ' of ' + o.count + '…' + (f ? ' (trying again)' : '')); } });
         if (r === null) return null;
         return pool.length ? { qs: pool } : { msg: r.msg };
     }
@@ -1659,11 +1702,19 @@
         var h = '<div class="qp-a' + (num ? ' qp-k' : '') + '"><b>' + (num ? 'Q' + num + '. ' : L.ans + ': ') + (mcq ? '(' + 'ABCDEF'[q.a] + ') ' + NB.esc(q.o[q.a]) : '') + '</b>';
         if (mcq) h += q.e ? ' · ' + NB.esc(q.e) : '';
         else h += qpNl(q.ans);
+        if (q.qh) {                                              // Both: the Hindi answer sits right below the English one
+            h += '<div class="qp-hi">' + (mcq ? '<b>(' + 'ABCDEF'[q.a] + ') ' + NB.esc((q.oh || [])[q.a] || '') + '</b>' + (q.eh ? ' · ' + NB.esc(q.eh) : '') : qpNl(q.ansh || ''));
+            h += '</div>';
+        }
         return h + '</div>';
     }
     function qpQ(q, mcq, num, marks, below, L) {
         var h = '<div class="qp-q"><div class="qp-qt"><span><b>Q' + num + '.</b> ' + NB.esc(q.q) + '</span>' + (marks ? '<span class="qp-m">[' + marks + ']</span>' : '') + '</div>';
         if (mcq) h += '<div class="qp-o">' + q.o.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + NB.esc(t) + '</span>'; }).join('') + '</div>';
+        if (q.qh) {                                              // Both: English question + options above, the same question + options in Hindi below
+            h += '<div class="qp-hq">' + NB.esc(q.qh) + '</div>';
+            if (mcq && q.oh) h += '<div class="qp-o">' + q.oh.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + NB.esc(t) + '</span>'; }).join('') + '</div>';
+        }
         if (below) h += qpAns(q, mcq, 0, L);
         return h + '</div>';
     }
@@ -1712,6 +1763,14 @@
         sel.innerHTML = l.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === keep ? ' selected' : '') + '>' + NB.esc(x[1] + (x[0] === 'other' ? '' : ' (' + x[2] + ')')) + '</option>'; }).join('');
         qpBoardHint();
     }
+    /* the "Both" language option is only for non-language subjects (Maths, Science, Social Science ...), never for Hindi / English / Maithili / Sanskrit / Non-Hindi */
+    function qpLangFix(initial) {
+        var lg = $('qpLang'), sj = $('qpSubj'), o, has, ok; if (!lg || !sj) return;
+        ok = !QP_LANGSUBJ[sj.value];
+        o = lg.querySelector('option[value="Both"]'); has = !!o;
+        if (ok && !has) { o = document.createElement('option'); o.value = 'Both'; o.textContent = 'English + हिंदी (Both)'; lg.appendChild(o); if (initial) { var sv = (LSX.get('nb_qp_opts', null) || {}).lang; if (sv === 'Both') lg.value = 'Both'; } }
+        if (!ok && has) { if (lg.value === 'Both') lg.value = sj.value === 'english' ? 'English' : 'Hindi'; o.remove(); }
+    }
     function qpBoardHint() {
         var b = $('qpBoard'), v = $('qpSubj') && $('qpSubj').value; if (!b) return;
         b.innerHTML = qpBoardLine(v, 'Questions');
@@ -1732,19 +1791,20 @@
             '<label class="nbo-l" for="qpSrc">Chapter text (optional)</label><textarea id="qpSrc" class="nbo-in" rows="5" maxlength="12000" placeholder="Paste the lesson text here. Questions will then come only from it."></textarea></details>' +
             '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
             '<label>Answers' + qpSel('qpAns', [['none', 'No answers'], ['end', 'Answer key at the end'], ['below', 'Answer below each question']], s.ans || 'end') + '</label></div>' +
-            '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
+            '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish'], ['Both', 'English + हिंदी (Both)']], s.lang || 'English') + '</label>' +
             '<label>Difficulty' + qpSel('qpLevel', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']], s.level || 'Medium') + '</label></div>' +
             '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
             '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
-        qpFillSubj(s.subj); qpSync(); chRender('qp');
+        qpFillSubj(s.subj); qpSync(); chRender('qp'); qpLangFix(true);
         qpScanInit('qp');
         $('qpBack').addEventListener('click', function () { NB.close('nbQp'); NB.openPdfMaker(); });
         $('qpType').addEventListener('change', qpSync);
-        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); chRender('qp'); });
+        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); chRender('qp'); qpLangFix(false); });
         $('qpSubj').addEventListener('change', function () {
             chRender('qp');
             qpBoardHint(); var v = this.value, lg = $('qpLang');
             if (v === 'hindi' || v === 'maithili' || v === 'sanskrit' || v === 'nonhindi' || v === 'sst') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';   // those papers are written in their own language
+            qpLangFix(false);
         });
         $('qpGo').addEventListener('click', async function () {
             if (QP.busy) return;
@@ -1765,7 +1825,7 @@
             QP.busy = false; if (go) go.disabled = false;
             if (!r) return;                                      // window was closed while it was working
             qpStatus('');
-            if (r.msg) { err.textContent = r.msg; return; }
+            if (r.msg || !r.qs) { err.textContent = r.msg || 'Could not make the questions right now. Please try again in a moment.'; return; }
             if (!r.qs.length) { err.textContent = 'Could not make the questions right now. Please try again in a moment.'; return; }
             try { qpHistSave(o, r.qs); } catch (e) {}
             QP.paper = { o: o, qs: r.qs, secs: r.secs }; mySave('paper', QP.paper); qpResult(r.qs.length < o.count);
@@ -1924,13 +1984,26 @@
                 var op = q.o.map(function (v) { return String(v == null ? '' : v).replace(/^\(?[A-Fa-f][\).:]\s+/, '').trim().slice(0, 200); }).filter(Boolean).slice(0, 6), a = parseInt(q.a, 10);
                 if (op.length < 2) return;
                 if (needA && !(a >= 0 && a < op.length)) return;
-                out.push({ q: q.q.trim().slice(0, 400), o: op, a: needA ? a : -1, e: typeof q.e === 'string' ? q.e.trim().slice(0, 260) : '' });
+                var item = { q: q.q.trim().slice(0, 400), o: op, a: needA ? a : -1, e: typeof q.e === 'string' ? q.e.trim().slice(0, 260) : '' };
+                if (o.lang === 'Both') {                         // the Hindi copy must have the same number of options, or the question is skipped
+                    var oh = Array.isArray(q.oh) ? q.oh.map(function (v) { return String(v == null ? '' : v).replace(/^\(?[A-Fa-fअ-औ][\).:]\s+/, '').trim().slice(0, 220); }).filter(Boolean).slice(0, 6) : [];
+                    if (typeof q.qh !== 'string' || !q.qh.trim() || oh.length !== op.length) return;
+                    item.qh = q.qh.trim().slice(0, 450); item.oh = oh; item.eh = typeof q.eh === 'string' ? q.eh.trim().slice(0, 300) : '';
+                }
+                out.push(item);
             } else {
                 var m = parseInt(q.m, 10); if (o.type === 'short') m = 2; else if (o.type === 'long') m = 5; else if (!(m > 0 && m <= 10)) m = 3;
                 var ans = Array.isArray(q.ans) ? q.ans.join('\n') : (typeof q.ans === 'string' ? q.ans : '');
                 ans = ans.trim().slice(0, 2500);
                 if (needA && !ans) return;
-                out.push({ q: q.q.trim().slice(0, 500), m: m, ans: ans });
+                var it2 = { q: q.q.trim().slice(0, 500), m: m, ans: ans };
+                if (o.lang === 'Both') {
+                    if (typeof q.qh !== 'string' || !q.qh.trim()) return;
+                    var ah = Array.isArray(q.ansh) ? q.ansh.join('\n') : (typeof q.ansh === 'string' ? q.ansh : ''); ah = ah.trim().slice(0, 2800);
+                    if (needA && !ah) return;
+                    it2.qh = q.qh.trim().slice(0, 550); it2.ansh = ah;
+                }
+                out.push(it2);
             }
         });
         return out;
@@ -2434,7 +2507,7 @@
         if (!navigator.onLine) { st.textContent = 'You are offline.'; return; }
         btn.disabled = true; st.textContent = 'Getting the chapter list…';
         var hindi = (subj === 'hindi' || subj === 'maithili' || subj === 'sanskrit' || subj === 'nonhindi' || subj === 'sst');
-        var bc = subj === 'nonhindi' ? 8 : cls, sname = subj === 'nonhindi' ? 'Hindi (Kislay Bhag-8)' : sj[1];
+        var bc = subj === 'nonhindi' ? 8 : cls, sname = subj === 'nonhindi' ? 'Hindi (Kislay Bhag-3)' : sj[1];
         var q = 'List the chapters / lessons of the ' + (b === 'ncert' ? 'NCERT' : 'BSEB / SCERT Bihar (Bihar government school)') + ' textbook for Class ' + bc + ' ' + sname + ', in the order of the book. ' +
             (subj === 'sst' ? 'Social Science has separate books (History, Geography, Political Science, Economics, Disaster Management): start every item with the part name, like \"इतिहास: chapter name\". ' : '') +
             (hindi ? 'Write the chapter names in Devanagari script exactly as in the book. ' : 'Write the chapter names in English. ') +
