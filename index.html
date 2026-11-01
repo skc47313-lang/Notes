@@ -540,6 +540,7 @@
                     <div class="nbm-sub">
                 <button type="button" class="nbm-i" style="--nbm-ic:#0ea5e9" onclick="NB.openCalc()"><i class="fa-solid fa-calculator"></i><span>Calculator</span></button>
                 <button type="button" class="nbm-i" style="--nbm-ic:#f59e0b" onclick="NB.openQuiz()"><i class="fa-solid fa-list-check"></i><span>Tests &amp; Quiz</span></button>
+                <button type="button" class="nbm-i" style="--nbm-ic:#0ea5e9" onclick="NB.openPaper()"><i class="fa-solid fa-file-pdf"></i><span>AI Question Paper (PDF)</span></button>
                 <button type="button" class="nbm-i" style="--nbm-ic:#8b5cf6" onclick="NB.openExam()"><i class="fa-solid fa-hourglass-half"></i><span>Exam countdown</span></button>
                 <button type="button" class="nbm-i" style="--nbm-ic:#d946ef" onclick="NB.openTodo()"><i class="fa-solid fa-clipboard-check"></i><span>To-Do List</span></button>
                 <button type="button" class="nbm-i" style="--nbm-ic:#0ea5e9" onclick="NB.openSounds()"><i class="fa-solid fa-music"></i><span>Reminder &amp; notification tones</span></button>
@@ -1018,6 +1019,7 @@
                 <button onclick="sendAiMessage('I need Class 10 science notes')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">📄 Find notes</button>
                 <button onclick="sendAiMessage('Make a 7-day study plan for my exam')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">🗓️ Study plan</button>
                 <button onclick="closeModal('aiModal'); NB.openAiTest()" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">📝 Make a test</button>
+                <button onclick="closeModal('aiModal'); NB.openPaper()" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">📄 Question paper</button>
                 <button onclick="sendAiMessage('I am not feeling motivated to study. Please motivate me')" class="shrink-0 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">💪 Motivation</button>
             </div>
             <div id="aiChatHistory" class="flex-grow overflow-y-auto space-y-2 pr-1 text-xs">

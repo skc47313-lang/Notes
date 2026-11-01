@@ -1158,11 +1158,11 @@
             $('nbqSubs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; QZ.subj = b.dataset.s; Array.prototype.forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); });
             $('nbqCls').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); });
             $('nbqStart').addEventListener('click', function () { QZ.src = 'bank'; quizStart(); });
-            $('nbqAi').addEventListener('click', aiScreen);
+            $('nbqAi').addEventListener('click', aiScreen); qpCta();
         }).catch(function () {
             body.innerHTML = '<h3 class="nbo-h">Tests</h3><p class="nbo-sub">The built-in questions could not be loaded. Check your internet connection and try again.</p>' +
                 '<button type="button" class="nbai-cta" id="nbqAi"><i class="fa-solid fa-wand-magic-sparkles"></i><span><b>Make a test with AI</b><small>Any topic, any chapter</small></span><i class="fa-solid fa-chevron-right"></i></button>';
-            $('nbqAi').addEventListener('click', aiScreen);
+            $('nbqAi').addEventListener('click', aiScreen); qpCta();
         });
     }
     function quizStart() {
@@ -1351,6 +1351,196 @@
         var p = NB.profile(); QZ.cls = p ? parseInt(p.cls.replace('Class ', ''), 10) : QZ.cls;
         NB.open('nbQz'); aiScreen();
     };
+
+    /* =====================================================================
+       AI Question Paper: objective (MCQ) or subjective questions, any number,
+       with or without answers, saved as a PDF (browser print dialog -> "Save as PDF").
+       Uses the same AI proxy as Bazar AI (window.nbCallAi).
+       ===================================================================== */
+    var QP = { run: 0, busy: false, paper: null };
+    var QP_LIM = { mcq: 12, short: 12, long: 6, mixed: 8 };          // questions per AI call (keeps every reply short enough)
+    var QP_TYPE = { mcq: 'Objective (MCQ)', short: 'Subjective: short answer', long: 'Subjective: long answer', mixed: 'Subjective: mixed' };
+    var QP_CSS = '.qpw{font-family:"Segoe UI","Noto Sans Devanagari",Mangal,Arial,sans-serif;color:#111;background:#fff;font-size:13px;line-height:1.55;text-align:left}' +
+        '.qpw h1{font-size:19px;margin:0;text-align:center;color:#111}.qpw h2{font-size:15px;margin:16px 0 8px;padding-bottom:3px;border-bottom:1px solid #999;color:#111}' +
+        '.qpw .qp-sub{text-align:center;font-size:12px;color:#444;margin:2px 0 8px}' +
+        '.qpw .qp-meta{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;border-top:1.5px solid #111;border-bottom:1.5px solid #111;padding:5px 0;margin:8px 0 14px;font-weight:600;font-size:12px}' +
+        '.qpw .qp-q{margin:0 0 12px;page-break-inside:avoid;break-inside:avoid}.qpw .qp-qt{display:flex;gap:10px;justify-content:space-between}' +
+        '.qpw .qp-m{white-space:nowrap;font-weight:700;font-size:12px}' +
+        '.qpw .qp-o{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 16px;margin:4px 0 0 22px}' +
+        '.qpw .qp-a{margin:6px 0 0 22px;padding:5px 9px;background:#eef2ff;border-left:3px solid #6366f1;font-size:12.5px}.qpw .qp-a.qp-k{margin-left:0}' +
+        '.qpw .qp-sum{margin:0 0 12px;font-weight:600;line-height:1.9}.qpw .qp-brk{page-break-before:always;break-before:page}';
+    function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function qpPrompt(o, n, done) {
+        var mcq = o.type === 'mcq', needA = o.ans !== 'none';
+        var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students. Make a question paper for Class ' + o.cls + ' on this topic or subject: "' + o.topic + '". Difficulty: ' + o.level + '. ' +
+            'Write the questions' + (needA ? ' and answers' : '') + ' in ' + o.lang + ' (Hinglish means Hindi written in English letters). For school topics follow CBSE / NCERT style; for other topics use well-established facts only. Be sure every answer is correct; never invent facts. ';
+        if (mcq) s += 'Make EXACTLY ' + n + ' multiple-choice questions. Each has 4 options and exactly one correct option; vary the position of the correct option. Do not put "A)" or "B)" labels inside the option text. ';
+        else if (o.type === 'short') s += 'Make EXACTLY ' + n + ' short-answer questions, 2 marks each' + (needA ? ', with a model answer of 2 to 4 lines' : '') + '. ';
+        else if (o.type === 'long') s += 'Make EXACTLY ' + n + ' long-answer questions, 5 marks each' + (needA ? ', with a complete model answer in 6 to 10 lines or points' : '') + '. ';
+        else s += 'Make EXACTLY ' + n + ' subjective questions, a mix of 2, 3 and 5 mark questions' + (needA ? ', with a model answer whose length fits the marks' : '') + '. ';
+        s += 'Reply with ONLY one JSON object and nothing else (no markdown fences, no extra words): ';
+        if (mcq) s += '{"questions":[{"q":"question text","o":["option 1","option 2","option 3","option 4"]' + (needA ? ',"a":0,"e":"one short line explaining the answer"' : '') + '}]} ' + (needA ? 'where "a" is the index 0-3 of the correct option. ' : '');
+        else s += '{"questions":[{"q":"question text","m":2' + (needA ? ',"ans":"model answer (use \\n for new lines)"' : '') + '}]} where "m" is the marks. ';
+        if (done.length) s += 'These questions were already made, so do NOT repeat or paraphrase them: ' + done.slice(-40).map(function (q) { return '"' + q.q.slice(0, 70) + '"'; }).join('; ') + '. ';
+        s += 'Only if the topic is harmful, illegal or sexual, reply with one friendly sentence (no JSON) and suggest another topic.';
+        return s;
+    }
+    function qpObjs(txt) {                                       // pull the question objects out of the reply, even when it was cut off
+        txt = String(txt || '').replace(/```(?:json)?/gi, '');
+        var i = txt.indexOf('{'); if (i < 0) return null;
+        var j = txt.lastIndexOf('}');
+        if (j > i) { try { var o = JSON.parse(txt.slice(i, j + 1)); if (o && Array.isArray(o.questions)) return o.questions; } catch (e) {} }
+        var k = txt.indexOf('['), arr = []; if (k < 0) return null;
+        var depth = 0, st = -1, inS = false, esc = false, c;
+        for (var x = k + 1; x < txt.length; x++) {
+            c = txt[x];
+            if (inS) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inS = false; continue; }
+            if (c === '"') inS = true;
+            else if (c === '{') { if (!depth) st = x; depth++; }
+            else if (c === '}') { depth--; if (!depth && st > -1) { try { arr.push(JSON.parse(txt.slice(st, x + 1))); } catch (e) {} st = -1; } }
+        }
+        return arr;
+    }
+    function qpNorm(arr, o) {
+        var mcq = o.type === 'mcq', needA = o.ans !== 'none', out = [];
+        (arr || []).forEach(function (q) {
+            if (!q || typeof q.q !== 'string' || !q.q.trim()) return;
+            if (mcq) {
+                if (!Array.isArray(q.o)) return;
+                var op = q.o.map(function (v) { return String(v == null ? '' : v).replace(/^\(?[A-Fa-f][\).:]\s+/, '').trim().slice(0, 200); }).filter(Boolean).slice(0, 6), a = parseInt(q.a, 10);
+                if (op.length < 2) return;
+                if (needA && !(a >= 0 && a < op.length)) return;
+                out.push({ q: q.q.trim().slice(0, 400), o: op, a: needA ? a : -1, e: typeof q.e === 'string' ? q.e.trim().slice(0, 260) : '' });
+            } else {
+                var m = parseInt(q.m, 10); if (o.type === 'short') m = 2; else if (o.type === 'long') m = 5; else if (!(m > 0 && m <= 10)) m = 3;
+                var ans = Array.isArray(q.ans) ? q.ans.join('\n') : (typeof q.ans === 'string' ? q.ans : '');
+                ans = ans.trim().slice(0, 2500);
+                if (needA && !ans) return;
+                out.push({ q: q.q.trim().slice(0, 500), m: m, ans: ans });
+            }
+        });
+        return out;
+    }
+    function qpStatus(t) { var e = $('qpSt'); if (e) e.textContent = t || ''; }
+    async function qpGenerate(o) {
+        var run = ++QP.run, got = [], fails = 0, lim = QP_LIM[o.type], seen = {};
+        while (got.length < o.count && fails < 3) {
+            if (run !== QP.run) return null;
+            var n = Math.min(lim, o.count - got.length), out;
+            qpStatus('Making questions ' + (got.length + 1) + ' to ' + (got.length + n) + ' of ' + o.count + '…' + (fails ? ' (trying again)' : ''));
+            try { out = await window.nbCallAi([{ role: 'system', content: qpPrompt(o, n, got) }, { role: 'user', content: 'Make the questions now.' }], { timeout: 90000 }); }
+            catch (e) { fails++; continue; }
+            if (run !== QP.run) return null;
+            var raw = qpObjs(out);
+            if (raw === null) return got.length ? { qs: got } : { msg: String(out || '').replace(/```[\s\S]*?```/g, '').trim().slice(0, 300) };
+            var fresh = qpNorm(raw, o).filter(function (q) { var k = q.q.toLowerCase().replace(/\W+/g, ' ').slice(0, 80); if (seen[k]) return false; seen[k] = 1; return true; });
+            if (!fresh.length) { fails++; continue; }
+            got = got.concat(fresh.slice(0, o.count - got.length));
+        }
+        return { qs: got };
+    }
+    function qpNl(s) { return NB.esc(s).replace(/\n/g, '<br>'); }
+    function qpAns(q, mcq, num) {
+        var h = '<div class="qp-a' + (num ? ' qp-k' : '') + '"><b>' + (num ? 'Q' + num + '. ' : 'Answer: ') + (mcq ? '(' + 'ABCDEF'[q.a] + ') ' + NB.esc(q.o[q.a]) : '') + '</b>';
+        if (mcq) h += q.e ? ' · ' + NB.esc(q.e) : '';
+        else h += (num ? '' : '') + qpNl(q.ans);
+        return h + '</div>';
+    }
+    function qpBody(p) {
+        var o = p.o, mcq = o.type === 'mcq', E = NB.esc, h = '';
+        var total = mcq ? p.qs.length : p.qs.reduce(function (s, q) { return s + (q.m || 0); }, 0);
+        var mins = mcq ? Math.max(5, Math.ceil(p.qs.length * 1.2)) : Math.max(10, Math.ceil(total * 1.5));
+        h += '<h1>' + E(o.topic) + '</h1><div class="qp-sub">Notes Bazar · Class ' + o.cls + ' · ' + E(QP_TYPE[o.type]) + '</div>' +
+            '<div class="qp-meta"><span>Total marks: ' + total + '</span><span>Time: ' + mins + ' min</span><span>Name: ______________</span><span>Date: __________</span></div>';
+        p.qs.forEach(function (q, i) {
+            h += '<div class="qp-q"><div class="qp-qt"><span><b>Q' + (i + 1) + '.</b> ' + E(q.q) + '</span>' + (mcq ? '' : '<span class="qp-m">[' + q.m + ']</span>') + '</div>';
+            if (mcq) h += '<div class="qp-o">' + q.o.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + E(t) + '</span>'; }).join('') + '</div>';
+            if (o.ans === 'below') h += qpAns(q, mcq);
+            h += '</div>';
+        });
+        if (o.ans === 'end') {
+            h += '<div class="qp-brk"></div><h2>Answer Key</h2>';
+            if (mcq) h += '<div class="qp-sum">' + p.qs.map(function (q, i) { return (i + 1) + '-' + 'ABCDEF'[q.a]; }).join(' &nbsp; ') + '</div>';
+            p.qs.forEach(function (q, i) { h += '<div class="qp-q">' + qpAns(q, mcq, i + 1) + '</div>'; });
+        }
+        return h;
+    }
+    function qpDoc(p) {
+        return '<!doctype html><html><head><meta charset="utf-8"><title>' + NB.esc('Question Paper - ' + p.o.topic) + '</title><style>@page{size:A4;margin:14mm}body{margin:0}' + QP_CSS + '</style></head><body><div class="qpw">' + qpBody(p) + '</div></body></html>';
+    }
+    function qpPrint() {
+        if (!QP.paper) return;
+        var html = qpDoc(QP.paper), f = document.createElement('iframe');
+        f.setAttribute('aria-hidden', 'true'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+        document.body.appendChild(f);
+        var d = f.contentWindow.document; d.open(); d.write(html); d.close();
+        var go = function () {
+            try { f.contentWindow.focus(); f.contentWindow.print(); }
+            catch (e) { var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); setTimeout(function () { w.print(); }, 400); } else NB.toast('Please allow pop-ups to download the PDF.', 3500); }
+            setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 90000);
+        };
+        setTimeout(go, 400);
+        NB.toast('Choose "Save as PDF" as the printer in the next window.', 4500);
+    }
+    function qpSel(id, opts, cur) { return '<select id="' + id + '" class="nbo-in">' + opts.map(function (x) { return '<option value="' + x[0] + '"' + (String(x[0]) === String(cur) ? ' selected' : '') + '>' + NB.esc(x[1]) + '</option>'; }).join('') + '</select>'; }
+    function qpForm() {
+        QP.run++; QP.busy = false;
+        var body = $('nbqpBody'), s = LSX.get('nb_qp_opts', null) || {}, pr = NB.profile();
+        var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, with or without answers, and save them as a PDF.</p>' +
+            '<label class="nbo-l" for="qpTopic">Topic / chapter</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Algebra, Indian Constitution" value="' + NB.esc(s.topic || '') + '">' +
+            '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('qpCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
+            '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed']], s.type || 'mcq') + '</label></div>' +
+            '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
+            '<label>Answers' + qpSel('qpAns', [['none', 'No answers'], ['end', 'Answer key at the end'], ['below', 'Answer below each question']], s.ans || 'end') + '</label></div>' +
+            '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
+            '<label>Difficulty' + qpSel('qpLevel', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']], s.level || 'Medium') + '</label></div>' +
+            '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
+            '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
+        $('qpGo').addEventListener('click', async function () {
+            if (QP.busy) return;
+            var err = $('qpErr'); err.textContent = '';
+            var o = { topic: qpTopic(), cls: parseInt($('qpCls').value, 10), type: $('qpType').value, count: parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value };
+            if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first.'; return; }
+            var max = o.type === 'mcq' ? 50 : 30;
+            if (!(o.count >= 1)) o.count = 10; if (o.count > max) { o.count = max; $('qpCount').value = max; err.textContent = 'Maximum ' + max + ' questions for this type. Making ' + max + '.'; }
+            try { LSX.set('nb_qp_opts', o); } catch (e) {}
+            if (typeof window.nbCallAi !== 'function') { err.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
+            QP.busy = true; var go = $('qpGo'); go.disabled = true;
+            var r = await qpGenerate(o);
+            QP.busy = false; if (go) go.disabled = false;
+            if (!r) return;                                      // window was closed while it was working
+            qpStatus('');
+            if (r.msg) { err.textContent = r.msg; return; }
+            if (!r.qs.length) { err.textContent = 'Could not make the questions right now. Please try again in a moment.'; return; }
+            QP.paper = { o: o, qs: r.qs }; qpResult(r.qs.length < o.count);
+        });
+    }
+    function qpResult(partial) {
+        var body = $('nbqpBody'), p = QP.paper;
+        if (!$('qpStyle')) { var st = document.createElement('style'); st.id = 'qpStyle'; st.textContent = QP_CSS; document.head.appendChild(st); }
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> Your question paper</h3><p class="nbo-sub">' + p.qs.length + ' questions' + (partial ? ' (the AI could not make all ' + p.o.count + ', tap "Make another paper" to try again)' : '') + '</p>' +
+            '<div class="nbqp-prev"><div class="qpw">' + qpBody(p) + '</div></div>' +
+            '<button type="button" class="nbo-save" id="qpPdf"><i class="fa-solid fa-download"></i> Download PDF</button>' +
+            '<p class="nbo-sub" style="margin:8px 0 0">In the window that opens, choose <b>Save as PDF</b> as the printer.</p>' +
+            '<button type="button" class="nbo-skip" id="qpNew">Make another paper</button>';
+        $('qpPdf').addEventListener('click', qpPrint);
+        $('qpNew').addEventListener('click', qpForm);
+    }
+    function buildPaper() {
+        document.body.appendChild(NB.mk('<div class="nbo" id="nbQp" aria-hidden="true"><div class="nbo-card nbq nbqp" role="dialog" aria-modal="true" aria-label="AI Question Paper">' +
+            '<button type="button" class="nbo-x" id="nbqpX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="nbqpBody"></div></div></div>'));
+        $('nbqpX').addEventListener('click', function () { NB.close('nbQp'); });
+        NB.onClose.nbQp = function () { QP.run++; QP.busy = false; };
+    }
+    NB.openPaper = function () { closeSiteMenu(); if (!$('nbQp')) buildPaper(); NB.open('nbQp'); qpForm(); };
+    function qpCta() {                                           // extra button on the "Tests" screen
+        var a = $('nbqAi'); if (!a || $('nbqPaper')) return;
+        var b = document.createElement('button'); b.type = 'button'; b.id = 'nbqPaper'; b.className = 'nbai-cta'; b.style.background = 'linear-gradient(135deg,#0ea5e9,#6366f1)';
+        b.innerHTML = '<i class="fa-solid fa-file-pdf"></i><span><b>Make a question paper (PDF)</b><small>Objective or subjective, with or without answers</small></span><i class="fa-solid fa-chevron-right"></i>';
+        b.addEventListener('click', function () { NB.close('nbQz'); NB.openPaper(); });
+        a.parentNode.insertBefore(b, a.nextSibling);
+    }
 
     /* =====================================================================
        Start-up

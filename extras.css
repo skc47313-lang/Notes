@@ -965,3 +965,8 @@ html.dark .nb-switch{border-color:#475569!important;background:#334155!important
 .nbai-form .nbo-in{flex:1;min-width:0}
 .nbai-send{width:46px;flex:none;border:0;border-radius:12px;background:var(--nb-grad);color:#fff;cursor:pointer}
 .nbai-send[disabled]{opacity:.5;cursor:wait}
+
+/* ---- AI Question Paper ---- */
+.nbqp{max-width:600px}
+.nbqp .nbai-set input.nbo-in{padding:8px 10px}
+.nbqp-prev{max-height:46dvh;overflow:auto;overscroll-behavior:contain;border:1px solid var(--nb-border);border-radius:14px;padding:14px;margin:10px 0 12px;background:#fff}
