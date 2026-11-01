@@ -2177,12 +2177,14 @@ function sha256(str) {
             ]
         };
         if (!AI_CONFIG.proxyUrl && !AI_CONFIG.providers.some(p => p.apiKey)) console.warn('Bazar AI: no proxyUrl / apiKey set, so only the offline helper (and the unreliable keyless fallback) will answer. See SETUP.md.');
+        let aiLastErr = null, aiRetryText = '';
         const aiFailUntil = {};   // provider -> timestamp until which we skip it (avoids long waits)
 
         const AI_BASE = `You are "Bazar AI", the built-in assistant of Notes Bazar, a study platform for Indian school students (Class 1-12; subjects Science, Math, Hindi, English, SST, Maithili) with Notes, Reference Books and PYQs.
 Language: reply in the same language/style the user writes in (Hindi, Hinglish, English or Maithili). Keep it simple, friendly and short unless the user asks for detail. Use short paragraphs and simple lists.
 You can do EVERYTHING a good assistant can: explain doubts step by step, solve maths, summarize chapters, make short notes / MCQs / quizzes, essays, letters, translations, study timetables, exam tips, career guidance, coding, general knowledge and everyday questions.
 Notes Bazar items: if "Matching items" are provided below, recommend them by title and tell the student to tap them. NEVER invent files, links or titles. If nothing matches, say it is not uploaded yet and suggest the "What if you want?" option on the home page.
+Answer ANY question the user asks, even if it is not about studies or school: general knowledge, current affairs (as far as you know), sports, movies, technology, coding, health basics, money basics, relationships, jokes, stories, anything. Never refuse only because it is "off topic" or "out of syllabus". If something may have changed recently or you do not know it, say so instead of guessing, and decline only harmful or illegal requests.
 Be honest: if you are not sure, say so. Never claim to be human.
 Emotional safety: if the student sounds stressed, sad or lonely, listen first, be warm and practical. If they mention self-harm or suicide, respond with care, encourage them to talk to a trusted adult right now, and share the free 24x7 Tele-MANAS helpline in India: 14416 (or local emergency services). Never give methods.`;
         const AI_MODE = {
@@ -2234,25 +2236,31 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                 </button>`).join('') + `</div>`;
         }
 
-        async function callAi(messages) {
-            let lastErr = new Error('no provider available');
+        async function callAi(messages, opt) {
+            const extraMs = (opt && opt.timeout) || 0;       // long jobs (AI test maker) may wait longer than a chat reply
+            let lastErr = new Error('no provider available'), proxyErr = null;
             if (AI_CONFIG.proxyUrl && (aiFailUntil.proxy || 0) <= Date.now()) {
-                const ctrl = new AbortController();
-                const timer = setTimeout(() => ctrl.abort(), AI_CONFIG.timeoutMs + 6000);
-                try {
-                    const r = await fetch(AI_CONFIG.proxyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, body: JSON.stringify({ messages }) });
-                    if (!r.ok) throw new Error('proxy HTTP ' + r.status);
-                    const j = await r.json();
-                    if (!j || !j.reply) throw new Error('proxy empty reply');
-                    return String(j.reply).trim();
-                } catch (e) { console.warn('AI proxy failed', e); aiFailUntil.proxy = Date.now() + 60000; lastErr = e; }
-                finally { clearTimeout(timer); }
+                for (let attempt = 0; attempt < 2; attempt++) {          // a cold-starting Worker often fails once, then works
+                    const ctrl = new AbortController();
+                    const timer = setTimeout(() => ctrl.abort(), extraMs || 30000);
+                    try {
+                        const r = await fetch(AI_CONFIG.proxyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, body: JSON.stringify({ messages }) });
+                        if (!r.ok) throw new Error('proxy HTTP ' + r.status);
+                        const j = await r.json();
+                        if (!j || !j.reply) throw new Error('proxy empty reply');
+                        aiFailUntil.proxy = 0;
+                        return String(j.reply).trim();
+                    } catch (e) { console.warn('AI proxy failed (try ' + (attempt + 1) + ')', e); lastErr = proxyErr = e; }
+                    finally { clearTimeout(timer); }
+                    if (attempt === 0) await new Promise(res => setTimeout(res, 700));
+                }
+                aiFailUntil.proxy = Date.now() + 15000;                  // only skip the Worker for 15 s after two failures
             }
             for (const p of AI_CONFIG.providers) {
                 if (!p.optionalKey && !p.apiKey) continue;                 // needs a key but none set
                 if ((aiFailUntil[p.name] || 0) > Date.now()) continue;     // failed recently
                 const ctrl = new AbortController();
-                const timer = setTimeout(() => ctrl.abort(), AI_CONFIG.timeoutMs);
+                const timer = setTimeout(() => ctrl.abort(), extraMs || 20000);
                 try {
                     const headers = { 'Content-Type': 'application/json' };
                     if (p.apiKey) headers['Authorization'] = 'Bearer ' + p.apiKey;
@@ -2268,8 +2276,32 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                     lastErr = e;
                 } finally { clearTimeout(timer); }
             }
-            throw lastErr;
+            aiLastErr = proxyErr || lastErr; throw lastErr;
         }
+
+        window.nbCallAi = callAi;   // used by the AI Test Maker (extras.js)
+
+
+        // ----- no live AI? still answer "anything" from Wikipedia (English or Hindi), with a link to the source -----
+        async function aiWikiAnswer(text) {
+            const hi = /[\u0900-\u097F]/.test(text), lang = hi ? 'hi' : 'en';
+            const q = text.replace(/[?!.,;:"()]/g, ' ').replace(/\b(what|who|why|how|when|where|is|are|was|were|the|a|an|of|in|on|to|tell|me|about|explain|define|meaning|kya|kaun|kab|kaise|kyun|kyu|hai|hain|ka|ki|ke|batao|bata|btao|mujhe|please|pls|bhai|samjhao|means?)\b/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+            if (q.length < 2) return null;
+            const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 7000);
+            try {
+                const u = 'https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&prop=extracts%7Cinfo&exintro=1&explaintext=1&exsentences=5&inprop=url&gsrsearch=' + encodeURIComponent(q);
+                const r = await fetch(u, { signal: ctrl.signal }); if (!r.ok) return null;
+                const j = await r.json(), pg = j && j.query && j.query.pages && Object.values(j.query.pages)[0];
+                if (!pg || !pg.extract || pg.extract.length < 40) return null;
+                const url = /^https:\/\/[a-z]+\.wikipedia\.org\//.test(pg.fullurl || '') ? pg.fullurl : '';
+                return { title: String(pg.title || q), text: String(pg.extract).trim().slice(0, 700), url };
+            } catch (e) { return null; } finally { clearTimeout(timer); }
+        }
+        function aiWhy(e) {
+            const m = String((e && (e.name === 'AbortError' ? 'timeout' : e.message)) || '');
+            return m === 'timeout' ? 'the AI server took too long' : /HTTP (\d+)/.test(m) ? 'AI server error ' + m.match(/HTTP (\d+)/)[1] : /Failed to fetch|NetworkError/i.test(m) ? 'no connection to the AI server' : 'the AI server did not answer';
+        }
+        window.nbAiRetry = function() { Object.keys(aiFailUntil).forEach(k => { aiFailUntil[k] = 0; }); if (aiRetryText) window.sendAiMessage(aiRetryText); };
 
         // ----- offline brain: works even when no AI server is reachable -----
         function aiIsCrisis(t) {
@@ -2453,7 +2485,8 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             chat.scrollTop = chat.scrollHeight;
             if (fab) fab.classList.add('thinking');
 
-            let reply = '', related = { intent: false, list: [] }, offline = false;
+            aiRetryText = userText;
+            let reply = '', related = { intent: false, list: [] }, offline = false, wiki = null;
             try { related = await findRelated(userText); } catch (e) {}
             try {
                 let sys = AI_MODE[mode] || AI_MODE.auto;
@@ -2470,10 +2503,13 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             } catch (err) {
                 console.error(err);
                 offline = true;
-                reply = aiLocalReply(userText, related);
+                if (!related.intent) wiki = await aiWikiAnswer(userText);
+                reply = wiki ? '' : aiLocalReply(userText, related);
             }
             typing.remove();
-            botBubble(aiFmt(reply) + (offline ? '<div class="mt-2 text-[10px] text-amber-600">⚠️ Live AI is not available right now, so this answer was given in offline mode.</div>' : ''), aiRelatedHtml(related.list));
+            const note = offline ? `<div class="mt-2 text-[10px] text-amber-600">⚠️ Live AI is not reachable (${esc(aiWhy(aiLastErr))}), so ${wiki ? 'this answer is from Wikipedia' : 'this was answered in offline mode'}. <button type="button" onclick="nbAiRetry()" class="underline font-bold">Try the live AI again</button></div>` : '';
+            const wikiHtml = wiki ? `<strong>${esc(wiki.title)}</strong><br>${esc(wiki.text).replace(/\n/g, '<br>')}` + (wiki.url ? `<br><a href="${wiki.url}" target="_blank" rel="noopener noreferrer" class="underline font-semibold">Read more on Wikipedia</a>` : '') : '';
+            botBubble((wiki ? wikiHtml : aiFmt(reply)) + note, aiRelatedHtml(related.list));
             finish();
         };
 

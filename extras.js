@@ -382,7 +382,7 @@
         await NB.pushNow();
         return cred.user;
     };
-    var PERSONAL = ['nb_profile', 'nb_acct', 'nb_favs', 'nb_recent', 'nb_seen', 'nb_dlhist', 'nb_days', 'nb_exam', 'nb_quiz', 'nb_todo', 'nb_sync_ts', 'nb_filters_v1', 'nb_recent_q', 'nb_reported'];
+    var PERSONAL = ['nb_profile', 'nb_acct', 'nb_favs', 'nb_recent', 'nb_seen', 'nb_dlhist', 'nb_days', 'nb_exam', 'nb_quiz', 'nb_todo', 'nb_ai_test', 'nb_sync_ts', 'nb_filters_v1', 'nb_recent_q', 'nb_reported'];
     NB.logout = async function () {
         try { await NB.pushNow(); } catch (e) {}
         try { var s = await authSdk(); await s.au.signOut(s.auth); } catch (e) {}
@@ -1146,6 +1146,7 @@
             var subs = ['All']; QZ.bank.forEach(function (q) { if (subs.indexOf(q.s) < 0) subs.push(q.s); });
             var hist = asArr(LSX.get('nb_quiz', [])).slice(0, 4);
             var h = '<h3 class="nbo-h">Tests</h3><p class="nbo-sub">Practice with MCQs or take a timed mock test.</p>' +
+                '<button type="button" class="nbai-cta" id="nbqAi"><i class="fa-solid fa-wand-magic-sparkles"></i><span><b>Make a test with AI</b><small>Any topic, any chapter. Chat with the AI and get your own test</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
                 '<label class="nbo-l">Test type</label><div class="nbq-modes"><button type="button" class="nbq-mode" data-m="practice" aria-pressed="' + (QZ.mode === 'practice') + '"><b>Practice quiz</b><small>10 questions · instant answers</small></button>' +
                 '<button type="button" class="nbq-mode" data-m="mock" aria-pressed="' + (QZ.mode === 'mock') + '"><b>Mock test</b><small>20 questions · 20 min timer</small></button></div>' +
                 '<label class="nbo-l">Subject</label><div class="nbq-chips" id="nbqSubs">' + subs.map(function (s) { return '<button type="button" data-s="' + NB.esc(s) + '" aria-pressed="' + (QZ.subj === s) + '">' + NB.esc(s) + '</button>'; }).join('') + '</div>' +
@@ -1156,12 +1157,17 @@
             body.querySelectorAll('.nbq-mode').forEach(function (b) { b.addEventListener('click', function () { QZ.mode = b.dataset.m; body.querySelectorAll('.nbq-mode').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }); });
             $('nbqSubs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; QZ.subj = b.dataset.s; Array.prototype.forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); });
             $('nbqCls').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); });
-            $('nbqStart').addEventListener('click', quizStart);
-        }).catch(function () { body.innerHTML = '<p class="nbo-sub">Could not load questions. Check your internet connection and try again.</p>'; });
+            $('nbqStart').addEventListener('click', function () { QZ.src = 'bank'; quizStart(); });
+            $('nbqAi').addEventListener('click', aiScreen);
+        }).catch(function () {
+            body.innerHTML = '<h3 class="nbo-h">Tests</h3><p class="nbo-sub">The built-in questions could not be loaded. Check your internet connection and try again.</p>' +
+                '<button type="button" class="nbai-cta" id="nbqAi"><i class="fa-solid fa-wand-magic-sparkles"></i><span><b>Make a test with AI</b><small>Any topic, any chapter</small></span><i class="fa-solid fa-chevron-right"></i></button>';
+            $('nbqAi').addEventListener('click', aiScreen);
+        });
     }
     function quizStart() {
-        QZ.list = pickQuestions(QZ.mode === 'mock' ? 20 : 10);
-        if (QZ.list.length < 3) { $('nbqErr').textContent = 'Not enough questions for this selection. Try another subject.'; return; }
+        QZ.list = QZ.src === 'ai' && AIT.qs ? aiPick() : pickQuestions(QZ.mode === 'mock' ? 20 : 10);
+        if (QZ.list.length < 3) { if ($('nbqErr')) $('nbqErr').textContent = 'Not enough questions for this selection. Try another subject.'; return; }
         QZ.idx = 0; QZ.ans = QZ.list.map(function () { return -1; }); QZ.done = false; QZ.t0 = Date.now();
         stopTimer();
         if (QZ.mode === 'mock') { QZ.left = Math.min(20 * 60, QZ.list.length * 60); QZ.timer = setInterval(tick, 1000); }
@@ -1201,7 +1207,7 @@
         if (QZ.done) return; QZ.done = true; stopTimer();
         var score = 0; QZ.list.forEach(function (q, i) { if (QZ.ans[i] === q.a) score++; });
         var total = QZ.list.length, pct = Math.round(score / total * 100), secs = Math.round((Date.now() - QZ.t0) / 1000);
-        var hist = asArr(LSX.get('nb_quiz', [])); hist.unshift({ t: Date.now(), score: score, total: total, mode: QZ.mode, subj: QZ.subj, cls: QZ.cls });
+        var hist = asArr(LSX.get('nb_quiz', [])); hist.unshift({ t: Date.now(), score: score, total: total, mode: QZ.mode, subj: QZ.src === 'ai' ? 'AI · ' + String(QZ.aiTitle || 'test').slice(0, 24) : QZ.subj, cls: QZ.cls });
         LSX.set('nb_quiz', hist.slice(0, 30)); NB.markDay(); ui.refreshAll();
         var msg = pct >= 80 ? 'Excellent work!' : pct >= 50 ? 'Good effort. Keep practising!' : 'Keep going. Review the answers below and try again.';
         var h = '<div class="nbq-score"><b>' + score + ' / ' + total + '</b><span>' + pct + '% · ' + msg + '<br>Time taken: ' + fmtT(secs) + '</span></div>';
@@ -1217,6 +1223,134 @@
         });
         $('nbqAgain').addEventListener('click', quizStart); $('nbqNew').addEventListener('click', quizSetup);
     }
+
+    /* =====================================================================
+       AI Test Maker: chat with Bazar AI, get a mock test on ANY topic, then take it
+       with the same practice / mock engine as the built-in question bank.
+       ===================================================================== */
+    var AIT = { hist: [], busy: false, qs: null, title: '', subj: '', last: 0 };
+    function aiSystem(cls, n) {
+        return 'You are the AI Test Maker inside Notes Bazar, a study app for Indian school students. The student is in Class ' + cls + '. ' +
+            'Make exactly ' + n + ' multiple-choice questions (unless the student asks for another number, maximum 25) on ANY topic the student asks for. The topic does NOT have to be in the school syllabus: general knowledge, current affairs, sports, technology, coding, history, movies, careers, competitive exams, hobbies and everything else are allowed. ' +
+            'Use the class only to judge difficulty (easy words and simple ideas for small classes). For school topics follow CBSE / NCERT style; for other topics use common, well-established facts. Each question has 4 options and exactly one correct answer, and you must be sure that the answer is right; do not invent facts. Only refuse topics that are harmful, illegal or sexual, and then reply in one friendly sentence and suggest another topic. ' +
+            'Write the questions in the same language the student writes in (English, Hindi or Hinglish). ' +
+            'WHEN THE TOPIC IS CLEAR reply with ONLY a JSON object and nothing else (no markdown fences, no extra words): ' +
+            '{"title":"short title","subject":"subject name","questions":[{"q":"question text","o":["option A","option B","option C","option D"],"a":0,"e":"one short line explaining the answer"}]} ' +
+            'where "a" is the index 0-3 of the correct option; vary the position of the correct answer. ' +
+            'If the topic is missing or too vague, or the student only chats or asks something else, answer in one or two short friendly sentences and ask which topic they want tested. ' +
+            'If the student asks to change the test (harder, easier, more questions, another topic), make a new full JSON test.';
+    }
+    /* take the JSON out of the reply, even when the AI added words around it or the reply was cut off */
+    function aiParseTest(txt) {
+        txt = String(txt || '').replace(/```(?:json)?/gi, '');
+        var i = txt.indexOf('{'); if (i < 0) return null;
+        var obj = null, j = txt.lastIndexOf('}');
+        if (j > i) { try { obj = JSON.parse(txt.slice(i, j + 1)); } catch (e) {} }
+        var arr = obj && Array.isArray(obj.questions) ? obj.questions : null;
+        if (!arr) {                                              // salvage the complete question objects from a truncated reply
+            var k = txt.indexOf('['); arr = [];
+            if (k > -1) {
+                var depth = 0, st = -1, inS = false, esc = false, c;
+                for (var x = k + 1; x < txt.length; x++) {
+                    c = txt[x];
+                    if (inS) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inS = false; continue; }
+                    if (c === '"') inS = true;
+                    else if (c === '{') { if (!depth) st = x; depth++; }
+                    else if (c === '}') { depth--; if (!depth && st > -1) { try { arr.push(JSON.parse(txt.slice(st, x + 1))); } catch (e) {} st = -1; } }
+                }
+            }
+            obj = obj || {};
+        }
+        var qs = [];
+        arr.forEach(function (q) {
+            if (!q || typeof q.q !== 'string' || !Array.isArray(q.o)) return;
+            var o = q.o.map(function (v) { return String(v == null ? '' : v).trim().slice(0, 160); }).filter(Boolean).slice(0, 6), a = parseInt(q.a, 10);
+            if (o.length < 2 || !(a >= 0 && a < o.length)) return;
+            qs.push({ q: q.q.trim().slice(0, 300), o: o, a: a, e: typeof q.e === 'string' ? q.e.trim().slice(0, 240) : '' });
+        });
+        if (qs.length < 3) return null;
+        return { title: String(obj.title || 'AI test').slice(0, 60), subject: String(obj.subject || 'AI test').slice(0, 30), qs: qs.slice(0, 25) };
+    }
+    function aiPick() {                                          // fresh option order every attempt
+        return shuffle(AIT.qs).map(function (q) {
+            var idx = shuffle(q.o.map(function (_, i) { return i; }));
+            return { q: q.q, s: AIT.subj, e: q.e, o: idx.map(function (i) { return q.o[i]; }), a: idx.indexOf(q.a) };
+        });
+    }
+    function aiBubble(role, text) {
+        var box = $('nbaiChat'); if (!box) return null;
+        var d = document.createElement('div'); d.className = 'nbai-m ' + role; d.textContent = text; box.appendChild(d); box.scrollTop = box.scrollHeight; return d;
+    }
+    function aiStartTest(mode) {
+        if (!AIT.qs) return;
+        QZ.src = 'ai'; QZ.mode = mode || QZ.mode; QZ.aiTitle = AIT.title;
+        quizStart();
+    }
+    function aiReady() {
+        var box = $('nbaiChat'); if (!box) return;
+        var d = document.createElement('div'); d.className = 'nbai-m bot nbai-ready';
+        d.innerHTML = '<b></b><span></span><div class="nbai-go"><button type="button" class="pri" data-m="practice">Practice (see answers)</button><button type="button" data-m="mock">Timed mock test</button></div>';
+        d.querySelector('b').textContent = 'Test ready: ' + AIT.title;
+        d.querySelector('span').textContent = AIT.qs.length + ' questions · ' + AIT.subj + '. You can also tell me to change it (harder, easier, other topic…).';
+        d.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { aiStartTest(b.dataset.m); }); });
+        box.appendChild(d); box.scrollTop = box.scrollHeight;
+    }
+    async function aiSend(text) {
+        text = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+        if (!text || AIT.busy) return;
+        if (typeof window.nbCallAi !== 'function') { aiBubble('bot', 'The AI is still loading. Please try again in a moment.'); return; }
+        AIT.busy = true; aiBubble('me', text);
+        var wait = aiBubble('bot', 'Thinking…'); wait.classList.add('wait');
+        var n = parseInt(($('nbaiN') || {}).value, 10) || 10, go = $('nbaiGo'); if (go) go.disabled = true;
+        AIT.hist.push({ role: 'user', content: text }); AIT.hist = AIT.hist.slice(-8);
+        try {
+            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n) }].concat(AIT.hist), { timeout: 60000 });
+            var t = aiParseTest(out);
+            if (wait.parentNode) wait.remove();
+            if (t) {
+                AIT.qs = t.qs; AIT.title = t.title; AIT.subj = t.subject;
+                try { LSX.set('nb_ai_test', { title: t.title, subject: t.subject, qs: t.qs, t: Date.now() }); } catch (e) {}
+                AIT.hist.push({ role: 'assistant', content: '[Made a ' + t.qs.length + '-question test: ' + t.title + ']' });
+                aiReady();
+            } else {
+                var shown = String(out || '').replace(/```[\s\S]*?```/g, '').trim();
+                if (/^\s*[\[{]/.test(shown) || !shown) shown = 'I could not build a proper test from that. Try again with a topic, for example "Photosynthesis" or "Algebra – linear equations".';
+                AIT.hist.push({ role: 'assistant', content: shown.slice(0, 300) });
+                aiBubble('bot', shown.slice(0, 600));
+            }
+        } catch (e) {
+            if (wait.parentNode) wait.remove(); AIT.hist.pop();
+            aiBubble('bot', 'Sorry, the AI could not be reached right now. Check your internet and try again, or use the built-in practice questions.');
+        } finally { AIT.busy = false; if (go) go.disabled = false; }
+    }
+    function aiScreen() {
+        stopTimer(); QZ.src = 'bank';
+        var body = $('nbqBody'), last = LSX.get('nb_ai_test', null);
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Test Maker</h3><p class="nbo-sub">Any topic, even outside your syllabus. Bazar AI makes the test in seconds.</p>' +
+            '<div class="nbai-set"><label>Questions<select id="nbaiN" class="nbo-in"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>' +
+            '<label>Class<select id="nbaiC" class="nbo-in">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return '<option value="' + n + '"' + (n === QZ.cls ? ' selected' : '') + '>Class ' + n + '</option>'; }).join('') + '</select></label></div>' +
+            '<div class="nbai-chat" id="nbaiChat" aria-live="polite"></div>' +
+            '<div class="nbai-chips" id="nbaiChips"></div>' +
+            '<form class="nbai-form" id="nbaiForm" autocomplete="off"><input id="nbaiIn" class="nbo-in" maxlength="400" placeholder="Topic, e.g. Photosynthesis, Class 10" aria-label="Topic for your test"><button type="submit" id="nbaiGo" class="nbai-send" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button></form>' +
+            '<button type="button" class="nbo-skip" id="nbaiBack">Back to tests</button>';
+        $('nbaiC').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); });
+        AIT.hist = []; AIT.qs = null;
+        aiBubble('bot', 'Hi! Which topic do you want to be tested on? It can be any chapter or subject, or anything outside your syllabus too (GK, current affairs, sports, coding, history…). You can also tell me the level (easy / hard).');
+        var sug = ['Photosynthesis', 'Algebra: linear equations', 'Indian Constitution', 'General knowledge', 'Cricket World Cups', 'Basics of Python coding', 'विज्ञान: प्रकाश'];
+        $('nbaiChips').innerHTML = ''; sug.forEach(function (s) { var b = document.createElement('button'); b.type = 'button'; b.textContent = s; b.addEventListener('click', function () { aiSend(s + ' (Class ' + QZ.cls + ')'); }); $('nbaiChips').appendChild(b); });
+        if (last && Array.isArray(last.qs) && last.qs.length >= 3) {
+            var r = document.createElement('button'); r.type = 'button'; r.className = 'nbai-last'; r.textContent = 'Retake your last AI test: ' + last.title;
+            r.addEventListener('click', function () { AIT.qs = last.qs; AIT.title = last.title; AIT.subj = last.subject || 'AI test'; aiReady(); r.remove(); });
+            $('nbaiChips').appendChild(r);
+        }
+        $('nbaiForm').addEventListener('submit', function (e) { e.preventDefault(); var i = $('nbaiIn'), v = i.value; i.value = ''; aiSend(v); });
+        $('nbaiBack').addEventListener('click', quizSetup);
+    }
+    NB.openAiTest = function () {
+        closeSiteMenu(); if (!$('nbQz')) buildQuiz();
+        var p = NB.profile(); QZ.cls = p ? parseInt(p.cls.replace('Class ', ''), 10) : QZ.cls;
+        NB.open('nbQz'); aiScreen();
+    };
 
     /* =====================================================================
        Start-up

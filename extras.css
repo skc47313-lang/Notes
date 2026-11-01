@@ -934,3 +934,34 @@ html.dark .nb-switch{border-color:#475569!important;background:#334155!important
 .nbrm-b button.ghost{background:var(--nb-hover);color:var(--nb-text)}
 .nbrm-b button:nth-child(2){background:#f59e0b}
 @media (prefers-reduced-motion:reduce){.nbrm-i{animation:none}}
+
+/* ============================================================
+   AI Test Maker (inside Tests)
+   ============================================================ */
+.nbai-cta{display:flex;align-items:center;gap:12px;width:100%;margin:2px 0 6px;padding:12px 14px;border-radius:16px;border:0;color:#fff;text-align:left;cursor:pointer;background:var(--nb-grad);box-shadow:0 8px 22px rgba(99,102,241,.3)}
+.nbai-cta>span{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.nbai-cta b{font-size:14px}
+.nbai-cta small{font-size:11.5px;opacity:.9}
+.nbai-cta>i:first-child{font-size:20px}
+.nbai-set{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.nbai-set label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:700;color:var(--nb-muted);min-width:0}
+.nbai-set select{padding:8px 10px}
+.nbai-chat{display:flex;flex-direction:column;gap:8px;height:min(40dvh,320px);min-height:150px;overflow-y:auto;overscroll-behavior:contain;padding:10px;border-radius:16px;border:1px solid var(--nb-border);background:var(--nb-surface-2)}
+.nbai-m{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+.nbai-m.bot{align-self:flex-start;background:var(--nb-surface);border:1px solid var(--nb-border)}
+.nbai-m.me{align-self:flex-end;background:var(--nb-grad);color:#fff}
+.nbai-m.wait{opacity:.7;animation:nbaiP 1s ease-in-out infinite}
+@keyframes nbaiP{50%{opacity:.35}}
+.nbai-ready{border-color:var(--theme-primary,#6366f1)!important;white-space:normal}
+.nbai-ready b{display:block;font-size:13.5px}
+.nbai-ready span{display:block;font-size:12px;color:var(--nb-muted);margin:2px 0 8px}
+.nbai-go{display:flex;flex-wrap:wrap;gap:6px}
+.nbai-go button{flex:1 1 auto;padding:9px 10px;border-radius:10px;border:1px solid var(--nb-border);background:var(--nb-surface-2);color:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.nbai-go button.pri{background:var(--theme-primary,#6366f1);border-color:transparent;color:#fff}
+.nbai-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.nbai-chips button{padding:6px 11px;border-radius:999px;border:1px solid var(--nb-border);background:var(--nb-surface);color:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.nbai-chips .nbai-last{border-color:var(--theme-primary,#6366f1);color:var(--theme-primary,#6366f1)}
+.nbai-form{display:flex;gap:8px}
+.nbai-form .nbo-in{flex:1;min-width:0}
+.nbai-send{width:46px;flex:none;border:0;border-radius:12px;background:var(--nb-grad);color:#fff;cursor:pointer}
+.nbai-send[disabled]{opacity:.5;cursor:wait}
