@@ -1151,13 +1151,13 @@
                 '<button type="button" class="nbq-mode" data-m="mock" aria-pressed="' + (QZ.mode === 'mock') + '"><b>Mock test</b><small>20 questions · 20 min timer</small></button></div>' +
                 '<label class="nbo-l">Subject</label><div class="nbq-chips" id="nbqSubs">' + subs.map(function (s) { return '<button type="button" data-s="' + NB.esc(s) + '" aria-pressed="' + (QZ.subj === s) + '">' + NB.esc(s) + '</button>'; }).join('') + '</div>' +
                 '<label class="nbo-l" for="nbqCls">Class level</label><select id="nbqCls" class="nbo-in">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return '<option value="' + n + '"' + (n === QZ.cls ? ' selected' : '') + '>Class ' + n + '</option>'; }).join('') + '</select>' +
-                '<div class="nbo-err" id="nbqErr"></div><button type="button" class="nbo-save" id="nbqStart">Start</button>' +
+                '<div class="nbo-err" id="nbqErr"></div><button type="button" class="nbo-save" id="nbqStart">Start</button><button type="button" class="nbo-skip" id="nbqHistBtn">📊 Test history &amp; progress</button>' +
                 (hist.length ? '<div class="nbq-hist" style="margin-top:12px"><b>Recent results</b><br>' + hist.map(function (r) { return NB.esc(r.mode === 'mock' ? 'Mock' : 'Practice') + ' · ' + NB.esc(r.subj) + ' · Class ' + r.cls + ' · <b>' + r.score + '/' + r.total + '</b> · ' + new Date(r.t).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }); }).join('<br>') + '</div>' : '');
             body.innerHTML = h;
             body.querySelectorAll('.nbq-mode').forEach(function (b) { b.addEventListener('click', function () { QZ.mode = b.dataset.m; body.querySelectorAll('.nbq-mode').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }); });
             $('nbqSubs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; QZ.subj = b.dataset.s; Array.prototype.forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); });
             $('nbqCls').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); });
-            $('nbqStart').addEventListener('click', function () { QZ.src = 'bank'; quizStart(); });
+            $('nbqStart').addEventListener('click', function () { QZ.src = 'bank'; quizStart(); }); $('nbqHistBtn').addEventListener('click', NB.openTestHistory);
             $('nbqAi').addEventListener('click', aiScreen); qpCta();
         }).catch(function () {
             body.innerHTML = '<h3 class="nbo-h">Tests</h3><p class="nbo-sub">The built-in questions could not be loaded. Check your internet connection and try again.</p>' +
@@ -1208,10 +1208,10 @@
         var score = 0; QZ.list.forEach(function (q, i) { if (QZ.ans[i] === q.a) score++; });
         var total = QZ.list.length, pct = Math.round(score / total * 100), secs = Math.round((Date.now() - QZ.t0) / 1000);
         var hist = asArr(LSX.get('nb_quiz', [])); hist.unshift({ t: Date.now(), score: score, total: total, mode: QZ.mode, subj: QZ.src === 'ai' ? 'AI · ' + String(QZ.aiTitle || 'test').slice(0, 24) : QZ.subj, cls: QZ.cls });
-        LSX.set('nb_quiz', hist.slice(0, 30)); NB.markDay(); ui.refreshAll();
+        LSX.set('nb_quiz', hist.slice(0, 30)); thSave(secs); NB.markDay(); ui.refreshAll();
         var msg = pct >= 80 ? 'Excellent work!' : pct >= 50 ? 'Good effort. Keep practising!' : 'Keep going. Review the answers below and try again.';
         var h = '<div class="nbq-score"><b>' + score + ' / ' + total + '</b><span>' + pct + '% · ' + msg + '<br>Time taken: ' + fmtT(secs) + '</span></div>';
-        $('nbqBody').innerHTML = h + '<div id="nbqRev"></div><div class="nbq-nav"><button type="button" id="nbqAgain">Try again</button><button type="button" class="pri" id="nbqNew">New test</button></div>';
+        $('nbqBody').innerHTML = h + '<div id="nbqRev"></div><div class="nbq-nav"><button type="button" id="nbqAgain">Try again</button><button type="button" class="pri" id="nbqNew">New test</button></div><button type="button" class="nbo-skip" id="nbqHistR">📊 My test history &amp; progress</button>';
         var rv = $('nbqRev');
         QZ.list.forEach(function (q, i) {
             var ok = QZ.ans[i] === q.a, d = document.createElement('div'); d.className = 'nbq-rev ' + (ok ? 'ok' : 'bad');
@@ -1221,7 +1221,7 @@
             if (q.e) { var e = document.createElement('div'); e.style.opacity = '.8'; e.textContent = q.e; d.appendChild(e); }
             rv.appendChild(d);
         });
-        $('nbqAgain').addEventListener('click', quizStart); $('nbqNew').addEventListener('click', quizSetup);
+        $('nbqAgain').addEventListener('click', quizStart); $('nbqNew').addEventListener('click', quizSetup); $('nbqHistR').addEventListener('click', NB.openTestHistory);
     }
 
     /* =====================================================================
@@ -1351,6 +1351,131 @@
         var p = NB.profile(); QZ.cls = p ? parseInt(p.cls.replace('Class ', ''), 10) : QZ.cls;
         NB.open('nbQz'); aiScreen();
     };
+
+    /* =====================================================================
+       Test History: every test is saved with all answers, so the student can
+       see marks, progress graphs, mistakes with explanations, and retake it.
+       ===================================================================== */
+    var TH_KEY = 'nb_tests', TH_MAX = 40, TH = { id: '', f: 'all' };
+    function thAll() { var a = LSX.get(TH_KEY, []); return Array.isArray(a) ? a : []; }
+    function thPut(a) { a = a.slice(0, TH_MAX); while (a.length && !LSX.set(TH_KEY, a)) a.pop(); if (!a.length) LSX.del(TH_KEY); }
+    function thSave(secs) {
+        try {
+            var ai = QZ.src === 'ai', score = 0, a;
+            var qs = QZ.list.map(function (q, i) { if (QZ.ans[i] === q.a) score++; return { q: q.q, o: q.o, a: q.a, e: q.e || '', s: q.s || '', x: QZ.ans[i] }; });
+            var title = ai ? String(QZ.aiTitle || 'AI test') : ('Practice · ' + QZ.subj);
+            a = thAll(); a.unshift({ id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4), t: Date.now(), title: title.slice(0, 60), subj: ai ? (AIT.subj || 'AI test') : QZ.subj, cls: QZ.cls, mode: QZ.mode, src: QZ.src, score: score, total: qs.length, secs: secs, qs: qs });
+            thPut(a);
+        } catch (e) {}
+    }
+    function thCol(p) { return p >= 80 ? '#16a34a' : (p >= 50 ? '#f59e0b' : '#ef4444'); }
+    function thPct(r) { return r.total ? Math.round(r.score / r.total * 100) : 0; }
+    function thDate(t) { var d = new Date(t); return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; }
+    function thLine(list) {                                      // list: oldest -> newest
+        var W = 340, H = 150, L = 26, R = 10, T = 10, B = 22, n = list.length, i, g = '', pts = [], x = function (k) { return n === 1 ? L + (W - L - R) / 2 : L + k * (W - L - R) / (n - 1); }, y = function (v) { return T + (H - T - B) * (1 - v / 100); };
+        [0, 50, 80, 100].forEach(function (v) { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="currentColor" stroke-opacity="' + (v === 80 ? '.4' : '.12') + '"' + (v === 80 ? ' stroke-dasharray="4 3"' : '') + '/><text x="' + (L - 4) + '" y="' + (y(v) + 3) + '" text-anchor="end" font-size="9" fill="currentColor" fill-opacity=".55">' + v + '</text>'; });
+        list.forEach(function (r, k) { pts.push(x(k).toFixed(1) + ',' + y(thPct(r)).toFixed(1)); });
+        g += '<polygon points="' + x(0).toFixed(1) + ',' + y(0) + ' ' + pts.join(' ') + ' ' + x(n - 1).toFixed(1) + ',' + y(0) + '" fill="url(#thg)"/><polyline points="' + pts.join(' ') + '" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+        list.forEach(function (r, k) { g += '<circle cx="' + x(k).toFixed(1) + '" cy="' + y(thPct(r)).toFixed(1) + '" r="4" fill="' + thCol(thPct(r)) + '" stroke="#fff" stroke-width="1.5"/>'; });
+        [0, Math.floor((n - 1) / 2), n - 1].filter(function (v, k, a) { return a.indexOf(v) === k; }).forEach(function (k) { g += '<text x="' + x(k).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity=".6">' + thDate(list[k].t) + '</text>'; });
+        return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Score trend" style="width:100%;height:auto;display:block"><defs><linearGradient id="thg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6366f1" stop-opacity=".28"/><stop offset="1" stop-color="#6366f1" stop-opacity="0"/></linearGradient></defs>' + g + '</svg>';
+    }
+    function thSubjects(a) {
+        var m = {}, out = [];
+        a.forEach(function (r) { r.qs.forEach(function (q) { var k = q.s || r.subj || 'General'; m[k] = m[k] || { r: 0, t: 0 }; m[k].t++; if (q.x === q.a) m[k].r++; }); });
+        Object.keys(m).forEach(function (k) { out.push({ s: k, r: m[k].r, t: m[k].t, p: Math.round(m[k].r / m[k].t * 100) }); });
+        return out.sort(function (p, q) { return p.p - q.p; }).slice(0, 8);
+    }
+    function thRender() {
+        TH.id = ''; var a = thAll(), body = $('nbthBody'), E = NB.esc, h;
+        h = '<h3 class="nbo-h"><i class="fa-solid fa-chart-line"></i> Test History</h3><p class="nbo-sub">All your tests, marks, mistakes and progress in one place.</p>';
+        if (!a.length) {
+            body.innerHTML = h + '<p class="nbo-sub" style="text-align:center;margin:26px 0">No tests yet. Take a quiz or an AI test and it will appear here.</p><button type="button" class="nbo-save" data-a="start">Start a test</button>';
+            return;
+        }
+        var avg = Math.round(a.reduce(function (s, r) { return s + thPct(r); }, 0) / a.length), best = Math.max.apply(null, a.map(thPct)), qn = a.reduce(function (s, r) { return s + r.total; }, 0), trend = '';
+        if (a.length >= 6) {
+            var rec5 = a.slice(0, 5), old5 = a.slice(5, 10), f = function (l) { return l.reduce(function (s, r) { return s + thPct(r); }, 0) / l.length; }, d = Math.round(f(rec5) - f(old5));
+            trend = '<div class="th-trend" style="color:' + (d >= 0 ? '#16a34a' : '#ef4444') + '">' + (d >= 0 ? '▲ Improving' : '▼ Dropping') + ': last 5 tests are ' + Math.abs(d) + '% ' + (d >= 0 ? 'better' : 'lower') + ' than the 5 before</div>';
+        }
+        h += '<div class="th-stats"><div><b>' + a.length + '</b><small>Tests</small></div><div><b style="color:' + thCol(avg) + '">' + avg + '%</b><small>Average</small></div><div><b style="color:' + thCol(best) + '">' + best + '%</b><small>Best</small></div><div><b>' + qn + '</b><small>Questions</small></div></div>' + trend;
+        h += '<div class="th-card"><b>Score trend</b><small> (' + (a.length === 1 ? 'your first test' : 'last ' + Math.min(a.length, 15) + ' tests') + ', dashed line = 80%)</small>' + thLine(a.slice(0, 15).reverse()) + '</div>';
+        var sb = thSubjects(a);
+        h += '<div class="th-card"><b>Subject-wise accuracy</b><small> (weakest first)</small>' + sb.map(function (s) {
+            return '<div class="th-bar"><span class="th-bl">' + E(s.s) + '</span><span class="th-bt"><i style="width:' + Math.max(s.p, 3) + '%;background:' + thCol(s.p) + '"></i></span><span class="th-bp">' + s.p + '% <small>(' + s.r + '/' + s.t + ')</small></span></div>';
+        }).join('') + (sb[0] && sb[0].p < 60 ? '<div class="th-tip">💡 Focus on <b>' + E(sb[0].s) + '</b> next. Retake your mistakes from that test.</div>' : '') + '</div>';
+        h += '<div class="th-list-h"><b>All tests</b><button type="button" class="th-del" id="thClear" data-a="delall">Delete all</button></div>' + a.map(function (r) {
+            var p = thPct(r); return '<button type="button" class="th-row" data-a="open" data-id="' + E(r.id) + '"><span class="th-badge" style="background:' + thCol(p) + '">' + p + '%</span><span class="th-tx"><b>' + E(r.title) + '</b><small>' + E(thDate(r.t) + ' · ' + (r.mode === 'mock' ? 'Mock' : 'Practice') + ' · Class ' + r.cls + ' · ' + r.score + '/' + r.total + ' correct') + '</small></span><i class="fa-solid fa-chevron-right"></i></button>';
+        }).join('');
+        body.innerHTML = h;
+    }
+    function thDetail(id) {
+        var a = thAll(), r = a.filter(function (x) { return x.id === id; })[0], body = $('nbthBody'), E = NB.esc, right = 0, wrong = 0, skip = 0, p, h, letters = 'ABCDEF';
+        if (!r) { thRender(); return; }
+        TH.id = id; r.qs.forEach(function (q) { if (q.x === q.a) right++; else if (q.x >= 0) wrong++; else skip++; });
+        p = thPct(r);
+        h = '<button type="button" class="np-back" data-a="back"><i class="fa-solid fa-arrow-left"></i> All tests</button><h3 class="nbo-h" style="margin-top:2px">' + E(r.title) + '</h3>' +
+            '<div class="th-score"><b style="color:' + thCol(p) + '">' + r.score + ' / ' + r.total + '</b><span>' + p + '% · ' + E(thDate(r.t)) + ' · ' + (r.mode === 'mock' ? 'Mock test' : 'Practice') + ' · ' + Math.floor((r.secs || 0) / 60) + ' min ' + ((r.secs || 0) % 60) + ' s</span></div>' +
+            '<div class="th-actions"><button type="button" class="nbo-save" data-a="retake"><i class="fa-solid fa-rotate-right"></i> Retake this test</button>' + ((wrong + skip) ? '<button type="button" class="pdf-share" data-a="retakew" style="margin-top:8px">🎯 Retake only my mistakes (' + (wrong + skip) + ')</button>' : '') + '</div>' +
+            '<div class="th-tabs">' + [['all', 'All ' + r.total], ['wrong', 'Wrong ' + wrong], ['skip', 'Skipped ' + skip], ['right', 'Right ' + right]].map(function (t) { return '<button type="button" data-a="tab" data-f="' + t[0] + '" aria-pressed="' + (TH.f === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
+        r.qs.forEach(function (q, i) {
+            var st = q.x === q.a ? 'right' : (q.x >= 0 ? 'wrong' : 'skip');
+            if (TH.f !== 'all' && TH.f !== st) return;
+            h += '<div class="th-q th-' + st + '"><div class="th-qq"><b>' + (i + 1) + '.</b> ' + E(q.q) + '</div>' + q.o.map(function (o, j) {
+                var c = j === q.a ? 'ok' : (j === q.x ? 'bad' : '');
+                return '<div class="th-o ' + c + '"><span>' + letters[j] + '</span><div>' + E(o) + '</div>' + (j === q.a ? '<em>✓ Correct</em>' : (j === q.x ? '<em>✗ Your answer</em>' : '')) + '</div>';
+            }).join('') + (st === 'skip' ? '<div class="th-note">You did not answer this one.</div>' : '') + (q.e ? '<div class="th-exp"><b>Why:</b> ' + E(q.e) + '</div>' : '') +
+                (st !== 'right' ? '<button type="button" class="th-why" data-a="why" data-i="' + i + '">🤖 Explain simply</button><div class="th-ai" id="thAi' + i + '"></div>' : '') + '</div>';
+        });
+        h += '<button type="button" class="th-del th-delone" data-a="del">Delete this test</button>';
+        body.innerHTML = h;
+    }
+    function thRetake(only) {
+        var r = thAll().filter(function (x) { return x.id === TH.id; })[0]; if (!r) return;
+        var all = r.qs.map(function (q) { return { q: q.q, o: q.o, a: q.a, e: q.e, bad: q.x !== q.a }; }), list = only ? all.filter(function (q) { return q.bad; }) : all;
+        if (list.length < 3) list = list.concat(all.filter(function (q) { return !q.bad; })).slice(0, Math.max(3, list.length));      // the quiz needs at least 3 questions
+        AIT.qs = list.map(function (q) { return { q: q.q, o: q.o, a: q.a, e: q.e }; });
+        AIT.title = (only ? 'Mistakes: ' : 'Retest: ') + String(r.title).replace(/^(Retest|Mistakes): /, '').slice(0, 40); AIT.subj = r.subj || 'Test';
+        QZ.cls = r.cls || QZ.cls; NB.close('nbTh'); if (!$('nbQz')) buildQuiz(); NB.open('nbQz'); aiStartTest(r.mode === 'mock' ? 'mock' : 'practice');
+    }
+    async function thWhy(i, btn) {
+        var r = thAll().filter(function (x) { return x.id === TH.id; })[0], q = r && r.qs[i], box = $('thAi' + i); if (!q || !box) return;
+        btn.disabled = true; box.textContent = 'Thinking…';
+        var L = 'ABCDEF', ask = 'A Class ' + (r.cls || 10) + ' student got this multiple-choice question wrong. Explain in 3 to 4 very short, simple sentences why the correct answer is right and why the student\'s choice is wrong (if they chose one). Reply in the same language as the question. No headings.\nQuestion: ' + q.q + '\nOptions: ' + q.o.map(function (o, j) { return L[j] + ') ' + o; }).join('  ') + '\nCorrect: ' + L[q.a] + ') ' + q.o[q.a] + '\nStudent chose: ' + (q.x >= 0 ? L[q.x] + ') ' + q.o[q.x] : 'no answer');
+        try {
+            if (typeof window.nbCallAi !== 'function') throw new Error('no ai');
+            var out = await window.nbCallAi([{ role: 'system', content: ask }, { role: 'user', content: 'Explain now.' }], { timeout: 45000 });
+            box.textContent = String(out || '').replace(/[*#`]/g, '').trim().slice(0, 700) || 'No explanation came back. Please try again.';
+        } catch (e) { box.textContent = 'The AI is busy right now. Please try again in a minute.'; }
+        btn.disabled = false;
+    }
+    function thClick(e) {
+        var b = e.target.closest && e.target.closest('[data-a]'); if (!b) return;
+        var act = b.getAttribute('data-a');
+        if (act === 'start') { NB.close('nbTh'); NB.openQuiz(); }
+        else if (act === 'open') { TH.f = 'all'; thDetail(b.getAttribute('data-id')); $('nbthBody').scrollTop = 0; }
+        else if (act === 'back') thRender();
+        else if (act === 'tab') { TH.f = b.getAttribute('data-f'); thDetail(TH.id); }
+        else if (act === 'retake') thRetake(false);
+        else if (act === 'retakew') thRetake(true);
+        else if (act === 'why') thWhy(parseInt(b.getAttribute('data-i'), 10), b);
+        else if (act === 'del' || act === 'delall') {
+            if (b.getAttribute('data-ask')) {
+                if (act === 'del') { thPut(thAll().filter(function (x) { return x.id !== TH.id; })); thRender(); NB.toast('Test deleted.', 1800); }
+                else { LSX.del(TH_KEY); thRender(); NB.toast('All tests deleted.', 1800); }
+                return;
+            }
+            var old = b.textContent; b.setAttribute('data-ask', '1'); b.textContent = act === 'del' ? 'Tap again to delete this test' : 'Tap again to delete all';
+            setTimeout(function () { if (b.parentNode) { b.removeAttribute('data-ask'); b.textContent = old; } }, 4000);
+        }
+    }
+    function buildTh() {
+        document.body.appendChild(NB.mk('<div class="nbo" id="nbTh" aria-hidden="true"><div class="nbo-card nbq nbqp" role="dialog" aria-modal="true" aria-label="Test History">' +
+            '<button type="button" class="nbo-x" id="nbthX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="nbthBody"></div></div></div>'));
+        $('nbthX').addEventListener('click', function () { NB.close('nbTh'); });
+        $('nbthBody').addEventListener('click', thClick);
+    }
+    NB.openTestHistory = function () { closeSiteMenu(); try { NB.close('nbQz'); } catch (e) {} if (!$('nbTh')) buildTh(); NB.open('nbTh'); thRender(); };
 
     /* =====================================================================
        AI Question Paper: objective (MCQ) or subjective questions, any number,
@@ -1584,7 +1709,7 @@
             '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['model', 'Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
             '<div style="margin-top:10px"><label class="nbo-l" for="qpSubj" style="margin-top:0">Subject</label><select id="qpSubj" class="nbo-in"></select><div class="qp-board" id="qpBoard"></div></div>' +
             '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><p class="nbo-sub" style="margin:6px 0 0">Model Set: one PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks, from the whole book. A fresh set every time.</p></div>' +
-            '<div id="qpTopicBox" style="margin-top:10px"><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<div id="qpTopicBox" style="margin-top:10px"><div id="qpChWrap"></div><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
             qpScanHtml('qp') +
             '<label class="nbo-l" for="qpBook">Book name (optional)</label><input id="qpBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
@@ -1595,12 +1720,13 @@
             '<label>Difficulty' + qpSel('qpLevel', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']], s.level || 'Medium') + '</label></div>' +
             '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
             '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
-        qpFillSubj(s.subj); qpSync();
+        qpFillSubj(s.subj); qpSync(); chRender('qp');
         qpScanInit('qp');
         $('qpBack').addEventListener('click', function () { NB.close('nbQp'); NB.openPdfMaker(); });
         $('qpType').addEventListener('change', qpSync);
-        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); });
+        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); chRender('qp'); });
         $('qpSubj').addEventListener('change', function () {
+            chRender('qp');
             qpBoardHint(); var v = this.value, lg = $('qpLang');
             if (v === 'hindi' || v === 'maithili' || v === 'sanskrit') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';   // those papers are written in their own language
         });
@@ -1626,7 +1752,7 @@
             if (r.msg) { err.textContent = r.msg; return; }
             if (!r.qs.length) { err.textContent = 'Could not make the questions right now. Please try again in a moment.'; return; }
             try { qpHistSave(o, r.qs); } catch (e) {}
-            QP.paper = { o: o, qs: r.qs, secs: r.secs }; qpResult(r.qs.length < o.count);
+            QP.paper = { o: o, qs: r.qs, secs: r.secs }; mySave('paper', QP.paper); qpResult(r.qs.length < o.count);
         });
     }
     function qpResult(partial) {
@@ -1634,10 +1760,9 @@
         if (!$('qpStyle')) { var st = document.createElement('style'); st.id = 'qpStyle'; st.textContent = QP_CSS; document.head.appendChild(st); }
         body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> Your question paper</h3><p class="nbo-sub">' + p.qs.length + ' questions' + (partial ? ' (the AI could not make all ' + p.o.count + ', tap "Make another paper" to try again)' : '') + '</p>' +
             '<div class="nbqp-prev"><div class="qpw">' + qpBody(p) + '</div></div>' +
-            '<button type="button" class="nbo-save" id="qpPdf"><i class="fa-solid fa-download"></i> Download PDF</button>' +
-            '<p class="nbo-sub" style="margin:8px 0 0">In the window that opens, choose <b>Save as PDF</b> as the printer.</p>' +
+            pdfBtns() + '<p class="nbo-sub" style="margin:8px 0 0">Saved in <b>My PDFs</b> on this phone.</p>' +
             '<button type="button" class="nbo-skip" id="qpNew">Make another paper</button>';
-        $('qpPdf').addEventListener('click', qpPrint);
+        pdfWire('qp');
         $('qpNew').addEventListener('click', qpForm);
     }
 
@@ -1974,11 +2099,20 @@
     }
 
     /* --- generation --- */
+    async function npAi(msgs, run) {                             // the AI key is shared by all students, so when it is busy wait and try again
+        var d = [0, 12000, 25000, 40000], i;
+        for (i = 0; i < d.length; i++) {
+            if (d[i]) { npStatus('The AI is busy right now, trying again in a few seconds…'); await new Promise(function (r) { setTimeout(r, d[i]); }); if (run !== NP.run) return ''; }
+            try { return await window.nbCallAi(msgs, { timeout: 90000 }); } catch (e) {}
+        }
+        throw new Error('AI busy');
+    }
     async function npSection(o, outline, i, words, run) {
         var a, out, bl, nb;
         for (a = 0; a < 2; a++) {
             if (run !== NP.run) return null;
-            try { out = await window.nbCallAi([{ role: 'system', content: npSecPrompt(o, outline, i, words) }, { role: 'user', content: 'Write the section now. ' + qpLangRule(o.lang, o.subj) }], { timeout: 90000 }); } catch (e) { continue; }
+            try { out = await npAi([{ role: 'system', content: npSecPrompt(o, outline, i, words) }, { role: 'user', content: 'Write the section now. ' + qpLangRule(o.lang, o.subj) }], run); } catch (e) { return null; }
+            if (run !== NP.run) return null;
             bl = npBlocks(out); if (!bl) continue;
             nb = bl.map(npNB).filter(Boolean);
             if (nb.length && npLangOk(nb, o.lang)) return nb;
@@ -1989,7 +2123,7 @@
         var run = ++NP.run, band = npBand(o.cls), N = NP_SEC[o.type][band], words = NP_WORDS[o.type][band], maxImg = o.pics ? (o.type === 'short' ? 2 : 4) : 0, outline = null, tries, out, j, msg = '', secs, res, next = 0, done = 0, notes = [];
         npStatus('Planning the notes…');
         for (tries = 0; tries < 2 && !outline; tries++) {
-            try { out = await window.nbCallAi([{ role: 'system', content: npOutlinePrompt(o, N, maxImg) }, { role: 'user', content: 'Make the outline now. ' + qpLangRule(o.lang, o.subj) }], { timeout: 90000 }); } catch (e) { continue; }
+            try { out = await npAi([{ role: 'system', content: npOutlinePrompt(o, N, maxImg) }, { role: 'user', content: 'Make the outline now. ' + qpLangRule(o.lang, o.subj) }], run); } catch (e) { msg = 'The AI is busy right now (many students use it at the same time). Please wait a minute and tap "Make notes" again.'; break; }
             if (run !== NP.run) return null;
             if (/"unsure"\s*:\s*true/i.test(String(out || '')) && !o.src) { msg = 'I am not sure what is in "' + o.topic + '". To get the real chapter, write the exact lesson name and book name, or paste / scan the chapter text in the box below, then try again.'; break; }
             j = npJson(out);
@@ -2012,14 +2146,61 @@
         await Promise.all([worker(), worker()]);
         if (run !== NP.run) return null;
         secs.forEach(function (s, i) { if (res[i] && res[i].length) notes.push({ h: s.h, icon: s.icon, img: s.img, blocks: res[i], pic: null }); });
-        if (!notes.length) return { msg: 'The AI could not write these notes in ' + o.lang + ' right now. Please tap "Make notes" again.' };
+        if (!notes.length) return { msg: 'The AI could not write these notes right now (it may be busy). Please wait a minute and tap "Make notes" again.' };
         if (maxImg) {
             npStatus('Finding pictures…');
             var want = notes.filter(function (n) { return n.img; }).slice(0, maxImg);
             await Promise.all(want.map(function (n) { return npImg(n.img).then(function (r) { n.pic = r; }); }));
             if (run !== NP.run) return null;
         }
-        return { title: String(outline.title || o.topic).slice(0, 120), notes: notes };
+        return { title: String(outline.title || o.topic).slice(0, 120), notes: notes, missed: secs.length - notes.length };
+    }
+
+
+    /* --- notes -> quiz ("Isi se test do") --- */
+    function npPlain(d) {
+        var out = [];
+        d.notes.forEach(function (s) {
+            var t = s.h + ':';
+            s.blocks.forEach(function (b) {
+                if (b.t === 'def') t += ' ' + (b.k ? b.k + ' - ' : '') + b.v + '.';
+                else if (b.t === 'pts') t += ' ' + b.items.join('; ') + '.';
+                else if (b.t === 'formula') t += ' ' + (b.k ? b.k + ': ' : '') + b.v + (b.n ? ' (' + b.n + ')' : '') + '.';
+                else if (b.t === 'table') t += ' ' + b.head.join(' | ') + ': ' + b.rows.map(function (r) { return r.join(' | '); }).join('; ') + '.';
+                else if (b.t === 'flow') t += ' ' + b.steps.join(' -> ') + '.';
+                else if (b.t === 'map') t += ' ' + b.center + ': ' + b.nodes.join(', ') + '.';
+                else t += ' ' + String(b.v || '').replace(/\n/g, ' ') + '.';
+            });
+            out.push(t.replace(/\*\*/g, ''));
+        });
+        return out.join('\n').slice(0, 8000);
+    }
+    function npQuizPrompt(o, n, txt) {
+        return 'You are the AI Test Maker inside Notes Bazar. Make exactly ' + n + ' multiple-choice questions for a Class ' + o.cls + ' student ONLY from the study notes below (chapter: "' + o.topic + '"). Cover different parts of the notes and do not ask anything that is not in the notes. ' + qpLangRule(o.lang, o.subj) +
+            ' Each question has 4 options and exactly one correct answer; vary the position of the correct answer; "e" is a one-line explanation. Reply with ONLY one JSON object, no markdown: {"title":"short title","subject":"subject name","questions":[{"q":"question text","o":["option A","option B","option C","option D"],"a":0,"e":"one short line"}]} where "a" is the index 0-3 of the correct option.\nNOTES:\n"""\n' + txt + '\n"""';
+    }
+    function npQuizOpen() {
+        var box = $('npQz'); if (!box) return;
+        box.innerHTML = '<div class="np-qp"><b>🎯 Test yourself on these notes</b><div class="nbai-set" style="margin-top:8px"><label>Questions' + qpSel('npQzN', [[5, '5'], [10, '10'], [15, '15']], 10) + '</label><label>Mode' + qpSel('npQzM', [['practice', 'Practice (see answers)'], ['mock', 'Timed mock test']], 'practice') + '</label></div>' +
+            '<button type="button" class="nbo-save" id="npQzGo" style="margin-top:10px"><i class="fa-solid fa-play"></i> Start quiz</button><div class="nbo-sub" id="npQzSt" style="margin:6px 0 0" aria-live="polite"></div></div>';
+        $('npQzGo').addEventListener('click', npQuizRun);
+    }
+    async function npQuizRun() {
+        var d = NP.doc, st = $('npQzSt'), go = $('npQzGo'), run = NP.run, n, mode, out, t = null;
+        if (!d || NP.qzBusy) return;
+        if (typeof window.nbCallAi !== 'function' || typeof aiParseTest !== 'function') { st.textContent = 'The quiz is still loading. Please try again in a moment.'; return; }
+        n = parseInt($('npQzN').value, 10) || 10; mode = $('npQzM').value;
+        NP.qzBusy = true; go.disabled = true; st.textContent = 'Making your quiz from these notes…';
+        try {
+            out = await npAi([{ role: 'system', content: npQuizPrompt(d.o, n, npPlain(d)) }, { role: 'user', content: 'Make the quiz now.' }], run);
+            t = aiParseTest(out);
+            if (!t) st.textContent = 'The quiz could not be made this time. Please tap Start quiz again.';
+        } catch (e) { st.textContent = 'The AI is busy right now. Please wait a minute and try again.'; }
+        NP.qzBusy = false; if ($('npQzGo')) $('npQzGo').disabled = false;
+        if (!t || run !== NP.run) return;
+        AIT.qs = t.qs; AIT.title = t.title || d.title; AIT.subj = t.subject || (d.o.subjN ? d.o.subjN[1] : 'Notes quiz');
+        try { LSX.set('nb_ai_test', { title: AIT.title, subject: AIT.subj, qs: t.qs, t: Date.now() }); } catch (e) {}
+        QZ.cls = d.o.cls; NB.close('nbNt'); if (!$('nbQz')) buildQuiz(); NB.open('nbQz'); aiStartTest(mode);
     }
 
     /* --- drawing --- */
@@ -2062,7 +2243,7 @@
         d.notes.forEach(function (s, i) {
             var P = NP_PAL[i % 6];
             h += '<section class="np-s" style="--c:' + P[0] + ';--b:' + P[1] + '"><h2><span class="np-n">' + (i + 1) + '</span><span>' + E(s.icon) + '</span><span>' + E(s.h) + '</span></h2>';
-            if (s.pic) { anyPic = true; h += '<figure class="np-img"><img src="' + E(s.pic.src) + '" alt="' + E(s.pic.cap) + '" loading="eager"><figcaption>' + E(s.pic.cap) + '</figcaption><button type="button" class="np-rm" title="Remove picture" aria-label="Remove picture">✕</button></figure>'; }
+            if (s.pic) { anyPic = true; h += '<figure class="np-img" data-i="' + i + '"><img src="' + E(s.pic.src) + '" alt="' + E(s.pic.cap) + '" loading="eager"><figcaption>' + E(s.pic.cap) + '</figcaption><button type="button" class="np-rm" title="Remove picture" aria-label="Remove picture">✕</button></figure>'; }
             s.blocks.forEach(function (b) { h += npBlockHtml(b, L, i); });
             h += '</section>';
         });
@@ -2073,13 +2254,18 @@
         var body = $('nbntBody'), d = NP.doc;
         if (!$('npStyle')) { var st = document.createElement('style'); st.id = 'npStyle'; st.textContent = NP_CSS; document.head.appendChild(st); }
         var pics = d.notes.some(function (s) { return s.pic; });
-        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-book-open"></i> Your notes</h3><p class="nbo-sub">' + d.notes.length + ' sections' + (pics ? '. Tap ✕ on a picture to remove it if it does not match.' : '') + '</p>' +
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-book-open"></i> Your notes</h3><p class="nbo-sub">' + d.notes.length + ' sections' + (d.missed ? ' (' + d.missed + ' could not be written because the AI was busy. Tap "Make other notes" to try again)' : '') + (pics ? '. Tap ✕ on a picture to remove it if it does not match.' : '') + '</p>' +
             '<div class="nbqp-prev np-prev"><div class="npw" id="npDoc">' + npBody(d) + '</div></div>' +
-            '<button type="button" class="nbo-save" id="npPdf"><i class="fa-solid fa-download"></i> Download PDF</button>' +
-            '<p class="nbo-sub" style="margin:8px 0 0">In the window that opens, choose <b>Save as PDF</b> as the printer. If colours are missing, turn on <b>Background graphics</b>.</p>' +
+            pdfBtns() + '<p class="nbo-sub" style="margin:8px 0 0">Saved in <b>My PDFs</b> on this phone.</p>' +
+            '<div id="npQz"><button type="button" class="np-qb" id="npQzOpen"><i class="fa-solid fa-bullseye"></i> Isi se test do <small>(quiz from these notes)</small></button></div>' +
             '<button type="button" class="nbo-skip" id="npNew">Make other notes</button>';
-        $('npPdf').addEventListener('click', npPrint); $('npNew').addEventListener('click', npForm);
-        $('npDoc').addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.np-rm'); if (b && b.parentNode) b.parentNode.parentNode.removeChild(b.parentNode); });
+        pdfWire('np'); $('npQzOpen').addEventListener('click', npQuizOpen); $('npNew').addEventListener('click', npForm);
+        $('npDoc').addEventListener('click', function (e) {
+            var b = e.target.closest && e.target.closest('.np-rm'), fg = b && b.parentNode, si;
+            if (!fg || !fg.parentNode) return;
+            si = parseInt(fg.getAttribute('data-i'), 10); fg.parentNode.removeChild(fg);
+            if (NP.doc.notes[si]) { NP.doc.notes[si].pic = null; mySave('notes', NP.doc); }
+        });
     }
     function npPrint() {
         var doc = $('npDoc'); if (!doc || !NP.doc) return;
@@ -2117,7 +2303,7 @@
             '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('npCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
             '<label>Notes type' + qpSel('npType', [['short', 'Short notes'], ['long', 'Long (full) notes']], s.type || 'short') + '</label></div>' +
             '<div style="margin-top:10px"><label class="nbo-l" for="npSubj" style="margin-top:0">Subject</label><select id="npSubj" class="nbo-in"></select><div class="qp-board" id="npBoard"></div></div>' +
-            '<div style="margin-top:10px"><label class="nbo-l" for="npTopic">Chapter / topic</label><input id="npTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Idgah, Quadratic Equations" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<div id="npTopicBox" style="margin-top:10px"><div id="npChWrap"></div><label class="nbo-l" for="npTopic">Chapter / topic</label><input id="npTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Idgah, Quadratic Equations" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<div class="nbo-sub" id="npTypeHint" style="margin:6px 0 0"></div>' +
             '<details id="npMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
             '<label class="nbo-l" for="npBook">Book name (optional)</label><input id="npBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
@@ -2127,11 +2313,12 @@
             '<label>Pictures' + qpSel('npPics', [['1', 'Add pictures / diagrams'], ['0', 'No pictures']], s.pics === '0' ? '0' : '1') + '</label></div>' +
             '<div class="nbo-sub" id="npSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="npErr"></div>' +
             '<button type="button" class="nbo-save" id="npGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make notes</button>';
-        npFillSubj(s.subj); qpScanInit('np');
+        npFillSubj(s.subj); chRender('np'); qpScanInit('np');
         var hint = function () { var t = $('npType').value, c = parseInt($('npCls').value, 10), b = npBand(c); $('npTypeHint').textContent = t === 'short' ? 'Short notes: quick 1 to 2 line definitions and key points (about ' + NP_SEC.short[b] + ' sections for Class ' + c + ').' : 'Long notes: full definitions, formulas, tables, diagrams, examples and exam tips (about ' + NP_SEC.long[b] + ' sections for Class ' + c + ').'; };
         hint(); $('npType').addEventListener('change', hint);
-        $('npCls').addEventListener('change', function () { npFillSubj($('npSubj').value); hint(); });
+        $('npCls').addEventListener('change', function () { npFillSubj($('npSubj').value); chRender('np'); hint(); });
         $('npSubj').addEventListener('change', function () {
+            chRender('np');
             npBoardHint(); var v = this.value, lg = $('npLang');
             if (v === 'hindi' || v === 'maithili' || v === 'sanskrit') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';
         });
@@ -2152,7 +2339,7 @@
             if (!r) return;                                        // window was closed while it was working
             npStatus('');
             if (r.msg) { err.textContent = r.msg; return; }
-            NP.doc = { o: o, title: r.title, notes: r.notes }; npResult();
+            NP.doc = { o: o, title: r.title, notes: r.notes, missed: r.missed || 0 }; mySave('notes', NP.doc); npResult();
         });
     }
     function buildNotes() {
@@ -2163,6 +2350,307 @@
     }
     NB.openNotes = function () { closeSiteMenu(); NB.close('nbPm'); if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npForm(); };
 
+
+    /* =====================================================================
+       1) Chapter lists (pick from a dropdown instead of typing)
+       Maths + Science follow NCERT chapters (Bihar board uses the same books).
+       Other subjects: the AI suggests the list once and it is saved on the phone.
+       ===================================================================== */
+    var CH = {
+        '9|math': ['Number Systems', 'Polynomials', 'Coordinate Geometry', 'Linear Equations in Two Variables', 'Introduction to Euclid\'s Geometry', 'Lines and Angles', 'Triangles', 'Quadrilaterals', 'Areas of Parallelograms and Triangles', 'Circles', 'Constructions', 'Heron\'s Formula', 'Surface Areas and Volumes', 'Statistics', 'Probability'],
+        '9|science': ['Matter in Our Surroundings', 'Is Matter Around Us Pure?', 'Atoms and Molecules', 'Structure of the Atom', 'The Fundamental Unit of Life', 'Tissues', 'Diversity in Living Organisms', 'Motion', 'Force and Laws of Motion', 'Gravitation', 'Work and Energy', 'Sound', 'Why Do We Fall Ill?', 'Natural Resources', 'Improvement in Food Resources'],
+        '10|math': ['Real Numbers', 'Polynomials', 'Pair of Linear Equations in Two Variables', 'Quadratic Equations', 'Arithmetic Progressions', 'Triangles', 'Coordinate Geometry', 'Introduction to Trigonometry', 'Some Applications of Trigonometry', 'Circles', 'Constructions', 'Areas Related to Circles', 'Surface Areas and Volumes', 'Statistics', 'Probability'],
+        '10|science': ['Chemical Reactions and Equations', 'Acids, Bases and Salts', 'Metals and Non-metals', 'Carbon and its Compounds', 'Periodic Classification of Elements', 'Life Processes', 'Control and Coordination', 'How do Organisms Reproduce?', 'Heredity', 'Light: Reflection and Refraction', 'The Human Eye and the Colourful World', 'Electricity', 'Magnetic Effects of Electric Current', 'Sources of Energy', 'Our Environment', 'Management of Natural Resources'],
+        '11|physics': ['Units and Measurements', 'Motion in a Straight Line', 'Motion in a Plane', 'Laws of Motion', 'Work, Energy and Power', 'System of Particles and Rotational Motion', 'Gravitation', 'Mechanical Properties of Solids', 'Mechanical Properties of Fluids', 'Thermal Properties of Matter', 'Thermodynamics', 'Kinetic Theory', 'Oscillations', 'Waves'],
+        '11|chemistry': ['Some Basic Concepts of Chemistry', 'Structure of Atom', 'Classification of Elements and Periodicity in Properties', 'Chemical Bonding and Molecular Structure', 'Thermodynamics', 'Equilibrium', 'Redox Reactions', 'Organic Chemistry: Some Basic Principles and Techniques', 'Hydrocarbons'],
+        '11|biology': ['The Living World', 'Biological Classification', 'Plant Kingdom', 'Animal Kingdom', 'Morphology of Flowering Plants', 'Anatomy of Flowering Plants', 'Structural Organisation in Animals', 'Cell: The Unit of Life', 'Biomolecules', 'Cell Cycle and Cell Division', 'Photosynthesis in Higher Plants', 'Respiration in Plants', 'Plant Growth and Development', 'Breathing and Exchange of Gases', 'Body Fluids and Circulation', 'Excretory Products and their Elimination', 'Locomotion and Movement', 'Neural Control and Coordination', 'Chemical Coordination and Integration'],
+        '11|math': ['Sets', 'Relations and Functions', 'Trigonometric Functions', 'Complex Numbers and Quadratic Equations', 'Linear Inequalities', 'Permutations and Combinations', 'Binomial Theorem', 'Sequences and Series', 'Straight Lines', 'Conic Sections', 'Introduction to Three Dimensional Geometry', 'Limits and Derivatives', 'Statistics', 'Probability'],
+        '12|physics': ['Electric Charges and Fields', 'Electrostatic Potential and Capacitance', 'Current Electricity', 'Moving Charges and Magnetism', 'Magnetism and Matter', 'Electromagnetic Induction', 'Alternating Current', 'Electromagnetic Waves', 'Ray Optics and Optical Instruments', 'Wave Optics', 'Dual Nature of Radiation and Matter', 'Atoms', 'Nuclei', 'Semiconductor Electronics'],
+        '12|chemistry': ['Solutions', 'Electrochemistry', 'Chemical Kinetics', 'The d- and f-Block Elements', 'Coordination Compounds', 'Haloalkanes and Haloarenes', 'Alcohols, Phenols and Ethers', 'Aldehydes, Ketones and Carboxylic Acids', 'Amines', 'Biomolecules'],
+        '12|biology': ['Sexual Reproduction in Flowering Plants', 'Human Reproduction', 'Reproductive Health', 'Principles of Inheritance and Variation', 'Molecular Basis of Inheritance', 'Evolution', 'Human Health and Disease', 'Microbes in Human Welfare', 'Biotechnology: Principles and Processes', 'Biotechnology and its Applications', 'Organisms and Populations', 'Ecosystem', 'Biodiversity and Conservation'],
+        '12|math': ['Relations and Functions', 'Inverse Trigonometric Functions', 'Matrices', 'Determinants', 'Continuity and Differentiability', 'Application of Derivatives', 'Integrals', 'Application of Integrals', 'Differential Equations', 'Vector Algebra', 'Three Dimensional Geometry', 'Linear Programming', 'Probability']
+    };
+    function chAiAll() { var a = LSX.get('nb_ch_ai', {}); return a && typeof a === 'object' ? a : {}; }
+    function chGet(cls, subj) {
+        var k = cls + '|' + subj, c = chAiAll()[k];
+        if (CH[k]) return { list: CH[k], ai: false };
+        return Array.isArray(c) && c.length ? { list: c, ai: true } : null;
+    }
+    function chRender(p) {
+        var w = $(p + 'ChWrap'), cs = $(p + 'Cls'), sb = $(p + 'Subj'); if (!w || !cs || !sb) return;
+        var cls = parseInt(cs.value, 10), subj = sb.value, r;
+        if (subj === 'other') { w.innerHTML = ''; return; }
+        r = chGet(cls, subj);
+        if (r) {
+            w.innerHTML = '<label class="nbo-l" for="' + p + 'Ch" style="margin-top:0">Pick a chapter</label><select id="' + p + 'Ch" class="nbo-in"><option value="">Choose from the list…</option>' +
+                r.list.map(function (c, i) { return '<option value="' + i + '">' + (i + 1) + '. ' + NB.esc(c) + '</option>'; }).join('') +
+                '<option value="own">✍ My chapter is not here (I will type it)</option></select>' +
+                (r.ai ? '<div class="nbo-sub" style="margin:4px 0 0">AI suggested list. Please check that it matches your book.</div>' : '') +
+                '<div class="nbo-sub" style="margin:8px 0 0">Or type the chapter yourself:</div>';
+            $(p + 'Ch').addEventListener('change', function () {
+                var t = $(p + 'Topic'); if (!t || this.value === '') return;
+                if (this.value === 'own') { t.value = ''; t.focus(); return; }
+                t.value = r.list[parseInt(this.value, 10)] || '';
+            });
+        } else {
+            w.innerHTML = '<button type="button" class="ch-ai-b" id="' + p + 'ChAi"><i class="fa-solid fa-list-ol"></i> Show chapter list (AI)</button><div class="nbo-sub" id="' + p + 'ChSt" style="margin:4px 0 6px" aria-live="polite"></div>';
+            $(p + 'ChAi').addEventListener('click', function () { chFetch(p); });
+        }
+    }
+    async function chFetch(p) {
+        var cls = parseInt($(p + 'Cls').value, 10), subj = $(p + 'Subj').value, sj = qpSubjFind(cls, subj), st = $(p + 'ChSt'), btn = $(p + 'ChAi'), b = qpBoard(subj), out, j, list, seen = {};
+        if (typeof window.nbCallAi !== 'function') { st.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
+        if (!navigator.onLine) { st.textContent = 'You are offline.'; return; }
+        btn.disabled = true; st.textContent = 'Getting the chapter list…';
+        var hindi = (subj === 'hindi' || subj === 'maithili' || subj === 'sanskrit');
+        var q = 'List the chapters / lessons of the ' + (b === 'ncert' ? 'NCERT' : 'BSEB / SCERT Bihar (Bihar government school)') + ' textbook for Class ' + cls + ' ' + sj[1] + ', in the order of the book. ' +
+            (hindi ? 'Write the chapter names in Devanagari script exactly as in the book. ' : 'Write the chapter names in English. ') +
+            'Only list chapters you are SURE are in that real book. If you are not sure about this book, reply {"chapters":[]}. Never invent chapter names. Reply with ONLY one JSON object, no markdown: {"chapters":["Chapter 1 name","Chapter 2 name"]} (at most 40).';
+        try { out = await window.nbCallAi([{ role: 'system', content: q }, { role: 'user', content: 'Give the chapter list now.' }], { timeout: 60000 }); } catch (e) { out = ''; }
+        j = npJson(out); list = [];
+        if (j && Array.isArray(j.chapters)) j.chapters.forEach(function (c) { c = npS(c, 90).replace(/^\s*(chapter|lesson|ch\.?|अध्याय|पाठ)?\s*\d+\s*[.:)\-–]\s*/i, ''); if (c && !seen[c.toLowerCase()]) { seen[c.toLowerCase()] = 1; list.push(c); } });
+        list = list.slice(0, 40);
+        if (!$(p + 'ChSt')) return;                                    // form was closed meanwhile
+        if (list.length < 3) { btn.disabled = false; st.textContent = 'The AI is not sure about this book. Please type the chapter name yourself.'; return; }
+        var all = chAiAll(); all[cls + '|' + subj] = list; LSX.set('nb_ch_ai', all);
+        chRender(p);
+    }
+
+    /* =====================================================================
+       2) Real PDF file (no print window): page is drawn by the browser, saved as an A4 PDF
+       ===================================================================== */
+    var PDF = { W: 794, H: 1123, MX: 38, MT: 34, MB: 54, S: 2, busy: false, cache: null };
+    function pdfLoadImg(url) {
+        return new Promise(function (res, rej) {
+            var im = new Image(), tm = setTimeout(function () { rej(new Error('page image timeout')); }, 20000);
+            im.onload = function () { clearTimeout(tm); res(im); };
+            im.onerror = function () { clearTimeout(tm); rej(new Error('page image failed')); };
+            im.src = url;
+        });
+    }
+    async function pdfInlineImages(host) {                           // pictures must be inside the page as data, or the browser leaves them out
+        var imgs = Array.prototype.slice.call(host.querySelectorAll('img'));
+        await Promise.all(imgs.map(async function (im) {
+            var fig = im.closest('figure') || im, src = im.getAttribute('src') || '', ctrl, tm, r, bl, du;
+            try {
+                if (!/^data:/i.test(src)) {
+                    ctrl = new AbortController(); tm = setTimeout(function () { ctrl.abort(); }, 9000);
+                    r = await fetch(src, { signal: ctrl.signal, mode: 'cors' }); clearTimeout(tm);
+                    if (!r.ok) throw new Error('img');
+                    bl = await r.blob();
+                    du = await new Promise(function (ok, no) { var fr = new FileReader(); fr.onload = function () { ok(fr.result); }; fr.onerror = no; fr.readAsDataURL(bl); });
+                    im.setAttribute('src', du);
+                }
+                await new Promise(function (ok, no) { if (im.complete && im.naturalWidth) ok(); else { im.onload = ok; im.onerror = function () { no(new Error('img')); }; } });
+            } catch (e) { if (fig.parentNode) fig.parentNode.removeChild(fig); }
+        }));
+    }
+    function pdfBreaks(root, PH) {                                   // where a page may end: between blocks, never right after a heading
+        var base = root.getBoundingClientRect().top, cand = [], forced = [], total = root.getBoundingClientRect().height;
+        (function walk(el) {
+            var kids = el.children, i, k, p, r, keep;
+            for (i = 0; i < kids.length; i++) {
+                k = kids[i]; if (/^(STYLE|SCRIPT)$/.test(k.tagName)) continue;
+                r = k.getBoundingClientRect();
+                if (k.classList.contains('qp-brk')) { forced.push(r.top - base); continue; }
+                p = i ? kids[i - 1] : null;
+                keep = p && (/^H[1-4]$/.test(p.tagName) || /(^|\s)(np-pt|np-hd|qp-sub|qp-meta|qp-inst)(\s|$)/.test(p.className || ''));
+                if (p && !keep) cand.push(r.top - base);
+                if (k.children.length && r.height > PH * 0.5) walk(k);
+            }
+        })(root);
+        var num = function (a, b) { return a - b; };
+        return { cand: cand.sort(num), forced: forced.sort(num), total: total };
+    }
+    function pdfPlan(br, PH) {
+        var pages = [], y = 0, lim, cut, f, i;
+        while (y < br.total - 2 && pages.length < 80) {
+            lim = y + PH; cut = null; f = null;
+            for (i = 0; i < br.forced.length; i++) if (br.forced[i] > y + 1 && br.forced[i] <= lim) { f = br.forced[i]; break; }
+            if (f != null) cut = f;
+            else if (br.total <= lim + 1) cut = br.total;
+            else { for (i = br.cand.length - 1; i >= 0; i--) if (br.cand[i] <= lim && br.cand[i] > y + 40) { cut = br.cand[i]; break; } if (cut == null) cut = lim; }
+            pages.push([y, cut]); y = cut;
+        }
+        return pages;
+    }
+    function pdfSvg(ser, css, y, h) {
+        var W = PDF.W - 2 * PDF.MX, c = css.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + h + '"><foreignObject x="0" y="0" width="' + W + '" height="' + h + '"><div xmlns="http://www.w3.org/1999/xhtml" style="width:' + W + 'px;height:' + h + 'px;overflow:hidden;background:#fff"><style>' + c + '</style><div style="position:relative;top:' + (-y) + 'px;width:' + W + 'px">' + ser + '</div></div></foreignObject></svg>';
+    }
+    function pdfHex16(t) { var h = 'FEFF', i, c; for (i = 0; i < t.length; i++) { c = t.charCodeAt(i).toString(16).toUpperCase(); h += ('0000' + c).slice(-4); } return h; }
+    function pdfWrite(pages, title) {                                // minimal PDF: one JPEG picture per A4 page
+        var enc = new TextEncoder(), parts = [], off = 0, xref = [], n = pages.length, total = 3 * n + 4, mw = 595.28, mh = 841.89, kids = [], i;
+        function put(x) { var u = typeof x === 'string' ? enc.encode(x) : x; parts.push(u); off += u.length; }
+        function obj(id, body) { xref[id] = off; put(id + ' 0 obj\n' + body + '\nendobj\n'); }
+        put('%PDF-1.4\n%\u00E2\u00E3\u00CF\u00D3\n');
+        for (i = 0; i < n; i++) kids.push((4 + 3 * i) + ' 0 R');
+        obj(1, '<</Type/Catalog/Pages 2 0 R>>');
+        obj(2, '<</Type/Pages/Kids[' + kids.join(' ') + ']/Count ' + n + '>>');
+        obj(3, '<</Title<' + pdfHex16(String(title || 'Notes Bazar')) + '>/Producer(Notes Bazar)>>');
+        pages.forEach(function (p, k) {
+            var pg = 4 + 3 * k, im = pg + 1, ct = pg + 2, cs = 'q ' + mw + ' 0 0 ' + mh + ' 0 0 cm /Im0 Do Q';
+            obj(pg, '<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + mw + ' ' + mh + ']/Resources<</XObject<</Im0 ' + im + ' 0 R>>>>/Contents ' + ct + ' 0 R>>');
+            xref[im] = off; put(im + ' 0 obj\n<</Type/XObject/Subtype/Image/Width ' + p.w + '/Height ' + p.h + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + p.bytes.length + '>>\nstream\n'); put(p.bytes); put('\nendstream\nendobj\n');
+            obj(ct, '<</Length ' + cs.length + '>>\nstream\n' + cs + '\nendstream');
+        });
+        var xs = off; put('xref\n0 ' + total + '\n0000000000 65535 f \n');
+        for (i = 1; i < total; i++) put(('0000000000' + xref[i]).slice(-10) + ' 00000 n \n');
+        put('trailer\n<</Size ' + total + '/Root 1 0 R/Info 3 0 R>>\nstartxref\n' + xs + '\n%%EOF');
+        return new Blob(parts, { type: 'application/pdf' });
+    }
+    async function pdfRender(o) {                                    // o: { cls, css, html, title, onProgress }
+        var W = PDF.W - 2 * PDF.MX, PH = PDF.H - PDF.MT - PDF.MB, S = PDF.S, host = document.createElement('div'), pages = [], i, root, br, plan, ser, h, img, cv, cx, last;
+        host.setAttribute('aria-hidden', 'true'); host.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + W + 'px;visibility:hidden;pointer-events:none';
+        host.innerHTML = '<style>' + o.css + '</style><div class="' + o.cls + '">' + o.html + '</div>';
+        document.body.appendChild(host);
+        try {
+            root = host.lastElementChild; root.style.width = W + 'px';
+            await pdfInlineImages(host);
+            if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+            br = pdfBreaks(root, PH); plan = pdfPlan(br, PH); ser = new XMLSerializer().serializeToString(root);
+            for (i = 0; i < plan.length; i++) {
+                if (o.onProgress) o.onProgress(i + 1, plan.length);
+                last = i === plan.length - 1; h = Math.max(20, Math.floor(plan[i][1] - plan[i][0]) + (last ? 2 : 0));
+                img = await pdfLoadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(pdfSvg(ser, o.css, plan[i][0], h)));
+                cv = document.createElement('canvas'); cv.width = PDF.W * S; cv.height = PDF.H * S; cx = cv.getContext('2d');
+                cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+                cx.drawImage(img, PDF.MX * S, PDF.MT * S, W * S, h * S);
+                cx.strokeStyle = '#e2e8f0'; cx.lineWidth = S; cx.beginPath(); cx.moveTo(PDF.MX * S, (PDF.H - 38) * S); cx.lineTo((PDF.W - PDF.MX) * S, (PDF.H - 38) * S); cx.stroke();
+                cx.fillStyle = '#94a3b8'; cx.textAlign = 'center'; cx.font = '600 ' + (10.5 * S) + 'px "Segoe UI",Arial,sans-serif';
+                cx.fillText('Notes Bazar · AI PDF Maker · Page ' + (i + 1) + ' of ' + plan.length, PDF.W * S / 2, (PDF.H - 22) * S);
+                pages.push(await new Promise(function (ok, no) {
+                    var w = cv.width, hh = cv.height;
+                    cv.toBlob(function (b) { if (!b) { no(new Error('toBlob')); return; } b.arrayBuffer().then(function (a) { ok({ w: w, h: hh, bytes: new Uint8Array(a) }); }, no); }, 'image/jpeg', 0.9);
+                }));
+                cv.width = 1; cv.height = 1;
+            }
+        } finally { if (host.parentNode) host.parentNode.removeChild(host); }
+        return pdfWrite(pages, o.title);
+    }
+    NB._pdf = { render: pdfRender };
+    function pdfName(parts) {
+        var s = parts.filter(Boolean).map(function (x) { return String(x).replace(/[^\p{L}\p{M}\p{N}]+/gu, '-').replace(/^-+|-+$/g, ''); }).filter(Boolean).join('_');
+        return (s || 'NotesBazar').slice(0, 70) + '.pdf';
+    }
+    function pdfCfg(kind) {
+        var c, clone, o;
+        if (kind === 'np') {
+            if (!NP.doc || !$('npDoc')) return null; o = NP.doc.o;
+            clone = $('npDoc').cloneNode(true); Array.prototype.forEach.call(clone.querySelectorAll('.np-rm'), function (x) { x.parentNode.removeChild(x); });
+            return { cls: 'npw', css: NP_CSS, html: clone.innerHTML, title: NP.doc.title, fallback: npPrint,
+                name: pdfName(['NotesBazar', 'Class' + o.cls, o.subj !== 'other' ? o.subjN && o.subjN[1] : '', NP.doc.title, o.type === 'short' ? 'Short-Notes' : 'Long-Notes']) };
+        }
+        if (!QP.paper) return null; o = QP.paper.o;
+        return { cls: 'qpw', css: QP_CSS, html: qpBody(QP.paper), title: o.title || o.topic, fallback: qpPrint,
+            name: pdfName(['NotesBazar', 'Class' + o.cls, o.subj !== 'other' ? o.subjN && o.subjN[1] : '', o.type === 'model' ? 'Model-Set' : (o.title || o.topic), 'Question-Paper']) };
+    }
+    function pdfCanShare() {
+        try { return !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] })); } catch (e) { return false; }
+    }
+    function pdfBtns() {
+        return '<button type="button" class="nbo-save" id="pdfDl"><i class="fa-solid fa-download"></i> Download PDF</button>' +
+            '<button type="button" class="pdf-share" id="pdfSh" style="display:none"><i class="fa-solid fa-share-nodes"></i> Share (WhatsApp etc.)</button>' +
+            '<div class="nbo-sub pdf-st" id="pdfSt" aria-live="polite"></div>';
+    }
+    async function pdfGet(kind) {                                    // the PDF blob for what is on screen (kept so a second tap is instant)
+        var cfg = pdfCfg(kind); if (!cfg) return null;
+        var key = kind + '|' + cfg.title + '|' + cfg.html.length;
+        if (PDF.cache && PDF.cache.key === key) return { blob: PDF.cache.blob, cfg: cfg };
+        var blob = await pdfRender({ cls: cfg.cls, css: cfg.css, html: cfg.html, title: cfg.title, onProgress: function (i, n) { var s = $('pdfSt'); if (s) s.textContent = 'Making your PDF… page ' + i + ' of ' + n; } });
+        PDF.cache = { key: key, blob: blob }; return { blob: blob, cfg: cfg };
+    }
+    function pdfWire(kind) {
+        var dl = $('pdfDl'), sh = $('pdfSh'), st = $('pdfSt');
+        if (pdfCanShare()) sh.style.display = '';
+        async function run(share) {
+            if (PDF.busy) return; PDF.busy = true; dl.disabled = true; sh.disabled = true; st.textContent = 'Making your PDF…';
+            var r = null;
+            try { r = await pdfGet(kind); }
+            catch (e) {
+                console.warn('pdf failed', e); st.textContent = 'Could not make the PDF file here, so the print window is opening. Choose "Save as PDF" there.';
+                var cfg = pdfCfg(kind); if (cfg) cfg.fallback();
+            }
+            if (r) {
+                var file = null; try { file = new File([r.blob], r.cfg.name, { type: 'application/pdf' }); } catch (e) {}
+                if (share && file && pdfCanShare()) {
+                    try { await navigator.share({ files: [file], title: r.cfg.title }); st.textContent = 'Shared.'; }
+                    catch (e) { st.textContent = (e && e.name === 'AbortError') ? '' : 'Sharing did not work. Use Download PDF instead.'; }
+                } else {
+                    var url = URL.createObjectURL(r.blob), a = document.createElement('a');
+                    a.href = url; a.download = r.cfg.name; a.style.display = 'none'; document.body.appendChild(a); a.click();
+                    setTimeout(function () { if (a.parentNode) a.parentNode.removeChild(a); }, 800);
+                    st.innerHTML = 'PDF saved as <b>' + NB.esc(r.cfg.name) + '</b>. Check your Downloads. <a href="' + url + '" target="_blank" rel="noopener">Not downloaded? Tap here to open it.</a>';
+                }
+            }
+            PDF.busy = false; dl.disabled = false; sh.disabled = false;
+        }
+        dl.addEventListener('click', function () { run(false); });
+        sh.addEventListener('click', function () { run(true); });
+    }
+
+    /* =====================================================================
+       3) My PDFs: every notes / paper that is made is saved on this phone
+       ===================================================================== */
+    var MY_KEY = 'nb_my_pdfs', MY_MAX = 20;
+    function myAll() { var a = LSX.get(MY_KEY, []); return Array.isArray(a) ? a : []; }
+    function myPut(a) { a = a.slice(0, MY_MAX); while (a.length && !LSX.set(MY_KEY, a)) a.pop(); if (!a.length) LSX.del(MY_KEY); }
+    function mySave(kind, doc) {
+        try {
+            var id = doc.id || (doc.id = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)), o = {}, k, data, rec, a;
+            for (k in doc.o) if (Object.prototype.hasOwnProperty.call(doc.o, k)) o[k] = doc.o[k];
+            o.src = '';
+            data = kind === 'notes' ? { id: id, o: o, title: doc.title, notes: doc.notes } : { id: id, o: o, qs: o.type === 'model' ? [] : doc.qs, secs: doc.secs };
+            if (JSON.stringify(data).length > 600000) return;
+            rec = { id: id, kind: kind, title: kind === 'notes' ? doc.title : (o.title || o.topic), ts: Date.now(), cls: o.cls, subj: (o.subj && o.subj !== 'other') ? qpSubjName(o) : '', lang: o.lang, type: o.type, data: data };
+            a = myAll().filter(function (x) { return x.id !== id; }); a.unshift(rec); myPut(a);
+        } catch (e) {}
+    }
+    function myKindLabel(r) { return r.kind === 'notes' ? (r.type === 'short' ? 'Short notes' : 'Long notes') : (r.type === 'model' ? 'Model Set' : 'Question paper'); }
+    function myRender() {
+        var a = myAll(), body = $('nbmyBody'), E = NB.esc;
+        body.innerHTML = '<button type="button" class="np-back" id="myBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button>' +
+            '<h3 class="nbo-h"><i class="fa-solid fa-folder-open"></i> My PDFs</h3><p class="nbo-sub">Saved on this phone. Open them again any time without waiting for the AI.</p>' +
+            (a.length ? a.map(function (r) {
+                var d = new Date(r.ts);
+                return '<div class="my-row" data-id="' + E(r.id) + '"><div class="my-ic" style="background:' + (r.kind === 'notes' ? 'linear-gradient(135deg,#f97316,#db2777)' : 'linear-gradient(135deg,#0ea5e9,#6366f1)') + '">' + (r.kind === 'notes' ? '📒' : '📄') + '</div>' +
+                    '<div class="my-tx"><b>' + E(String(r.title || '').slice(0, 70)) + '</b><small>' + E('Class ' + r.cls + (r.subj ? ' · ' + r.subj : '') + ' · ' + myKindLabel(r) + ' · ' + d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]) + '</small></div>' +
+                    '<div class="my-btns"><button type="button" class="my-b" data-a="open">Open</button><button type="button" class="my-x" data-a="del" aria-label="Delete"><i class="fa-solid fa-trash"></i></button></div></div>';
+            }).join('') : '<p class="nbo-sub" style="text-align:center;margin:22px 0">Nothing saved yet. Make notes or a question paper and it will appear here.</p>') +
+            (a.length ? '<button type="button" class="nbo-skip" id="myClear">Delete all (' + a.length + ')</button>' : '');
+        $('myBack').addEventListener('click', function () { NB.close('nbMy'); NB.openPdfMaker(); });
+        if ($('myClear')) $('myClear').addEventListener('click', function () {
+            var c = this;
+            if (c.getAttribute('data-ask')) { LSX.del(MY_KEY); myRender(); NB.toast('All saved PDFs deleted.', 1800); return; }
+            c.setAttribute('data-ask', '1'); c.textContent = 'Tap again to delete all ' + a.length + ' PDFs'; c.style.color = '#ef4444';
+            setTimeout(function () { if (c.parentNode) { c.removeAttribute('data-ask'); c.textContent = 'Delete all (' + a.length + ')'; c.style.color = ''; } }, 4000);
+        });
+        body.onclick = function (e) {
+            var b = e.target.closest && e.target.closest('[data-a]'); if (!b) return;
+            var row = b.closest('.my-row'), id = row && row.getAttribute('data-id'), rec = myAll().filter(function (x) { return x.id === id; })[0];
+            if (!rec) return;
+            var act = b.getAttribute('data-a');
+            if (act === 'del') { row.classList.add('my-ask'); row.querySelector('.my-btns').innerHTML = '<span class="my-cf">Delete?</span><button type="button" class="my-yes" data-a="yes">Yes</button><button type="button" class="my-no" data-a="no">No</button>'; return; }
+            if (act === 'no') { myRender(); return; }
+            if (act === 'yes') { myPut(myAll().filter(function (x) { return x.id !== id; })); myRender(); NB.toast('Deleted from My PDFs.', 1800); return; }
+            NB.close('nbMy');
+            if (rec.kind === 'notes') { NP.doc = rec.data; if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npResult(); }
+            else {
+                QP.paper = rec.data; if (rec.data.o.type === 'model') rec.data.qs = (rec.data.secs || []).reduce(function (s, x) { return s.concat(x.qs || []); }, []);
+                if (!$('nbQp')) buildPaper(); NB.open('nbQp'); qpResult(false);
+            }
+        };
+    }
+    NB.openMyPdfs = function () {
+        closeSiteMenu(); NB.close('nbPm');
+        if (!$('nbMy')) {
+            document.body.appendChild(NB.mk('<div class="nbo" id="nbMy" aria-hidden="true"><div class="nbo-card" role="dialog" aria-modal="true" aria-label="My PDFs" style="max-width:440px">' +
+                '<button type="button" class="nbo-x" id="nbmyX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="nbmyBody"></div></div></div>'));
+            $('nbmyX').addEventListener('click', function () { NB.close('nbMy'); });
+        }
+        myRender(); NB.open('nbMy');
+    };
+
     /* --- hub: AI PDF Maker --- */
     NB.openPdfMaker = function () {
         closeSiteMenu();
@@ -2172,11 +2660,14 @@
                 '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI PDF Maker</h3><p class="nbo-sub">What do you want to make today?</p>' +
                 '<button type="button" class="pm-card" id="pmQp" style="--pm:linear-gradient(135deg,#0ea5e9,#6366f1)"><span class="pm-ic"><i class="fa-solid fa-file-circle-question"></i></span><span class="pm-tx"><b>Question Paper Maker</b><small>MCQ, short and long questions or a full Model Set, with answers, as PDF</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
                 '<button type="button" class="pm-card" id="pmNt" style="--pm:linear-gradient(135deg,#f97316,#db2777)"><span class="pm-ic"><i class="fa-solid fa-book-open"></i></span><span class="pm-tx"><b>Notes Maker</b><small>Colourful short or long notes with definitions, formulas, diagrams and pictures, as PDF</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
+                '<button type="button" class="pm-card pm-my" id="pmMy"><span class="pm-ic"><i class="fa-solid fa-folder-open"></i></span><span class="pm-tx"><b>My PDFs <span id="pmMyN"></span></b><small>Open the notes and papers you made before, no waiting for the AI</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
                 '</div></div>'));
+            $('pmMy').addEventListener('click', function () { NB.openMyPdfs(); });
             $('nbpmX').addEventListener('click', function () { NB.close('nbPm'); });
             $('pmQp').addEventListener('click', function () { NB.close('nbPm'); NB.openPaper(); });
             $('pmNt').addEventListener('click', function () { NB.close('nbPm'); NB.openNotes(); });
         }
+        var n = myAll().length; $('pmMyN').textContent = n ? '(' + n + ')' : '';
         NB.open('nbPm');
     };
     function qpCta() {                                           // extra button on the "Tests" screen
