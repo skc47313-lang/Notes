@@ -1368,23 +1368,244 @@
         '.qpw .qp-m{white-space:nowrap;font-weight:700;font-size:12px}' +
         '.qpw .qp-o{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 16px;margin:4px 0 0 22px}' +
         '.qpw .qp-a{margin:6px 0 0 22px;padding:5px 9px;background:#eef2ff;border-left:3px solid #6366f1;font-size:12.5px}.qpw .qp-a.qp-k{margin-left:0}' +
-        '.qpw .qp-sum{margin:0 0 12px;font-weight:600;line-height:1.9}.qpw .qp-brk{page-break-before:always;break-before:page}';
-    function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 120); }
-    function qpPrompt(o, n, done) {
-        var mcq = o.type === 'mcq', needA = o.ans !== 'none';
-        var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students. Make a question paper for Class ' + o.cls + ' on this topic or subject: "' + o.topic + '". Difficulty: ' + o.level + '. ' +
-            'Write the questions' + (needA ? ' and answers' : '') + ' in ' + o.lang + ' (Hinglish means Hindi written in English letters). For school topics follow CBSE / NCERT style; for other topics use well-established facts only. Be sure every answer is correct; never invent facts. ';
+        '.qpw .qp-sum{margin:0 0 12px;font-weight:600;line-height:1.9}.qpw .qp-brk{page-break-before:always;break-before:page}' +
+        '.qpw h2{page-break-after:avoid;break-after:avoid}.qpw h2.qp-h3{font-size:13px;margin:12px 0 6px;border-bottom:1px dashed #bbb}.qpw .qp-inst{font-size:12px;font-style:italic;margin:0 0 10px;color:#333}';
+    /* ---- Model Set layout: 80 MCQ (1 mark) + 15 short (2 marks) + 10 long (5 marks) = 160 marks ---- */
+    var QP_MODEL = { mcq: 80, short: 15, long: 10 }, QP_MODEL_TOTAL = 105, QP_MARKS = { mcq: 1, short: 2, long: 5 };
+    var QP_SUBJ = {
+        low: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['evs', 'EVS', 'पर्यावरण अध्ययन', 'Paryavaran Adhyayan'], ['computer', 'Computer', 'कंप्यूटर', 'Computer'], ['gk', 'General Knowledge', 'सामान्य ज्ञान', 'Samanya Gyan']],
+        mid: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['sanskrit', 'Sanskrit', 'संस्कृत', 'Sanskrit'], ['it', 'Information Technology', 'सूचना प्रौद्योगिकी', 'Information Technology']],
+        high: [['physics', 'Physics', 'भौतिक विज्ञान', 'Bhautik Vigyan'], ['chemistry', 'Chemistry', 'रसायन विज्ञान', 'Rasayan Vigyan'], ['biology', 'Biology', 'जीव विज्ञान', 'Jeev Vigyan'], ['math', 'Maths', 'गणित', 'Ganit'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['accountancy', 'Accountancy', 'लेखाशास्त्र', 'Lekhashastra'], ['business', 'Business Studies', 'व्यवसाय अध्ययन', 'Vyavsay Adhyayan'], ['economics', 'Economics', 'अर्थशास्त्र', 'Arthshastra'], ['history', 'History', 'इतिहास', 'Itihas'], ['geography', 'Geography', 'भूगोल', 'Bhugol'], ['polsci', 'Political Science', 'राजनीति विज्ञान', 'Rajneeti Vigyan'], ['cs', 'Computer Science', 'कंप्यूटर विज्ञान', 'Computer Vigyan']]
+    };
+    var QP_L = {
+        English: { cls: 'Class', total: 'Total marks', time: 'Time', min: 'min', hrs: '3 hours', name: 'Name', date: 'Date', ans: 'Answer', key: 'Answer Key', set: 'Model Set',
+            types: { mcq: 'Objective (MCQ)', short: 'Subjective: short answer', long: 'Subjective: long answer', mixed: 'Subjective: mixed' },
+            secs: ['Section A: Objective questions (1 mark each)', 'Section B: Short answer questions (2 marks each)', 'Section C: Long answer questions (5 marks each)'],
+            inst: 'All questions are compulsory. Section A has 80 objective questions (1 mark each), Section B has 15 short-answer questions (2 marks each) and Section C has 10 long-answer questions (5 marks each).' },
+        Hindi: { cls: 'कक्षा', total: 'कुल अंक', time: 'समय', min: 'मिनट', hrs: '3 घंटे', name: 'नाम', date: 'दिनांक', ans: 'उत्तर', key: 'उत्तर कुंजी', set: 'मॉडल सेट',
+            types: { mcq: 'वस्तुनिष्ठ (बहुविकल्पीय)', short: 'लघु उत्तरीय प्रश्न', long: 'दीर्घ उत्तरीय प्रश्न', mixed: 'विषयनिष्ठ (मिश्रित)' },
+            secs: ['खंड अ: वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक)', 'खंड ब: लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक)', 'खंड स: दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक)'],
+            inst: 'सभी प्रश्न अनिवार्य हैं। खंड अ में 80 वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक), खंड ब में 15 लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक) और खंड स में 10 दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक) हैं।' },
+        Hinglish: { cls: 'Class', total: 'Kul ank', time: 'Samay', min: 'minute', hrs: '3 ghante', name: 'Naam', date: 'Dinank', ans: 'Uttar', key: 'Uttar Kunji', set: 'Model Set',
+            types: { mcq: 'Vastunishth (MCQ)', short: 'Laghu uttariya prashn', long: 'Dirgh uttariya prashn', mixed: 'Vishayanishth (mishrit)' },
+            secs: ['Khand A: Vastunishth prashn (har ek 1 ank)', 'Khand B: Laghu uttariya prashn (har ek 2 ank)', 'Khand C: Dirgh uttariya prashn (har ek 5 ank)'],
+            inst: 'Sabhi prashn anivarya hain. Khand A me 80 vastunishth prashn (har ek 1 ank), Khand B me 15 laghu uttariya prashn (har ek 2 ank) aur Khand C me 10 dirgh uttariya prashn (har ek 5 ank) hain.' }
+    };
+    function qpLab(lang) { return QP_L[lang] || QP_L.English; }
+    function qpSubjList(cls) { return cls <= 8 ? QP_SUBJ.low : (cls <= 10 ? QP_SUBJ.mid : QP_SUBJ.high); }
+    function qpSubjFind(cls, key) { var l = qpSubjList(cls), i; for (i = 0; i < l.length; i++) if (l[i][0] === key) return l[i]; return l[0]; }
+    function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1]); }
+    function qpLangRule(lang) {
+        if (lang === 'Hindi') return 'LANGUAGE RULE (very important): write EVERYTHING in Hindi using Devanagari script only (हिंदी). Every question, every option, every explanation and every answer must be in Devanagari. Do NOT write Hindi words in English/Roman letters and do NOT answer in English or Hinglish. Only unavoidable symbols, numbers and chemical formulas may use Roman letters.';
+        if (lang === 'Hinglish') return 'LANGUAGE RULE (very important): write everything in Hinglish, meaning simple Hindi written in English (Roman) letters, like "Bharat ki rajdhani kya hai?". Do not use Devanagari script.';
+        return 'LANGUAGE RULE (very important): write EVERYTHING in English only. If the topic is given in Hindi or any other language, understand it and write the questions, options and answers in English. Do not use Devanagari or Hindi words.';
+    }
+    function qpSeed() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
+    function qpKey(s) { return String(s || '').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim().slice(0, 80); }   // unicode aware (Hindi letters count too)
+    function qpHistKey(o) { return o.type === 'model' ? 'M|' + o.cls + '|' + o.subj + '|' + o.lang : 'T|' + o.cls + '|' + o.type + '|' + qpKey(o.topic); }
+    function qpHistGet(o) { var h = LSX.get('nb_qp_hist', {}) || {}, a = h[qpHistKey(o)]; return Array.isArray(a) ? a : []; }
+    function qpHistSave(o, qs) {
+        var h = LSX.get('nb_qp_hist', {}) || {}, k = qpHistKey(o), a = Array.isArray(h[k]) ? h[k] : [], ks = Object.keys(h);
+        qs.forEach(function (q) { var x = qpKey(q.q); if (x && a.indexOf(x) < 0) a.push(x); });
+        h[k] = a.slice(-420);
+        if (ks.length > 30) delete h[ks[0]];
+        LSX.set('nb_qp_hist', h);
+    }
+    function qpPick(a, n) { var c = a.slice(), out = [], i; while (c.length && out.length < n) { i = Math.floor(Math.random() * c.length); out.push(c.splice(i, 1)[0]); } return out; }
+    function qpShuf(n) { var a = [], i, j, t; for (i = 0; i < n; i++) a.push(i + 1); for (i = n - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+    function qpLangOk(qs, lang) {                                // did the AI really write in the chosen language?
+        var t = '';
+        qs.forEach(function (q) { t += ' ' + q.q + ' ' + (q.o ? q.o.join(' ') : '') + ' ' + (q.ans || '') + ' ' + (q.e || ''); });
+        var dev = (t.match(/[\u0900-\u097F]/g) || []).length, lat = (t.match(/[A-Za-z]/g) || []).length, tot = dev + lat;
+        if (!tot) return true;
+        return lang === 'Hindi' ? dev / tot >= 0.55 : dev / tot <= 0.08;
+    }
+    function qpTitleOf(txt, lang) {
+        var m = /"title"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(String(txt || '')); if (!m) return '';
+        try { var t = JSON.parse('"' + m[1] + '"').trim().slice(0, 120); return t && qpLangOk([{ q: t }], lang) ? t : ''; } catch (e) { return ''; }
+    }
+    function qpPrompt(o, n, done, c) {
+        var mcq = o.type === 'mcq', needA = o.ans !== 'none', what = o.model ? 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)' : 'this topic or subject: "' + o.topic + '"';
+        var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students. Make a question paper for Class ' + o.cls + ' on ' + what + '. Difficulty: ' + o.level + '. ' + qpLangRule(o.lang) + ' ' +
+            'For school topics follow CBSE / NCERT style; for other topics use well-established facts only. Be sure every answer is correct; never invent facts. ';
         if (mcq) s += 'Make EXACTLY ' + n + ' multiple-choice questions. Each has 4 options and exactly one correct option; vary the position of the correct option. Do not put "A)" or "B)" labels inside the option text. ';
         else if (o.type === 'short') s += 'Make EXACTLY ' + n + ' short-answer questions, 2 marks each' + (needA ? ', with a model answer of 2 to 4 lines' : '') + '. ';
         else if (o.type === 'long') s += 'Make EXACTLY ' + n + ' long-answer questions, 5 marks each' + (needA ? ', with a complete model answer in 6 to 10 lines or points' : '') + '. ';
         else s += 'Make EXACTLY ' + n + ' subjective questions, a mix of 2, 3 and 5 mark questions' + (needA ? ', with a model answer whose length fits the marks' : '') + '. ';
+        if (c.N) s += 'This is part of a Model Set that must cover the WHOLE syllabus. Divide the textbook into ' + c.N + ' equal parts in chapter order and take the questions of THIS batch from part ' + c.seg + ' of ' + c.N + ', each question from a different concept. ';
+        s += 'Variation code ' + c.seed + ': use it so this paper is different from any other paper on the same subject (different concepts, examples, names and numbers). ';
         s += 'Reply with ONLY one JSON object and nothing else (no markdown fences, no extra words): ';
-        if (mcq) s += '{"questions":[{"q":"question text","o":["option 1","option 2","option 3","option 4"]' + (needA ? ',"a":0,"e":"one short line explaining the answer"' : '') + '}]} ' + (needA ? 'where "a" is the index 0-3 of the correct option. ' : '');
-        else s += '{"questions":[{"q":"question text","m":2' + (needA ? ',"ans":"model answer (use \\n for new lines)"' : '') + '}]} where "m" is the marks. ';
-        if (done.length) s += 'These questions were already made, so do NOT repeat or paraphrase them: ' + done.slice(-40).map(function (q) { return '"' + q.q.slice(0, 70) + '"'; }).join('; ') + '. ';
+        var ti = o.model ? '' : '"title":"short paper title in ' + (o.lang === 'Hinglish' ? 'Hinglish' : o.lang) + '",';
+        if (mcq) s += '{' + ti + '"questions":[{"q":"question text","o":["option 1","option 2","option 3","option 4"]' + (needA ? ',"a":0,"e":"one short line explaining the answer"' : '') + '}]} ' + (needA ? 'where "a" is the index 0-3 of the correct option. ' : '');
+        else s += '{' + ti + '"questions":[{"q":"question text","m":2' + (needA ? ',"ans":"model answer (use \\n for new lines)"' : '') + '}]} where "m" is the marks. ';
+        var avoid = done.slice(-40).map(function (q) { return q.q.slice(0, 70); }).concat((c.avoid || []).slice(0, 30));
+        if (avoid.length) s += 'These questions already exist, so do NOT repeat or paraphrase them: ' + avoid.map(function (q) { return '"' + q + '"'; }).join('; ') + '. ';
         s += 'Only if the topic is harmful, illegal or sexual, reply with one friendly sentence (no JSON) and suggest another topic.';
         return s;
     }
+    function qpStatus(t) { var e = $('qpSt'); if (e) e.textContent = t || ''; }
+    /* one chain of AI calls that makes `target` new questions into ctx.pool (several chains may share one pool) */
+    async function qpGenSec(o, target, ctx) {
+        var mine = 0, fails = 0, langFails = 0, call = 0, lim = ctx.lim || QP_LIM[o.type], msg = '', c, n, out, raw, fresh, tt;
+        while (mine < target && fails < 4) {
+            if (ctx.run !== QP.run) return null;
+            n = Math.min(lim, target - mine);
+            c = { seed: ctx.seed, N: ctx.N || 0, seg: ctx.segs ? ctx.segs[call % ctx.segs.length] : 0, avoid: ctx.avoid };
+            ctx.prog(fails);
+            try {
+                out = await window.nbCallAi([{ role: 'system', content: qpPrompt(o, n, ctx.pool, c) },
+                    { role: 'user', content: 'Make the questions now. ' + qpLangRule(o.lang) + ' (variation ' + ctx.seed + '-' + call + ')' }], { timeout: 90000 });
+            } catch (e) { fails++; continue; }
+            if (ctx.run !== QP.run) return null;
+            raw = qpObjs(out);
+            if (raw === null) { if (!ctx.pool.length) msg = String(out || '').replace(/```[\s\S]*?```/g, '').trim().slice(0, 300); break; }
+            fresh = qpNorm(raw, o);
+            if (fresh.length && !qpLangOk(fresh, o.lang)) { fails++; if (++langFails >= 3) { if (!ctx.pool.length) msg = 'The AI could not write this paper in ' + o.lang + ' right now. Please tap "Make question paper" again.'; break; } continue; }
+            fresh = fresh.filter(function (q) { var k = qpKey(q.q); if (!k || ctx.seen[k]) return false; ctx.seen[k] = 1; return true; });
+            if (!fresh.length) { fails++; continue; }
+            if (!o.title && !o.model && (tt = qpTitleOf(out, o.lang))) o.title = tt;
+            fresh = fresh.slice(0, target - mine);
+            fresh.forEach(function (q) { ctx.pool.push(q); });
+            mine += fresh.length; call++; ctx.prog(0);
+        }
+        return { msg: msg };
+    }
+    async function qpGenerate(o) {
+        var run = ++QP.run, pool = [], seen = {}, hist = qpHistGet(o), r;
+        if (o.type === 'model') return qpGenModel(o, run, hist);
+        r = await qpGenSec(o, o.count, { run: run, pool: pool, seen: seen, seed: qpSeed(), avoid: qpPick(hist, 30), lim: QP_LIM[o.type],
+            prog: function (f) { qpStatus('Making questions ' + (pool.length + 1) + ' to ' + Math.min(o.count, pool.length + QP_LIM[o.type]) + ' of ' + o.count + '…' + (f ? ' (trying again)' : '')); } });
+        if (r === null) return null;
+        return pool.length ? { qs: pool } : { msg: r.msg };
+    }
+    async function qpGenModel(o, run, hist) {
+        var seed = qpSeed(), seen = {}, pM = [], pS = [], pL = [], avoid = qpPick(hist, 30), oM, oS, oL, mp = qpShuf(8), sp = qpShuf(2), lp = qpShuf(2), res, i;
+        hist.forEach(function (k) { seen[k] = 1; });               // never repeat questions from the earlier model sets
+        oM = Object.assign({}, o, { type: 'mcq', model: true }); oS = Object.assign({}, o, { type: 'short', model: true }); oL = Object.assign({}, o, { type: 'long', model: true });
+        var prog = function (f) { qpStatus('Making your model set… ' + (pM.length + pS.length + pL.length) + ' of ' + QP_MODEL_TOTAL + ' questions' + (f ? ' (trying again)' : '')); };
+        var mk = function (pool, lim, segs, N) { return { run: run, pool: pool, seen: seen, seed: seed, avoid: avoid, lim: lim, segs: segs, N: N, prog: prog }; };
+        res = await Promise.all([                                    // 4 chains run side by side so it finishes sooner
+            qpGenSec(oM, 40, mk(pM, 10, mp.slice(0, 4), 8)), qpGenSec(oM, 40, mk(pM, 10, mp.slice(4), 8)),
+            qpGenSec(oS, QP_MODEL.short, mk(pS, 8, sp, 2)), qpGenSec(oL, QP_MODEL.long, mk(pL, 5, lp, 2))]);
+        for (i = 0; i < res.length; i++) if (res[i] === null) return null;
+        if (pM.length < QP_MODEL.mcq && (res = await qpGenSec(oM, QP_MODEL.mcq - pM.length, mk(pM, 10, qpShuf(8), 8))) === null) return null;
+        if (pS.length < QP_MODEL.short && (res = await qpGenSec(oS, QP_MODEL.short - pS.length, mk(pS, 8, qpShuf(2), 2))) === null) return null;
+        if (pL.length < QP_MODEL.long && (res = await qpGenSec(oL, QP_MODEL.long - pL.length, mk(pL, 5, qpShuf(2), 2))) === null) return null;
+        var secs = [{ k: 'mcq', qs: pM.slice(0, QP_MODEL.mcq) }, { k: 'short', qs: pS.slice(0, QP_MODEL.short) }, { k: 'long', qs: pL.slice(0, QP_MODEL.long) }], all = [];
+        secs.forEach(function (s) { all = all.concat(s.qs); });
+        return all.length ? { qs: all, secs: secs } : { msg: 'Could not make the model set right now. Please try again in a moment.' };
+    }
+    function qpNl(s) { return NB.esc(s).replace(/\n/g, '<br>'); }
+    function qpAns(q, mcq, num, L) {
+        var h = '<div class="qp-a' + (num ? ' qp-k' : '') + '"><b>' + (num ? 'Q' + num + '. ' : L.ans + ': ') + (mcq ? '(' + 'ABCDEF'[q.a] + ') ' + NB.esc(q.o[q.a]) : '') + '</b>';
+        if (mcq) h += q.e ? ' · ' + NB.esc(q.e) : '';
+        else h += qpNl(q.ans);
+        return h + '</div>';
+    }
+    function qpQ(q, mcq, num, marks, below, L) {
+        var h = '<div class="qp-q"><div class="qp-qt"><span><b>Q' + num + '.</b> ' + NB.esc(q.q) + '</span>' + (marks ? '<span class="qp-m">[' + marks + ']</span>' : '') + '</div>';
+        if (mcq) h += '<div class="qp-o">' + q.o.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + NB.esc(t) + '</span>'; }).join('') + '</div>';
+        if (below) h += qpAns(q, mcq, 0, L);
+        return h + '</div>';
+    }
+    function qpMeta(L, total, time) { return '<div class="qp-meta"><span>' + L.total + ': ' + total + '</span><span>' + L.time + ': ' + time + '</span><span>' + L.name + ': ______________</span><span>' + L.date + ': __________</span></div>'; }
+    function qpBodyModel(p) {
+        var o = p.o, L = qpLab(o.lang), E = NB.esc, h = '', n = 0, total = 0, starts = [];
+        p.secs.forEach(function (s) { total += s.qs.length * QP_MARKS[s.k]; });
+        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(L.set) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + ' · ' + E(L.set) + '</div>' + qpMeta(L, total, L.hrs) + '<div class="qp-inst">' + E(L.inst) + '</div>';
+        p.secs.forEach(function (s, si) {
+            starts.push(n); h += '<h2>' + E(L.secs[si]) + '</h2>';
+            s.qs.forEach(function (q) { n++; h += qpQ(q, s.k === 'mcq', n, s.k === 'mcq' ? 0 : QP_MARKS[s.k], o.ans === 'below', L); });
+        });
+        if (o.ans === 'end') {
+            h += '<div class="qp-brk"></div><h2>' + E(L.key) + '</h2>';
+            p.secs.forEach(function (s, si) {
+                if (!s.qs.length) return;
+                h += '<h2 class="qp-h3">' + E(L.secs[si]) + '</h2>';
+                if (s.k === 'mcq') h += '<div class="qp-sum">' + s.qs.map(function (q, i) { return (starts[si] + i + 1) + '-' + 'ABCDEF'[q.a]; }).join(' &nbsp; ') + '</div>';
+                s.qs.forEach(function (q, i) { h += '<div class="qp-q">' + qpAns(q, s.k === 'mcq', starts[si] + i + 1, L) + '</div>'; });
+            });
+        }
+        return h;
+    }
+    function qpBody(p) {
+        if (p.o.type === 'model') return qpBodyModel(p);
+        var o = p.o, mcq = o.type === 'mcq', E = NB.esc, L = qpLab(o.lang), h = '';
+        var total = mcq ? p.qs.length : p.qs.reduce(function (s, q) { return s + (q.m || 0); }, 0);
+        var mins = mcq ? Math.max(5, Math.ceil(p.qs.length * 1.2)) : Math.max(10, Math.ceil(total * 1.5));
+        h += '<h1>' + E(o.title || o.topic) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + ' · ' + E(L.types[o.type]) + '</div>' + qpMeta(L, total, mins + ' ' + L.min);
+        p.qs.forEach(function (q, i) { h += qpQ(q, mcq, i + 1, mcq ? 0 : q.m, o.ans === 'below', L); });
+        if (o.ans === 'end') {
+            h += '<div class="qp-brk"></div><h2>' + E(L.key) + '</h2>';
+            if (mcq) h += '<div class="qp-sum">' + p.qs.map(function (q, i) { return (i + 1) + '-' + 'ABCDEF'[q.a]; }).join(' &nbsp; ') + '</div>';
+            p.qs.forEach(function (q, i) { h += '<div class="qp-q">' + qpAns(q, mcq, i + 1, L) + '</div>'; });
+        }
+        return h;
+    }
+    function qpSync() {                                           // Model Set: topic + question count are not needed
+        var m = $('qpType').value === 'model', t = $('qpTopic'), c = $('qpCount'), w = $('qpSubWrap');
+        if (m) { if (!c.disabled) QP.cnt = c.value; t.disabled = true; c.disabled = true; c.value = QP_MODEL_TOTAL; t.placeholder = 'Not needed for Model Set'; w.style.display = ''; }
+        else { t.disabled = false; c.disabled = false; if (QP.cnt) { c.value = QP.cnt; QP.cnt = 0; } t.placeholder = 'e.g. Life Processes, Algebra, Indian Constitution'; w.style.display = 'none'; }
+        t.parentNode.classList.toggle('qp-off', m);
+    }
+    function qpFillSubj(keep) {
+        var cls = parseInt($('qpCls').value, 10), sel = $('qpSubj'), l = qpSubjList(cls);
+        sel.innerHTML = l.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === keep ? ' selected' : '') + '>' + NB.esc(x[1] + ' (' + x[2] + ')') + '</option>'; }).join('');
+    }
+    function qpForm() {
+        QP.run++; QP.busy = false; QP.cnt = 0;
+        var body = $('nbqpBody'), s = LSX.get('nb_qp_opts', null) || {}, pr = NB.profile();
+        var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, or a full Model Set, with or without answers, and save them as a PDF.</p>' +
+            '<div id="qpTopicBox"><label class="nbo-l" for="qpTopic">Topic / chapter</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Algebra, Indian Constitution" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('qpCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
+            '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['model', 'Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
+            '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><label class="nbo-l" for="qpSubj" style="margin-top:0">Which subject\'s Model Set?</label><select id="qpSubj" class="nbo-in"></select>' +
+            '<p class="nbo-sub" style="margin:6px 0 0">One PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks. A fresh set every time.</p></div>' +
+            '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
+            '<label>Answers' + qpSel('qpAns', [['none', 'No answers'], ['end', 'Answer key at the end'], ['below', 'Answer below each question']], s.ans || 'end') + '</label></div>' +
+            '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
+            '<label>Difficulty' + qpSel('qpLevel', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']], s.level || 'Medium') + '</label></div>' +
+            '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
+            '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
+        qpFillSubj(s.subj); qpSync();
+        $('qpType').addEventListener('change', qpSync);
+        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); });
+        $('qpGo').addEventListener('click', async function () {
+            if (QP.busy) return;
+            var err = $('qpErr'); err.textContent = '';
+            var m = $('qpType').value === 'model', cl = parseInt($('qpCls').value, 10), sj = m ? qpSubjFind(cl, $('qpSubj').value) : null;
+            var o = { topic: m ? sj[1] : qpTopic(), cls: cl, type: $('qpType').value, count: m ? QP_MODEL_TOTAL : parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value, subj: m ? sj[0] : '', subjN: sj };
+            if (!m) {
+                if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first.'; return; }
+                var max = o.type === 'mcq' ? 50 : 30;
+                if (!(o.count >= 1)) o.count = 10; if (o.count > max) { o.count = max; $('qpCount').value = max; err.textContent = 'Maximum ' + max + ' questions for this type. Making ' + max + '.'; }
+            }
+            LSX.set('nb_qp_opts', { topic: qpTopic(), cls: o.cls, type: o.type, count: m ? (QP.cnt || 10) : o.count, ans: o.ans, lang: o.lang, level: o.level, subj: o.subj });
+            if (typeof window.nbCallAi !== 'function') { err.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
+            QP.busy = true; var go = $('qpGo'); go.disabled = true;
+            var r = await qpGenerate(o);
+            QP.busy = false; if (go) go.disabled = false;
+            if (!r) return;                                      // window was closed while it was working
+            qpStatus('');
+            if (r.msg) { err.textContent = r.msg; return; }
+            if (!r.qs.length) { err.textContent = 'Could not make the questions right now. Please try again in a moment.'; return; }
+            try { qpHistSave(o, r.qs); } catch (e) {}
+            QP.paper = { o: o, qs: r.qs, secs: r.secs }; qpResult(r.qs.length < o.count);
+        });
+    }
+    function qpResult(partial) {
+        var body = $('nbqpBody'), p = QP.paper;
+        if (!$('qpStyle')) { var st = document.createElement('style'); st.id = 'qpStyle'; st.textContent = QP_CSS; document.head.appendChild(st); }
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> Your question paper</h3><p class="nbo-sub">' + p.qs.length + ' questions' + (partial ? ' (the AI could not make all ' + p.o.count + ', tap "Make another paper" to try again)' : '') + '</p>' +
+            '<div class="nbqp-prev"><div class="qpw">' + qpBody(p) + '</div></div>' +
+            '<button type="button" class="nbo-save" id="qpPdf"><i class="fa-solid fa-download"></i> Download PDF</button>' +
+            '<p class="nbo-sub" style="margin:8px 0 0">In the window that opens, choose <b>Save as PDF</b> as the printer.</p>' +
+            '<button type="button" class="nbo-skip" id="qpNew">Make another paper</button>';
+        $('qpPdf').addEventListener('click', qpPrint);
+        $('qpNew').addEventListener('click', qpForm);
+    }
+    function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 120); }
     function qpObjs(txt) {                                       // pull the question objects out of the reply, even when it was cut off
         txt = String(txt || '').replace(/```(?:json)?/gi, '');
         var i = txt.indexOf('{'); if (i < 0) return null;
@@ -1421,50 +1642,6 @@
         });
         return out;
     }
-    function qpStatus(t) { var e = $('qpSt'); if (e) e.textContent = t || ''; }
-    async function qpGenerate(o) {
-        var run = ++QP.run, got = [], fails = 0, lim = QP_LIM[o.type], seen = {};
-        while (got.length < o.count && fails < 3) {
-            if (run !== QP.run) return null;
-            var n = Math.min(lim, o.count - got.length), out;
-            qpStatus('Making questions ' + (got.length + 1) + ' to ' + (got.length + n) + ' of ' + o.count + '…' + (fails ? ' (trying again)' : ''));
-            try { out = await window.nbCallAi([{ role: 'system', content: qpPrompt(o, n, got) }, { role: 'user', content: 'Make the questions now.' }], { timeout: 90000 }); }
-            catch (e) { fails++; continue; }
-            if (run !== QP.run) return null;
-            var raw = qpObjs(out);
-            if (raw === null) return got.length ? { qs: got } : { msg: String(out || '').replace(/```[\s\S]*?```/g, '').trim().slice(0, 300) };
-            var fresh = qpNorm(raw, o).filter(function (q) { var k = q.q.toLowerCase().replace(/\W+/g, ' ').slice(0, 80); if (seen[k]) return false; seen[k] = 1; return true; });
-            if (!fresh.length) { fails++; continue; }
-            got = got.concat(fresh.slice(0, o.count - got.length));
-        }
-        return { qs: got };
-    }
-    function qpNl(s) { return NB.esc(s).replace(/\n/g, '<br>'); }
-    function qpAns(q, mcq, num) {
-        var h = '<div class="qp-a' + (num ? ' qp-k' : '') + '"><b>' + (num ? 'Q' + num + '. ' : 'Answer: ') + (mcq ? '(' + 'ABCDEF'[q.a] + ') ' + NB.esc(q.o[q.a]) : '') + '</b>';
-        if (mcq) h += q.e ? ' · ' + NB.esc(q.e) : '';
-        else h += (num ? '' : '') + qpNl(q.ans);
-        return h + '</div>';
-    }
-    function qpBody(p) {
-        var o = p.o, mcq = o.type === 'mcq', E = NB.esc, h = '';
-        var total = mcq ? p.qs.length : p.qs.reduce(function (s, q) { return s + (q.m || 0); }, 0);
-        var mins = mcq ? Math.max(5, Math.ceil(p.qs.length * 1.2)) : Math.max(10, Math.ceil(total * 1.5));
-        h += '<h1>' + E(o.topic) + '</h1><div class="qp-sub">Notes Bazar · Class ' + o.cls + ' · ' + E(QP_TYPE[o.type]) + '</div>' +
-            '<div class="qp-meta"><span>Total marks: ' + total + '</span><span>Time: ' + mins + ' min</span><span>Name: ______________</span><span>Date: __________</span></div>';
-        p.qs.forEach(function (q, i) {
-            h += '<div class="qp-q"><div class="qp-qt"><span><b>Q' + (i + 1) + '.</b> ' + E(q.q) + '</span>' + (mcq ? '' : '<span class="qp-m">[' + q.m + ']</span>') + '</div>';
-            if (mcq) h += '<div class="qp-o">' + q.o.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + E(t) + '</span>'; }).join('') + '</div>';
-            if (o.ans === 'below') h += qpAns(q, mcq);
-            h += '</div>';
-        });
-        if (o.ans === 'end') {
-            h += '<div class="qp-brk"></div><h2>Answer Key</h2>';
-            if (mcq) h += '<div class="qp-sum">' + p.qs.map(function (q, i) { return (i + 1) + '-' + 'ABCDEF'[q.a]; }).join(' &nbsp; ') + '</div>';
-            p.qs.forEach(function (q, i) { h += '<div class="qp-q">' + qpAns(q, mcq, i + 1) + '</div>'; });
-        }
-        return h;
-    }
     function qpDoc(p) {
         return '<!doctype html><html><head><meta charset="utf-8"><title>' + NB.esc('Question Paper - ' + p.o.topic) + '</title><style>@page{size:A4;margin:14mm}body{margin:0}' + QP_CSS + '</style></head><body><div class="qpw">' + qpBody(p) + '</div></body></html>';
     }
@@ -1483,50 +1660,6 @@
         NB.toast('Choose "Save as PDF" as the printer in the next window.', 4500);
     }
     function qpSel(id, opts, cur) { return '<select id="' + id + '" class="nbo-in">' + opts.map(function (x) { return '<option value="' + x[0] + '"' + (String(x[0]) === String(cur) ? ' selected' : '') + '>' + NB.esc(x[1]) + '</option>'; }).join('') + '</select>'; }
-    function qpForm() {
-        QP.run++; QP.busy = false;
-        var body = $('nbqpBody'), s = LSX.get('nb_qp_opts', null) || {}, pr = NB.profile();
-        var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
-        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, with or without answers, and save them as a PDF.</p>' +
-            '<label class="nbo-l" for="qpTopic">Topic / chapter</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Algebra, Indian Constitution" value="' + NB.esc(s.topic || '') + '">' +
-            '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('qpCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
-            '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed']], s.type || 'mcq') + '</label></div>' +
-            '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
-            '<label>Answers' + qpSel('qpAns', [['none', 'No answers'], ['end', 'Answer key at the end'], ['below', 'Answer below each question']], s.ans || 'end') + '</label></div>' +
-            '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
-            '<label>Difficulty' + qpSel('qpLevel', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']], s.level || 'Medium') + '</label></div>' +
-            '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
-            '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
-        $('qpGo').addEventListener('click', async function () {
-            if (QP.busy) return;
-            var err = $('qpErr'); err.textContent = '';
-            var o = { topic: qpTopic(), cls: parseInt($('qpCls').value, 10), type: $('qpType').value, count: parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value };
-            if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first.'; return; }
-            var max = o.type === 'mcq' ? 50 : 30;
-            if (!(o.count >= 1)) o.count = 10; if (o.count > max) { o.count = max; $('qpCount').value = max; err.textContent = 'Maximum ' + max + ' questions for this type. Making ' + max + '.'; }
-            try { LSX.set('nb_qp_opts', o); } catch (e) {}
-            if (typeof window.nbCallAi !== 'function') { err.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
-            QP.busy = true; var go = $('qpGo'); go.disabled = true;
-            var r = await qpGenerate(o);
-            QP.busy = false; if (go) go.disabled = false;
-            if (!r) return;                                      // window was closed while it was working
-            qpStatus('');
-            if (r.msg) { err.textContent = r.msg; return; }
-            if (!r.qs.length) { err.textContent = 'Could not make the questions right now. Please try again in a moment.'; return; }
-            QP.paper = { o: o, qs: r.qs }; qpResult(r.qs.length < o.count);
-        });
-    }
-    function qpResult(partial) {
-        var body = $('nbqpBody'), p = QP.paper;
-        if (!$('qpStyle')) { var st = document.createElement('style'); st.id = 'qpStyle'; st.textContent = QP_CSS; document.head.appendChild(st); }
-        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> Your question paper</h3><p class="nbo-sub">' + p.qs.length + ' questions' + (partial ? ' (the AI could not make all ' + p.o.count + ', tap "Make another paper" to try again)' : '') + '</p>' +
-            '<div class="nbqp-prev"><div class="qpw">' + qpBody(p) + '</div></div>' +
-            '<button type="button" class="nbo-save" id="qpPdf"><i class="fa-solid fa-download"></i> Download PDF</button>' +
-            '<p class="nbo-sub" style="margin:8px 0 0">In the window that opens, choose <b>Save as PDF</b> as the printer.</p>' +
-            '<button type="button" class="nbo-skip" id="qpNew">Make another paper</button>';
-        $('qpPdf').addEventListener('click', qpPrint);
-        $('qpNew').addEventListener('click', qpForm);
-    }
     function buildPaper() {
         document.body.appendChild(NB.mk('<div class="nbo" id="nbQp" aria-hidden="true"><div class="nbo-card nbq nbqp" role="dialog" aria-modal="true" aria-label="AI Question Paper">' +
             '<button type="button" class="nbo-x" id="nbqpX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="nbqpBody"></div></div></div>'));

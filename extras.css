@@ -970,3 +970,9 @@ html.dark .nb-switch{border-color:#475569!important;background:#334155!important
 .nbqp{max-width:600px}
 .nbqp .nbai-set input.nbo-in{padding:8px 10px}
 .nbqp-prev{max-height:46dvh;overflow:auto;overscroll-behavior:contain;border:1px solid var(--nb-border);border-radius:14px;padding:14px;margin:10px 0 12px;background:#fff}
+
+/* ---- AI Question Paper: Model Set ---- */
+.nbqp .nbo-in:disabled{opacity:.45;cursor:not-allowed;background:var(--nb-surface-2)}
+.qp-off .nbo-l{opacity:.5}
+.qp-subwrap{margin:0 0 10px;padding:10px;border-radius:14px;border:1px dashed var(--theme-primary,#6366f1);background:rgba(99,102,241,.06)}
+.qp-subwrap select.nbo-in{padding:9px 10px;font-size:13px}
