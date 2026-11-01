@@ -2181,7 +2181,7 @@ function sha256(str) {
         const aiFailUntil = {};   // provider -> timestamp until which we skip it (avoids long waits)
 
         const AI_BASE = `You are "Bazar AI", the built-in assistant of Notes Bazar, a study platform for Indian school students (Class 1-12; subjects Science, Math, Hindi, English, SST, Maithili) with Notes, Reference Books and PYQs.
-Language: reply in the same language/style the user writes in (Hindi, Hinglish, English or Maithili). Keep it simple, friendly and short unless the user asks for detail. Use short paragraphs and simple lists.
+Language: reply in the same language/style the user writes in (Hindi, Hinglish, English or Maithili). Keep it simple, friendly and short unless the user asks for detail. Avoid markdown tables; use short numbered or bulleted lists instead. Use short paragraphs and simple lists.
 You can do EVERYTHING a good assistant can: explain doubts step by step, solve maths, summarize chapters, make short notes / MCQs / quizzes, essays, letters, translations, study timetables, exam tips, career guidance, coding, general knowledge and everyday questions.
 Notes Bazar items: if "Matching items" are provided below, recommend them by title and tell the student to tap them. NEVER invent files, links or titles. If nothing matches, say it is not uploaded yet and suggest the "What if you want?" option on the home page.
 Answer ANY question the user asks, even if it is not about studies or school: general knowledge, current affairs (as far as you know), sports, movies, technology, coding, health basics, money basics, relationships, jokes, stories, anything. Never refuse only because it is "off topic" or "out of syllabus". If something may have changed recently or you do not know it, say so instead of guessing, and decline only harmful or illegal requests.
@@ -2224,7 +2224,22 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         }
 
         function aiFmt(t) {
-            return esc(t).replace(/^#{1,6}\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/^\s*[-*]\s+/gm, '• ').replace(/\n/g, '<br>');
+            // markdown tables -> real HTML tables (the AI often answers with | a | b | rows)
+            const lines = String(t || '').split('\n'), out = [];
+            const isRow = l => /^\s*\|.*\|\s*$/.test(l), isSep = l => /^\s*\|[\s:|-]+\|\s*$/.test(l) && l.indexOf('-') > -1;
+            const cells = l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+            const inl = x => esc(x).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            for (let i = 0; i < lines.length; i++) {
+                if (isRow(lines[i]) && i + 1 < lines.length && isSep(lines[i + 1])) {
+                    const head = cells(lines[i]); i += 2; const rows = [];
+                    while (i < lines.length && isRow(lines[i])) { rows.push(cells(lines[i])); i++; }
+                    i--;
+                    out.push('\u0000T' + '<div style="overflow-x:auto;margin:6px 0"><table style="border-collapse:collapse;font-size:12px;width:100%"><thead><tr>' +
+                        head.map(h => '<th style="border:1px solid rgba(148,163,184,.5);padding:4px 8px;text-align:left;background:rgba(99,102,241,.12)">' + inl(h) + '</th>').join('') + '</tr></thead><tbody>' +
+                        rows.map(r => '<tr>' + r.map(c => '<td style="border:1px solid rgba(148,163,184,.5);padding:4px 8px;vertical-align:top">' + inl(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>');
+                } else out.push(lines[i]);
+            }
+            return out.map(l => l.startsWith('\u0000T') ? l.slice(2) : esc(l).replace(/^#{1,6}\s*/, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/^\s*[-*]\s+/, '• ') + '<br>').join('').replace(/(<br>)+$/, '');
         }
 
         function aiRelatedHtml(list) {
