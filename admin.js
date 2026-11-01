@@ -503,19 +503,46 @@
     /* =============================== Appearance =============================== */
     var ACC = [['default', 'Indigo', '#6366f1', '#7c3aed'], ['blue', 'Blue', '#2563eb', '#1d4ed8'], ['emerald', 'Emerald', '#059669', '#10b981'], ['sunset', 'Sunset', '#ea580c', '#f97316']];
     var BGS = [['night', '#0f172a'], ['navy', '#172554'], ['forest', '#052e16'], ['wine', '#4c0519'], ['sunrise', 'linear-gradient(135deg,#fde68a,#fca5a5,#c4b5fd)'], ['ocean', 'linear-gradient(135deg,#0ea5e9,#6366f1,#8b5cf6)'], ['mint', 'linear-gradient(135deg,#a7f3d0,#bae6fd)'], ['dusk', 'linear-gradient(160deg,#1e1b4b,#7c3aed 60%,#ec4899)']];
-    function curAccent() { var p = (document.documentElement.style.getPropertyValue('--theme-primary') || '').trim().toLowerCase(); return (ACC.filter(function (a) { return a[2] === p; })[0] || ACC[0])[0]; }
+    function lxState() { return window.NBLayout && NBLayout.state ? NBLayout.state() : { acc: null, bg: null }; }
+    function curAccent() { var a = lxState().acc; if (!a) return ''; var m = ACC.filter(function (x) { return x[2] === a.p; })[0]; return m ? m[0] : 'custom'; }
+    function themeHex() { var a = lxState().acc; if (a) return a.p; var v = (getComputedStyle(document.documentElement).getPropertyValue('--theme-primary') || '').trim(); return /^#[0-9a-f]{6}$/i.test(v) ? v : '#6366f1'; }
+    var PUB = '<button type="button" class="a-btn pri" data-lx-pub onclick="NBLayout.publish()" style="margin-top:12px"><i class="fa-solid fa-cloud-arrow-up"></i><span>Publish to all students</span></button><p class="a-note" style="margin:8px 0 0;background:var(--a-hover);border-color:var(--a-line);color:var(--a-mute)">Changes show here first. Press Publish so every student sees them on phone and PC.</p>';
+    function accentCard(cur) {
+        return '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-palette"></i> Accent colour</h3><button class="a-btn sm" onclick="NBAdmin.accent(null)"><i class="fa-solid fa-rotate-left"></i>Layout default</button></div><div class="a-sw">' +
+            ACC.map(function (a) { return '<button type="button" class="' + (cur === a[0] ? 'on' : '') + '" onclick="NBAdmin.accent(\'' + a[0] + '\')" aria-pressed="' + (cur === a[0]) + '"><i style="background:linear-gradient(135deg,' + a[2] + ',' + a[3] + ')"></i>' + a[1] + '</button>'; }).join('') + '</div>' +
+            '<div class="a-cust' + (cur === 'custom' ? ' on' : '') + '"><label for="lxAccC"><i class="fa-solid fa-eye-dropper"></i> Custom accent colour</label><input type="color" id="lxAccC" value="' + themeHex() + '" oninput="NBAdmin.accentLive(this.value)" onchange="NBAdmin.accentDone()" aria-label="Custom accent colour"><code id="lxAccV">' + themeHex() + '</code></div>' + PUB + '</section>';
+    }
+    function bgCard() {
+        var b = lxState().bg || {}, c1 = b.c || '#eef2ff', c2 = b.c2 || '#fce7f3';
+        return '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-image"></i> Website background</h3><button class="a-btn sm" onclick="NBAdmin.bg(null)"><i class="fa-solid fa-rotate-left"></i>Reset</button></div><div class="a-sw bg">' +
+            BGS.map(function (x) { return '<button type="button" onclick="NBAdmin.bg(\'' + x[0] + '\')" title="' + x[0] + '"><i style="background:' + x[1] + '"></i>' + x[0].charAt(0).toUpperCase() + x[0].slice(1) + '</button>'; }).join('') + '</div>' +
+            '<div class="a-cust' + (b.c ? ' on' : '') + '"><label for="lxBg1"><i class="fa-solid fa-fill-drip"></i> Custom background colour</label><input type="color" id="lxBg1" value="' + c1 + '" oninput="NBAdmin.bgLive()" aria-label="Custom background colour">' +
+            '<label class="a-chk"><input type="checkbox" id="lxBgG"' + (b.c2 ? ' checked' : '') + ' onchange="NBAdmin.bgLive()"> Gradient</label><input type="color" id="lxBg2" value="' + c2 + '" oninput="NBAdmin.bgLive()" aria-label="Second colour"' + (b.c2 ? '' : ' disabled') + '></div>' + PUB + '</section>';
+    }
     function pageAppearance() {
         var dark = document.documentElement.classList.contains('dark'), cur = curAccent();
         $('adminPanel-appearance').innerHTML =
             '<div class="a-hero-card" style="margin-bottom:18px"><div class="tx"><b><i class="fa-solid fa-wand-magic-sparkles"></i> Home hero slider</b><p>The big banner on the Home page. Add, reorder or hide slides and change text, colours and buttons. Changes go live for everyone when you publish.</p></div><button class="a-btn-y" onclick="NBAdmin.hero()"><i class="fa-solid fa-pen-ruler"></i> Customize Hero</button></div>' +
             '<div class="a-two"><div class="a-stack"><section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-circle-half-stroke"></i> Mode</h3></div><div class="a-mode"><button class="' + (!dark ? 'on' : '') + '" onclick="NBAdmin.mode(\'light\')"><i class="fa-solid fa-sun"></i>Light</button><button class="' + (dark ? 'on' : '') + '" onclick="NBAdmin.mode(\'dark\')"><i class="fa-solid fa-moon"></i>Dark</button></div><p class="a-note" style="background:var(--a-hover);border-color:var(--a-line);color:var(--a-mute)">Applies to the dashboard and the whole website on this device.</p></section>' +
-            '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-palette"></i> Accent colour</h3></div><div class="a-sw">' + ACC.map(function (a) { return '<button type="button" class="' + (cur === a[0] ? 'on' : '') + '" onclick="NBAdmin.accent(\'' + a[0] + '\')" aria-pressed="' + (cur === a[0]) + '"><i style="background:linear-gradient(135deg,' + a[2] + ',' + a[3] + ')"></i>' + a[1] + '</button>'; }).join('') + '</div></section></div>' +
-            '<div class="a-stack"><section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-image"></i> Website background</h3><button class="a-btn sm" onclick="NBAdmin.bg(null)"><i class="fa-solid fa-rotate-left"></i>Reset</button></div><div class="a-sw bg">' + BGS.map(function (b) { return '<button type="button" onclick="NBAdmin.bg(\'' + b[0] + '\')" title="' + b[0] + '"><i style="background:' + b[1] + '"></i>' + b[0].charAt(0).toUpperCase() + b[0].slice(1) + '</button>'; }).join('') + '</div></section>' +
+            accentCard(cur) + '</div>' +
+            '<div class="a-stack">' + bgCard() +
             '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-table-columns"></i> Dashboard layout</h3></div><div class="a-row"><div class="tx"><b>Compact sidebar</b><span>Show only icons in the sidebar on large screens.</span></div><button type="button" class="a-toggle" role="switch" aria-checked="' + S.compact + '" aria-label="Compact sidebar" onclick="NBAdmin.compact()"></button></div></section></div></div>';
     }
     A.mode = function (m) { if (window.setMode) window.setMode(m); rerender(); };
-    A.accent = function (k) { if (window.setTheme) window.setTheme(k); rerender(); };
-    A.bg = function (k) { if (k == null) { if (window.resetBg) window.resetBg(); } else if (window.setBgPreset) window.setBgPreset(k); toast(k == null ? 'Background reset' : 'Background changed ✓'); };
+    A.accent = function (k) {
+        if (!window.NBLayout) return;
+        var a = ACC.filter(function (x) { return x[0] === k; })[0];
+        if (k == null || !a) NBLayout.setAccent(null); else NBLayout.setAccent(a[2], a[3]);
+        rerender();
+    };
+    A.accentLive = function (v) { if (window.NBLayout) NBLayout.setAccent(v); var c = $('lxAccV'); if (c) c.textContent = v; };
+    A.accentDone = function () { rerender(); };
+    A.bg = function (k) { if (!window.NBLayout) return; NBLayout.setBg(k == null ? null : { k: k }); toast(k == null ? 'Background reset (publish to apply for everyone)' : 'Background changed. Publish to show it to everyone.'); rerender(); };
+    A.bgLive = function () {
+        if (!window.NBLayout) return;
+        var g = $('lxBgG'), c2 = $('lxBg2'); c2.disabled = !g.checked;
+        NBLayout.setBg({ c: $('lxBg1').value, c2: g.checked ? c2.value : '' });
+    };
     A.compact = function () { S.compact = !S.compact; lsSet('nb_adm_compact', S.compact ? '1' : '0'); rerender(); };
 
     /* =============================== Notifications =============================== */

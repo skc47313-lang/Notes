@@ -98,3 +98,29 @@ html.dark #lxDelWrap .lxd{background:#1e293b;color:#f1f5f9}
 #lxDelWrap .lxno{background:#e2e8f0;color:#334155}
 #lxDelWrap button:disabled{opacity:.6;cursor:wait}
 @media (max-width:640px){html[data-layout="eleg"] .nbh-right{position:static}}
+
+/* ============================================================
+   Admin-published accent colour and website background (win over every layout's own colours)
+   ============================================================ */
+html.lx-acc[data-layout]{--theme-primary:var(--lx-ap)!important;--theme-secondary:var(--lx-as)!important}
+html.custom-bg[data-layout]:not([data-layout="classic"]):not([data-x]) body{background:var(--custom-bg)!important;background-attachment:fixed!important}
+
+/* ============================================================
+   Admin picker: filters + mini previews
+   ============================================================ */
+.lx-chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 2px}
+.lx-chip{padding:6px 14px;border-radius:99px;border:1px solid var(--a-line,#e2e8f0);background:transparent;color:inherit;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.lx-chip.on{background:#6366f1;border-color:#6366f1;color:#fff}
+.lx-hint{margin:8px 0 0;font-size:12px;opacity:.65}
+.lx-mini{position:relative;border:1px solid rgba(100,116,139,.2)}
+.lx-mini em{position:absolute;left:0;top:0;right:0;height:13px;border-bottom:1px solid transparent}
+.lx-mini.side em{right:auto;bottom:0;width:26%;height:auto;border-bottom:0;border-right:1px solid transparent}
+.lx-mini b{position:absolute;left:8px;top:18px;width:34%;height:6px;border-radius:4px}
+.lx-mini.side b{left:32%;top:9px}
+.lx-mini s{position:absolute;bottom:7px;height:20px;width:26%;border-radius:5px;text-decoration:none}
+.lx-mini s:nth-of-type(1){left:8px}.lx-mini s:nth-of-type(2){left:calc(8px + 30%)}
+.lx-mini.side s:nth-of-type(1){left:32%}.lx-mini.side s:nth-of-type(2){left:calc(32% + 30%);width:24%}
+.lx-card .lx-sw{height:70px}
+.lx-card{min-width:0}
+.lx-card b{overflow-wrap:anywhere}
+@media (max-width:420px){.lx-grid{grid-template-columns:1fr 1fr}.lx-card small{display:none}}

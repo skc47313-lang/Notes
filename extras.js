@@ -1286,6 +1286,8 @@
     function num(v, min, max, d) { v = parseFloat(v); return isFinite(v) ? Math.min(max, Math.max(min, v)) : d; }
     function col(v, d) { return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : d; }
     function url(v) { v = String(v || '').trim(); return /^https?:\/\/[^\s"'<>\\]+$/i.test(v) && v.length <= 500 ? v : ''; }
+    /* a photo is either an https link or an uploaded, already-compressed picture stored inside the slide (data:image/jpeg|webp|png) */
+    function photo(v) { v = String(v || '').trim(); return v.length <= 900000 && /^data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+\/=]+$/.test(v) ? v : url(v); }
     function uid() { return 's' + Math.random().toString(36).slice(2, 9); }
     function btn(b) {
         if (!b || typeof b !== 'object') return null;
@@ -1309,7 +1311,7 @@
                 c: [col(c[0], '#4f46e5'), col(c[1], '#7c3aed'), col(c[2], '')],
                 p: pOk ? p : [0, 55, 110],
                 ang: Math.round(num(s.ang, 0, 360, 135)), solid: col(s.solid, '#4f46e5'),
-                img: url(s.img), ov: Math.round(num(s.ov, 0, 85, 35)),
+                img: photo(s.img), imgM: photo(s.imgM), fit: s.fit === 'contain' ? 'contain' : 'cover', pos: /^(top|center|bottom)$/.test(s.pos) ? s.pos : 'center', ov: Math.round(num(s.ov, 0, 85, 35)),
                 tc: col(s.tc, '#ffffff'), al: s.al === 'left' ? 'left' : 'center',
                 b: arr(s.b).slice(0, 2).map(btn).filter(Boolean)
             });
@@ -1342,8 +1344,10 @@
         else if (s.bg === 'solid') { a.classList.add('hs-c'); a.style.background = s.solid; }
         else if (s.bg === 'img' && s.img) {
             var o = (s.ov / 100).toFixed(2);
-            a.style.backgroundImage = 'linear-gradient(rgba(0,0,0,' + o + '),rgba(0,0,0,' + o + ')),url("' + s.img + '")';
-            a.style.backgroundSize = 'cover'; a.style.backgroundPosition = 'center';
+            a.classList.add('hs-photo'); if (s.fit === 'contain') a.classList.add('hs-fit');
+            a.style.setProperty('--hs-d', 'url("' + s.img + '")'); a.style.setProperty('--hs-m', 'url("' + (s.imgM || s.img) + '")');
+            a.style.setProperty('--hs-o', 'rgba(0,0,0,' + o + ')'); a.style.setProperty('--hs-pos', s.pos || 'center');
+            if (!s.title && !s.text && !s.badge && !s.b.length) a.classList.add('hs-only');
         } else a.classList.add('dynamic-bg');                       // "theme" (and image without a link)
         var e;
         if (s.icon) { e = document.createElement('i'); e.className = 'fa-solid fa-' + s.icon + ' hs-deco'; e.setAttribute('aria-hidden', 'true'); a.appendChild(e); }
@@ -1512,11 +1516,14 @@
     /* ----- rendering ----- */
     function renderPrev() {
         var box = $('hzPrev'), s = slide(); box.innerHTML = '';
+        var pvb = $('hzPv'); if (pvb) Array.prototype.forEach.call(pvb.children, function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-pv') === (st.pv || 'd'))); });
         if (!s) { box.innerHTML = '<div class="hz-empty">No slides yet. Press <b>Add slide</b>.</div>'; return; }
         var c = NB.heroClean({ slides: [s] }).slides[0];
         var w = document.createElement('div'); w.className = 'hs';
         var t = document.createElement('div'); t.className = 'hs-track';
-        t.appendChild(NB.heroSlide(c, st.sel, st.cfg.slides.length)); w.appendChild(t); box.appendChild(w);
+        var sl = NB.heroSlide(c, st.sel, st.cfg.slides.length);
+        if (st.pv === 'm') { sl.classList.add('hs-pm'); w.style.maxWidth = '360px'; w.style.margin = '0 auto'; }
+        t.appendChild(sl); w.appendChild(t); box.appendChild(w);
         if (!s.on) { var n = document.createElement('div'); n.className = 'hz-hid'; n.textContent = 'Hidden: this slide is not shown on Home'; box.appendChild(n); }
     }
     function renderStrip() {
@@ -1529,13 +1536,57 @@
         v.innerHTML = s && !s.on ? '<i class="fa-solid fa-eye"></i> Show' : '<i class="fa-solid fa-eye-slash"></i> Hide';
         ['hzUp', 'hzDown', 'hzDup', 'hzVis', 'hzDel'].forEach(function (id) { $(id).disabled = !s; });
         if (s) { $('hzUp').disabled = st.sel === 0; $('hzDown').disabled = st.sel === a.length - 1; }
-        $('hzAdd').disabled = a.length >= MAXS;
+        $('hzAdd').disabled = a.length >= MAXS; $('hzAddPh').disabled = a.length >= MAXS;
     }
     function fld(label, inner, cls) { return '<label class="hz-f' + (cls ? ' ' + cls : '') + '"><span class="nbo-l">' + label + '</span>' + inner + '</label>'; }
     function inp(key, val, max, ph) { return '<input class="nbo-in" data-f="' + key + '" maxlength="' + max + '" value="' + h(val) + '" placeholder="' + h(ph || '') + '" autocomplete="off">'; }
     function colorF(label, key, val) { return fld(label, '<span class="hz-col"><input type="color" data-f="' + key + '" value="' + h(val) + '"><code>' + h(val) + '</code></span>'); }
     function range(key, val, min, max, step, unit) { return '<div class="hz-rng"><input type="range" data-f="' + key + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output class="hz-out" data-u="' + unit + '">' + val + unit + '</output></div>'; }
     function seg(attr, cur, list) { return '<div class="hz-seg">' + list.map(function (x) { return '<button type="button" class="hz-btn" data-' + attr + '="' + x[0] + '" aria-pressed="' + (cur === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>'; }
+    function kb(v) { return Math.round(String(v || '').length * 0.75 / 1024); }
+    function thumb(v, auto) { return v ? '<div class="hz-th" style="background-image:url(&quot;' + h(v) + '&quot;)">' + (auto ? '<small>same as main</small>' : '') + '</div>' : '<div class="hz-th empty"><i class="fa-regular fa-image"></i></div>'; }
+    /* uploaded picture -> compressed JPEG data URL (so it works on every phone and PC without any file hosting) */
+    function readPhoto(file, maxDim, q) {
+        return new Promise(function (res, rej) {
+            if (!file || !/^image\//.test(file.type)) { rej(new Error('Please choose an image file.')); return; }
+            if (file.size > 20 * 1024 * 1024) { rej(new Error('That photo is too large (max 20 MB).')); return; }
+            var fr = new FileReader();
+            fr.onerror = function () { rej(new Error('Could not read that photo.')); };
+            fr.onload = function () {
+                var im = new Image();
+                im.onerror = function () { rej(new Error('That image format is not supported.')); };
+                im.onload = function () {
+                    var sc = Math.min(1, maxDim / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'), x = c.getContext('2d');
+                    c.width = Math.max(1, Math.round(im.naturalWidth * sc)); c.height = Math.max(1, Math.round(im.naturalHeight * sc));
+                    x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+                    var out = c.toDataURL('image/jpeg', q);
+                    while (out.length > 600000 && q > 0.4) { q -= 0.08; out = c.toDataURL('image/jpeg', q); }
+                    if (out.length > 880000) { rej(new Error('That photo is still too heavy after compressing. Try a smaller one.')); return; }
+                    res(out);
+                };
+                im.src = fr.result;
+            };
+            fr.readAsDataURL(file);
+        });
+    }
+    var picking = 'd';
+    function pickFile(kind) { picking = kind; var f = $('hzFile'); f.value = ''; f.click(); }
+    function onFile() {
+        var f = this.files && this.files[0]; if (!f || !st) return;
+        var kind = picking; msg('Processing photo…');
+        var wantD = kind !== 'm';
+        Promise.all([wantD ? readPhoto(f, 1600, 0.78) : null, readPhoto(f, 900, 0.74)]).then(function (r) {
+            if (kind === 'new') {
+                if (st.cfg.slides.length >= MAXS) { msg('You can have up to ' + MAXS + ' slides.', 'err'); return; }
+                var n = newSlide(); n.bg = 'img'; n.title = ''; n.text = ''; n.badge = ''; n.icon = ''; n.ov = 0; n.b = [{ t: '', a: 'notes', u: '', s: 'light' }, { t: '', a: 'notes', u: '', s: 'light' }];
+                n.img = r[0]; n.imgM = r[1]; st.cfg.slides.push(n); st.sel = st.cfg.slides.length - 1;
+            } else {
+                var s = slide(); if (!s) return;
+                if (kind === 'm') s.imgM = r[1]; else { s.bg = 'img'; s.img = r[0]; s.imgM = r[1]; }
+            }
+            dirty(); renderAll(); msg('Photo added. It is set for both PC and phone ✓', 'ok');
+        }).catch(function (e) { msg(e.message || 'Could not use that photo.', 'err'); });
+    }
     function renderForm() {
         var s = slide(), el = $('hzForm');
         if (!s) { el.innerHTML = ''; return; }
@@ -1551,8 +1602,16 @@
                + fld('Angle', range('ang', s.ang, 0, 360, 5, '°'));
         }
         if (s.bg === 'solid') o += '<div class="hz-grid hz-3">' + colorF('Colour', 'solid', s.solid) + '</div>';
-        if (s.bg === 'img') o += fld('Image link (https://…)', inp('img', s.img, 500, 'https://example.com/banner.jpg')) + fld('Dark overlay (keeps the text readable)', range('ov', s.ov, 0, 85, 5, '%'))
-            + '<p class="hz-note">Paste a direct image link. Keep the picture small (under ~300 KB) so Home stays fast.</p>';
+        if (s.bg === 'img') {
+            o += '<div class="hz-ph"><div class="hz-ph-box"><span class="nbo-l">Photo (desktop &amp; mobile)</span>' + thumb(s.img) +
+                '<div class="hz-ph-b"><button type="button" class="hz-btn hz-pri" data-hz="pick-d"><i class="fa-solid fa-upload"></i> ' + (s.img ? 'Change photo' : 'Upload photo') + '</button>' + (s.img ? '<button type="button" class="hz-btn hz-danger" data-hz="clr-d"><i class="fa-solid fa-xmark"></i> Remove</button>' : '') + '</div></div>' +
+                '<div class="hz-ph-box"><span class="nbo-l">Mobile photo (optional)</span>' + thumb(s.imgM || s.img, !s.imgM) +
+                '<div class="hz-ph-b"><button type="button" class="hz-btn" data-hz="pick-m"><i class="fa-solid fa-mobile-screen"></i> ' + (s.imgM ? 'Change' : 'Upload different') + '</button>' + (s.imgM ? '<button type="button" class="hz-btn hz-danger" data-hz="clr-m"><i class="fa-solid fa-xmark"></i> Use main photo</button>' : '') + '</div></div></div>' +
+                '<p class="hz-note">One upload is enough: it is resized for PC and phone automatically (' + kb(s.img) + ' KB desktop' + (s.imgM ? ', ' + kb(s.imgM) + ' KB mobile' : '') + '). Upload a separate mobile photo only if you want a different picture on phones.</p>' +
+                '<div class="hz-grid hz-2">' + fld('Fit', seg('fit', s.fit, [['cover', 'Fill (crop edges)'], ['contain', 'Show whole photo']])) + fld('Focus', seg('pos', s.pos, [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']])) + '</div>' +
+                fld('Or use an image link (https://…)', inp('img', /^data:/.test(s.img) ? '' : s.img, 500, 'https://example.com/banner.jpg')) +
+                fld('Dark overlay (keeps the text readable, 0 = none)', range('ov', s.ov, 0, 85, 5, '%'));
+        }
         o += '</section>';
         o += '<section class="hz-sec"><h4>Text style &amp; icon</h4><div class="hz-grid hz-2">' + colorF('Text colour', 'tc', s.tc) + fld('Alignment', seg('al', s.al, [['center', 'Center'], ['left', 'Left']])) + '</div>'
            + '<span class="nbo-l">Decoration icon (faded, bottom-right)</span><div class="hz-icons"><button type="button" class="hz-ic" data-icon="none" aria-pressed="' + (!s.icon) + '" title="No icon"><i class="fa-solid fa-ban"></i></button>'
@@ -1597,7 +1656,7 @@
         setField(k, t.type === 'checkbox' ? t.checked : t.value, e.type === 'change');
     }
     function newSlide() {
-        return { id: 's' + Math.random().toString(36).slice(2, 9), on: true, badge: 'New', title: 'Your heading here', text: 'Write one or two short, useful lines.', icon: 'star', bg: 'grad', c: ['#4f46e5', '#7c3aed', ''], p: [0, 55, 110], ang: 135, solid: '#4f46e5', img: '', ov: 35, tc: '#ffffff', al: 'center',
+        return { id: 's' + Math.random().toString(36).slice(2, 9), on: true, badge: 'New', title: 'Your heading here', text: 'Write one or two short, useful lines.', icon: 'star', bg: 'grad', c: ['#4f46e5', '#7c3aed', ''], p: [0, 55, 110], ang: 135, solid: '#4f46e5', img: '', imgM: '', fit: 'cover', pos: 'center', ov: 35, tc: '#ffffff', al: 'center',
             b: [{ t: 'Explore Notes', a: 'notes', u: '', s: 'light' }, { t: '', a: 'notes', u: '', s: 'light' }] };
     }
     function act(w) {
@@ -1613,7 +1672,7 @@
         dirty(); renderAll();
     }
     function onClick(e) {
-        var t = e.target.closest ? e.target.closest('[data-bg],[data-al],[data-icon],[data-preset],[data-hz],[data-i]') : null;
+        var t = e.target.closest ? e.target.closest('[data-bg],[data-al],[data-fit],[data-pos],[data-icon],[data-preset],[data-hz],[data-i],[data-pv]') : null;
         if (!t) return;
         var s = slide(), v;
         if ((v = t.getAttribute('data-hz'))) {
@@ -1621,13 +1680,20 @@
             else if (v === 'save') save();
             else if (v === 'reset') reset();
             else if (v === 'copy') copyRule();
+            else if (v === 'pick-d' || v === 'pick-m') pickFile(v.charAt(5));
+            else if (v === 'photo') pickFile('new');
+            else if (v === 'clr-d') { var q0 = slide(); if (q0) { q0.img = ''; q0.imgM = ''; dirty(); renderForm(); renderPrev(); } }
+            else if (v === 'clr-m') { var q1 = slide(); if (q1) { q1.imgM = ''; dirty(); renderForm(); renderPrev(); } }
             else act(v);
             return;
         }
+        if ((v = t.getAttribute('data-pv'))) { st.pv = v; renderPrev(); return; }
         if ((v = t.getAttribute('data-i')) !== null) { st.sel = +v; renderStrip(); renderForm(); renderPrev(); return; }
         if (!s) return;
         if ((v = t.getAttribute('data-bg'))) s.bg = v;
         else if ((v = t.getAttribute('data-al'))) s.al = v;
+        else if ((v = t.getAttribute('data-fit'))) s.fit = v;
+        else if ((v = t.getAttribute('data-pos'))) s.pos = v;
         else if ((v = t.getAttribute('data-icon'))) s.icon = v === 'none' ? '' : v;
         else if ((v = t.getAttribute('data-preset')) !== null) { var p = PRESETS[+v]; s.bg = 'grad'; s.c = p.c.slice(); s.p = p.p.slice(); s.ang = 135; }
         dirty(); renderForm(); renderPrev();
@@ -1641,11 +1707,14 @@
     async function save() {
         var a = st.cfg.slides, k, j, b;
         for (k = 0; k < a.length; k++) {
-            if (!a[k].title.trim()) { st.sel = k; renderAll(); msg('Slide ' + (k + 1) + ' needs a heading.', 'err'); return; }
-            if (a[k].bg === 'img' && !validUrl(a[k].img)) { st.sel = k; renderAll(); msg('Slide ' + (k + 1) + ': add a valid https:// image link, or pick another background.', 'err'); return; }
+            var isPh = a[k].bg === 'img' && a[k].img;
+            if (!a[k].title.trim() && !isPh) { st.sel = k; renderAll(); msg('Slide ' + (k + 1) + ' needs a heading (or make it a photo slide).', 'err'); return; }
+            if (a[k].bg === 'img' && !/^data:image\//.test(a[k].img) && !validUrl(a[k].img)) { st.sel = k; renderAll(); msg('Slide ' + (k + 1) + ': upload a photo or add a valid https:// image link, or pick another background.', 'err'); return; }
             for (j = 0; j < 2; j++) { b = a[k].b[j]; if (b.t.trim() && b.a === 'link' && !validUrl(b.u)) { st.sel = k; renderAll(); msg('Slide ' + (k + 1) + ', button ' + (j + 1) + ': add a valid https:// link.', 'err'); return; } }
         }
         var cfg = NB.heroClean(st.cfg);
+        var bytes = JSON.stringify(cfg).length;
+        if (bytes > 3200000) { msg('Photos are too heavy together (' + (bytes / 1048576).toFixed(1) + ' MB). Remove a photo or use fewer photo slides (limit about 3 MB).', 'err'); return; }
         if (!cfg.slides.some(function (s) { return s.on; }) && !confirm('No slide is visible, so the hero section will be hidden on Home. Continue?')) return;
         var btn = $('hzSave'); btn.disabled = true; btn.textContent = 'Publishing…'; msg('');
         try {
@@ -1653,7 +1722,7 @@
             await write('PUT', cfg);
             delete cfg.updatedAt;
             NB.heroApply(cfg); st.dirty = false;
-            msg('Published ✓ Everyone will see the new hero.', 'ok'); NB.toast('Hero published');
+            msg('Published ✓ Everyone will see the new hero on PC and phone.' + (bytes > 1500000 ? ' Tip: the photos are large (' + (bytes / 1048576).toFixed(1) + ' MB), so Home may load slower on weak internet.' : ''), 'ok'); NB.toast('Hero published');
         } catch (e) {
             if (e.status === 401 || e.status === 403) permission(e); else msg('Could not publish. Check your internet connection and try again.', 'err');
         }
@@ -1679,8 +1748,9 @@
             + '<button type="button" class="nbo-x" data-hz="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>'
             + '<h3 class="nbo-h" id="hzTtl"><i class="fa-solid fa-wand-magic-sparkles dynamic-text"></i> Hero customize</h3>'
             + '<p class="nbo-sub">Edit, add, reorder or hide the slides on the Home page. Changes go live for everyone when you press <b>Publish</b>.</p>'
-            + '<div id="hzPrev" class="hz-prev"></div>'
-            + '<div class="hz-bar"><span id="hzCount" class="hz-cnt"></span><button type="button" id="hzAdd" class="hz-btn hz-pri" data-hz="add"><i class="fa-solid fa-plus"></i> Add slide</button></div>'
+            + '<div class="hz-pvw"><span class="hz-cnt">Preview</span><div id="hzPv" class="hz-seg"><button type="button" class="hz-btn" data-pv="d" aria-pressed="true"><i class="fa-solid fa-desktop"></i> PC</button><button type="button" class="hz-btn" data-pv="m" aria-pressed="false"><i class="fa-solid fa-mobile-screen"></i> Phone</button></div></div>'
+            + '<div id="hzPrev" class="hz-prev"></div><input type="file" id="hzFile" accept="image/*" class="nb-hide">'
+            + '<div class="hz-bar"><span id="hzCount" class="hz-cnt"></span><span class="hz-addw"><button type="button" id="hzAddPh" class="hz-btn" data-hz="photo"><i class="fa-regular fa-image"></i> Add photo</button><button type="button" id="hzAdd" class="hz-btn hz-pri" data-hz="add"><i class="fa-solid fa-plus"></i> Add slide</button></span></div>'
             + '<div id="hzStrip" class="hz-strip"></div>'
             + '<div class="hz-tools"><button type="button" id="hzUp" class="hz-btn" data-hz="up"><i class="fa-solid fa-arrow-left"></i> Move left</button><button type="button" id="hzDown" class="hz-btn" data-hz="down">Move right <i class="fa-solid fa-arrow-right"></i></button>'
             + '<button type="button" id="hzDup" class="hz-btn" data-hz="dup"><i class="fa-solid fa-clone"></i> Duplicate</button><button type="button" id="hzVis" class="hz-btn" data-hz="vis"></button>'
@@ -1699,6 +1769,7 @@
         document.body.appendChild(el);
         NB.noClose.nbHeroEd = 1;                                  // no accidental Esc / outside-tap: the X button asks first if there are unsaved edits
         el.addEventListener('click', onClick);
+        $('hzFile').addEventListener('change', onFile);
         el.addEventListener('input', onField); el.addEventListener('change', onField);
         el.addEventListener('keydown', function (e) {
             if ((e.key === 'Enter' || e.key === ' ') && e.target.getAttribute && e.target.getAttribute('data-i') !== null) { e.preventDefault(); onClick(e); }

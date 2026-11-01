@@ -406,3 +406,13 @@ html.dark .c-blue{--fb:rgba(37,99,235,.2)}html.dark .c-green{--fb:rgba(22,163,74
 /* old generic rule made every table a block; ours must fill the card */
 #adminDashboardModal table.a-table{display:table;width:100%;max-width:none;overflow:visible}
 #adminDashboardModal .a-items button,#adminDashboardModal .a-list button{min-height:36px}
+
+/* custom accent / background pickers */
+.a-cust{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;padding:10px 12px;border:1px solid var(--a-line);border-radius:14px}
+.a-cust.on{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.18)}
+.a-cust label{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.a-cust input[type=color]{width:46px;height:34px;padding:0;border:1px solid var(--a-line);border-radius:10px;background:transparent;cursor:pointer}
+.a-cust input[type=color]:disabled{opacity:.4;cursor:not-allowed}
+.a-cust code{font-size:12px;opacity:.7}
+.a-cust .a-chk{font-weight:600;cursor:pointer}
+.a-btn[data-lx-pub][disabled]{opacity:.55;cursor:default}
