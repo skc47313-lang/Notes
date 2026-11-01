@@ -1045,3 +1045,9 @@ html.dark .nb-switch{border-color:#475569!important;background:#334155!important
 @keyframes nbmslide{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
 .nbmore-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:12px 0 4px;padding:11px;border-radius:14px;border:1.5px dashed var(--theme-primary,#6366f1);background:rgba(99,102,241,.07);color:var(--theme-primary,#6366f1);font-size:13px;font-weight:800;cursor:pointer;position:relative;clear:both}
 .nbmore-btn:hover{background:rgba(99,102,241,.14)}
+
+/* ---- Question paper: subject / board ---- */
+.qp-board{margin:6px 2px 0;font-size:11.5px;color:var(--nb-muted)}.qp-board b{color:var(--theme-primary,#6366f1)}
+.qp-more{margin-top:10px;border:1px solid var(--nb-border);border-radius:12px;padding:8px 12px;background:var(--nb-surface-2)}
+.qp-more summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--theme-primary,#6366f1)}
+.qp-more textarea{resize:vertical;min-height:80px}

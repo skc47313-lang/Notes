@@ -1373,9 +1373,9 @@
     /* ---- Model Set layout: 80 MCQ (1 mark) + 15 short (2 marks) + 10 long (5 marks) = 160 marks ---- */
     var QP_MODEL = { mcq: 80, short: 15, long: 10 }, QP_MODEL_TOTAL = 105, QP_MARKS = { mcq: 1, short: 2, long: 5 };
     var QP_SUBJ = {
-        low: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['evs', 'EVS', 'पर्यावरण अध्ययन', 'Paryavaran Adhyayan'], ['computer', 'Computer', 'कंप्यूटर', 'Computer'], ['gk', 'General Knowledge', 'सामान्य ज्ञान', 'Samanya Gyan']],
-        mid: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['sanskrit', 'Sanskrit', 'संस्कृत', 'Sanskrit'], ['it', 'Information Technology', 'सूचना प्रौद्योगिकी', 'Information Technology']],
-        high: [['physics', 'Physics', 'भौतिक विज्ञान', 'Bhautik Vigyan'], ['chemistry', 'Chemistry', 'रसायन विज्ञान', 'Rasayan Vigyan'], ['biology', 'Biology', 'जीव विज्ञान', 'Jeev Vigyan'], ['math', 'Maths', 'गणित', 'Ganit'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['accountancy', 'Accountancy', 'लेखाशास्त्र', 'Lekhashastra'], ['business', 'Business Studies', 'व्यवसाय अध्ययन', 'Vyavsay Adhyayan'], ['economics', 'Economics', 'अर्थशास्त्र', 'Arthshastra'], ['history', 'History', 'इतिहास', 'Itihas'], ['geography', 'Geography', 'भूगोल', 'Bhugol'], ['polsci', 'Political Science', 'राजनीति विज्ञान', 'Rajneeti Vigyan'], ['cs', 'Computer Science', 'कंप्यूटर विज्ञान', 'Computer Vigyan']]
+        low: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['evs', 'EVS', 'पर्यावरण अध्ययन', 'Paryavaran Adhyayan'], ['computer', 'Computer', 'कंप्यूटर', 'Computer'], ['gk', 'General Knowledge', 'सामान्य ज्ञान', 'Samanya Gyan'], ['maithili', 'Maithili', 'मैथिली', 'Maithili']],
+        mid: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['sanskrit', 'Sanskrit', 'संस्कृत', 'Sanskrit'], ['maithili', 'Maithili', 'मैथिली', 'Maithili'], ['it', 'Information Technology', 'सूचना प्रौद्योगिकी', 'Information Technology']],
+        high: [['physics', 'Physics', 'भौतिक विज्ञान', 'Bhautik Vigyan'], ['chemistry', 'Chemistry', 'रसायन विज्ञान', 'Rasayan Vigyan'], ['biology', 'Biology', 'जीव विज्ञान', 'Jeev Vigyan'], ['math', 'Maths', 'गणित', 'Ganit'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['maithili', 'Maithili', 'मैथिली', 'Maithili'], ['accountancy', 'Accountancy', 'लेखाशास्त्र', 'Lekhashastra'], ['business', 'Business Studies', 'व्यवसाय अध्ययन', 'Vyavsay Adhyayan'], ['economics', 'Economics', 'अर्थशास्त्र', 'Arthshastra'], ['history', 'History', 'इतिहास', 'Itihas'], ['geography', 'Geography', 'भूगोल', 'Bhugol'], ['polsci', 'Political Science', 'राजनीति विज्ञान', 'Rajneeti Vigyan'], ['cs', 'Computer Science', 'कंप्यूटर विज्ञान', 'Computer Vigyan']]
     };
     var QP_L = {
         English: { cls: 'Class', total: 'Total marks', time: 'Time', min: 'min', hrs: '3 hours', name: 'Name', date: 'Date', ans: 'Answer', key: 'Answer Key', set: 'Model Set',
@@ -1392,17 +1392,23 @@
             inst: 'Sabhi prashn anivarya hain. Khand A me 80 vastunishth prashn (har ek 1 ank), Khand B me 15 laghu uttariya prashn (har ek 2 ank) aur Khand C me 10 dirgh uttariya prashn (har ek 5 ank) hain.' }
     };
     function qpLab(lang) { return QP_L[lang] || QP_L.English; }
-    function qpSubjList(cls) { return cls <= 8 ? QP_SUBJ.low : (cls <= 10 ? QP_SUBJ.mid : QP_SUBJ.high); }
+    var QP_OTHER = ['other', 'Other / any topic', 'अन्य विषय', 'Anya vishay'];
+    function qpSubjList(cls) { return (cls <= 8 ? QP_SUBJ.low : (cls <= 10 ? QP_SUBJ.mid : QP_SUBJ.high)).concat([QP_OTHER]); }
+    /* Science + Maths follow NCERT; every other school subject follows BSEB / SCERT Bihar books */
+    var QP_NCERT = { math: 1, science: 1, physics: 1, chemistry: 1, biology: 1 };
+    function qpBoard(subj) { return subj === 'other' || !subj ? 'any' : (QP_NCERT[subj] ? 'ncert' : 'bseb'); }
+    function qpBoardName(subj) { var b = qpBoard(subj); return b === 'ncert' ? 'NCERT' : (b === 'bseb' ? 'BSEB / SCERT Bihar' : ''); }
     function qpSubjFind(cls, key) { var l = qpSubjList(cls), i; for (i = 0; i < l.length; i++) if (l[i][0] === key) return l[i]; return l[0]; }
     function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1]); }
-    function qpLangRule(lang) {
+    function qpLangRule(lang, subj) {
+        if (lang === 'Hindi' && subj === 'maithili') return 'LANGUAGE RULE (very important): the subject is Maithili, so write EVERYTHING in Maithili language using Devanagari script only (मैथिली). Every question, option, explanation and answer must be in Devanagari. Do NOT use English/Roman letters or Hinglish.';
         if (lang === 'Hindi') return 'LANGUAGE RULE (very important): write EVERYTHING in Hindi using Devanagari script only (हिंदी). Every question, every option, every explanation and every answer must be in Devanagari. Do NOT write Hindi words in English/Roman letters and do NOT answer in English or Hinglish. Only unavoidable symbols, numbers and chemical formulas may use Roman letters.';
         if (lang === 'Hinglish') return 'LANGUAGE RULE (very important): write everything in Hinglish, meaning simple Hindi written in English (Roman) letters, like "Bharat ki rajdhani kya hai?". Do not use Devanagari script.';
         return 'LANGUAGE RULE (very important): write EVERYTHING in English only. If the topic is given in Hindi or any other language, understand it and write the questions, options and answers in English. Do not use Devanagari or Hindi words.';
     }
     function qpSeed() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
     function qpKey(s) { return String(s || '').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim().slice(0, 80); }   // unicode aware (Hindi letters count too)
-    function qpHistKey(o) { return o.type === 'model' ? 'M|' + o.cls + '|' + o.subj + '|' + o.lang : 'T|' + o.cls + '|' + o.type + '|' + qpKey(o.topic); }
+    function qpHistKey(o) { return o.type === 'model' ? 'M|' + o.cls + '|' + o.subj + '|' + o.lang : 'T|' + o.cls + '|' + o.type + '|' + (o.subj || '') + '|' + qpKey(o.book) + '|' + qpKey(o.topic); }
     function qpHistGet(o) { var h = LSX.get('nb_qp_hist', {}) || {}, a = h[qpHistKey(o)]; return Array.isArray(a) ? a : []; }
     function qpHistSave(o, qs) {
         var h = LSX.get('nb_qp_hist', {}) || {}, k = qpHistKey(o), a = Array.isArray(h[k]) ? h[k] : [], ks = Object.keys(h);
@@ -1424,10 +1430,21 @@
         var m = /"title"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(String(txt || '')); if (!m) return '';
         try { var t = JSON.parse('"' + m[1] + '"').trim().slice(0, 120); return t && qpLangOk([{ q: t }], lang) ? t : ''; } catch (e) { return ''; }
     }
+    function qpSyllabus(o) {
+        var b = qpBoard(o.subj), sn = o.subjN ? o.subjN[1] : o.topic, t = '';
+        if (b === 'ncert') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the NCERT textbook and the NCERT / CBSE syllabus of Class ' + o.cls + ' (chapter names, definitions, examples and exercises in NCERT style). ';
+        else if (b === 'bseb') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the textbooks and syllabus prescribed by BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ' and the BSEB exam pattern, NOT NCERT / CBSE books. ' + (o.subj === 'hindi' ? '(For Hindi the books are, for example, the Kislay series, Godhuli, and the Hindi grammar book.) ' : '');
+        else t = 'Use well-established facts only; for school topics follow the textbooks used in Bihar (BSEB / SCERT) or NCERT, whichever fits the topic. ';
+        if (!o.model) t += 'CHAPTER RULE (very important): the topic may be the name of a lesson, story, poem, essay or chapter from a school textbook, sometimes with the book name (for example "Kislay Bhag 3, chapter 2: Idgah"). First identify the REAL lesson in that book/subject and make every question from its actual content (author, characters, events, theme, message, important lines, vocabulary, grammar of that lesson). Never replace it with a different or generic topic. If you are NOT sure what that lesson contains, do not guess and do not invent: reply with only {"unsure":true}. ';
+        if (o.book) t += 'The textbook is: "' + o.book + '". ';
+        if (o.src) t += 'SOURCE TEXT of the lesson is given below. Make ALL questions only from this text and its subject; do not add outside facts about it.\n"""\n' + o.src + '\n"""\n';
+        return t;
+    }
     function qpPrompt(o, n, done, c) {
-        var mcq = o.type === 'mcq', needA = o.ans !== 'none', what = o.model ? 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)' : 'this topic or subject: "' + o.topic + '"';
-        var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students. Make a question paper for Class ' + o.cls + ' on ' + what + '. Difficulty: ' + o.level + '. ' + qpLangRule(o.lang) + ' ' +
-            'For school topics follow CBSE / NCERT style; for other topics use well-established facts only. Be sure every answer is correct; never invent facts. ';
+        var mcq = o.type === 'mcq', needA = o.ans !== 'none', sn = o.subjN && o.subj !== 'other' ? o.subjN[1] : '';
+        var what = o.model ? 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)' : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
+        var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students (Bihar and all India). Make a question paper for Class ' + o.cls + ' on ' + what + '. Difficulty: ' + o.level + '. ' + qpLangRule(o.lang, o.subj) + ' ' + qpSyllabus(o) +
+            'Be sure every answer is correct; never invent facts. ';
         if (mcq) s += 'Make EXACTLY ' + n + ' multiple-choice questions. Each has 4 options and exactly one correct option; vary the position of the correct option. Do not put "A)" or "B)" labels inside the option text. ';
         else if (o.type === 'short') s += 'Make EXACTLY ' + n + ' short-answer questions, 2 marks each' + (needA ? ', with a model answer of 2 to 4 lines' : '') + '. ';
         else if (o.type === 'long') s += 'Make EXACTLY ' + n + ' long-answer questions, 5 marks each' + (needA ? ', with a complete model answer in 6 to 10 lines or points' : '') + '. ';
@@ -1454,9 +1471,10 @@
             ctx.prog(fails);
             try {
                 out = await window.nbCallAi([{ role: 'system', content: qpPrompt(o, n, ctx.pool, c) },
-                    { role: 'user', content: 'Make the questions now. ' + qpLangRule(o.lang) + ' (variation ' + ctx.seed + '-' + call + ')' }], { timeout: 90000 });
+                    { role: 'user', content: 'Make the questions now. ' + qpLangRule(o.lang, o.subj) + ' (variation ' + ctx.seed + '-' + call + ')' }], { timeout: 90000 });
             } catch (e) { fails++; continue; }
             if (ctx.run !== QP.run) return null;
+            if (/"unsure"\s*:\s*true/i.test(String(out || ''))) { if (!ctx.pool.length) msg = 'I am not sure what is in "' + o.topic + '". To get the real chapter, write the exact lesson name and book name, or paste the chapter text in the box below, then try again.'; break; }
             raw = qpObjs(out);
             if (raw === null) { if (!ctx.pool.length) msg = String(out || '').replace(/```[\s\S]*?```/g, '').trim().slice(0, 300); break; }
             fresh = qpNorm(raw, o);
@@ -1512,7 +1530,7 @@
     function qpBodyModel(p) {
         var o = p.o, L = qpLab(o.lang), E = NB.esc, h = '', n = 0, total = 0, starts = [];
         p.secs.forEach(function (s) { total += s.qs.length * QP_MARKS[s.k]; });
-        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(L.set) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + ' · ' + E(L.set) + '</div>' + qpMeta(L, total, L.hrs) + '<div class="qp-inst">' + E(L.inst) + '</div>';
+        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(L.set) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + (qpBoardName(o.subj) ? ' · ' + qpBoardName(o.subj) : '') + ' · ' + E(L.set) + '</div>' + qpMeta(L, total, L.hrs) + '<div class="qp-inst">' + E(L.inst) + '</div>';
         p.secs.forEach(function (s, si) {
             starts.push(n); h += '<h2>' + E(L.secs[si]) + '</h2>';
             s.qs.forEach(function (q) { n++; h += qpQ(q, s.k === 'mcq', n, s.k === 'mcq' ? 0 : QP_MARKS[s.k], o.ans === 'below', L); });
@@ -1533,7 +1551,7 @@
         var o = p.o, mcq = o.type === 'mcq', E = NB.esc, L = qpLab(o.lang), h = '';
         var total = mcq ? p.qs.length : p.qs.reduce(function (s, q) { return s + (q.m || 0); }, 0);
         var mins = mcq ? Math.max(5, Math.ceil(p.qs.length * 1.2)) : Math.max(10, Math.ceil(total * 1.5));
-        h += '<h1>' + E(o.title || o.topic) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + ' · ' + E(L.types[o.type]) + '</div>' + qpMeta(L, total, mins + ' ' + L.min);
+        h += '<h1>' + E(o.title || o.topic) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + (o.subj && o.subj !== 'other' ? ' · ' + E(qpSubjName(o)) : '') + (qpBoardName(o.subj) ? ' · ' + qpBoardName(o.subj) : '') + ' · ' + E(L.types[o.type]) + '</div>' + qpMeta(L, total, mins + ' ' + L.min);
         p.qs.forEach(function (q, i) { h += qpQ(q, mcq, i + 1, mcq ? 0 : q.m, o.ans === 'below', L); });
         if (o.ans === 'end') {
             h += '<div class="qp-brk"></div><h2>' + E(L.key) + '</h2>';
@@ -1545,23 +1563,31 @@
     function qpSync() {                                           // Model Set: topic + question count are not needed
         var m = $('qpType').value === 'model', t = $('qpTopic'), c = $('qpCount'), w = $('qpSubWrap');
         if (m) { if (!c.disabled) QP.cnt = c.value; t.disabled = true; c.disabled = true; c.value = QP_MODEL_TOTAL; t.placeholder = 'Not needed for Model Set'; w.style.display = ''; }
-        else { t.disabled = false; c.disabled = false; if (QP.cnt) { c.value = QP.cnt; QP.cnt = 0; } t.placeholder = 'e.g. Life Processes, Algebra, Indian Constitution'; w.style.display = 'none'; }
-        t.parentNode.classList.toggle('qp-off', m);
+        else { t.disabled = false; c.disabled = false; if (QP.cnt) { c.value = QP.cnt; QP.cnt = 0; } t.placeholder = 'e.g. Idgah, Life Processes, Algebra'; w.style.display = 'none'; }
+        t.parentNode.classList.toggle('qp-off', m); $('qpMore').style.display = m ? 'none' : '';
     }
     function qpFillSubj(keep) {
         var cls = parseInt($('qpCls').value, 10), sel = $('qpSubj'), l = qpSubjList(cls);
-        sel.innerHTML = l.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === keep ? ' selected' : '') + '>' + NB.esc(x[1] + ' (' + x[2] + ')') + '</option>'; }).join('');
+        sel.innerHTML = l.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === keep ? ' selected' : '') + '>' + NB.esc(x[1] + (x[0] === 'other' ? '' : ' (' + x[2] + ')')) + '</option>'; }).join('');
+        qpBoardHint();
+    }
+    function qpBoardHint() {
+        var b = $('qpBoard'), v = $('qpSubj') && $('qpSubj').value, n = qpBoardName(v); if (!b) return;
+        b.innerHTML = n ? '<i class="fa-solid fa-book"></i> Questions will follow <b>' + n + '</b> books' : 'Questions will follow the best matching textbook';
     }
     function qpForm() {
         QP.run++; QP.busy = false; QP.cnt = 0;
         var body = $('nbqpBody'), s = LSX.get('nb_qp_opts', null) || {}, pr = NB.profile();
         var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
         body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, or a full Model Set, with or without answers, and save them as a PDF.</p>' +
-            '<div id="qpTopicBox"><label class="nbo-l" for="qpTopic">Topic / chapter</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Algebra, Indian Constitution" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('qpCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
             '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['model', 'Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
-            '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><label class="nbo-l" for="qpSubj" style="margin-top:0">Which subject\'s Model Set?</label><select id="qpSubj" class="nbo-in"></select>' +
-            '<p class="nbo-sub" style="margin:6px 0 0">One PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks. A fresh set every time.</p></div>' +
+            '<div style="margin-top:10px"><label class="nbo-l" for="qpSubj" style="margin-top:0">Subject</label><select id="qpSubj" class="nbo-in"></select><div class="qp-board" id="qpBoard"></div></div>' +
+            '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><p class="nbo-sub" style="margin:6px 0 0">Model Set: one PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks, from the whole book. A fresh set every time.</p></div>' +
+            '<div id="qpTopicBox" style="margin-top:10px"><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name or paste the chapter</summary>' +
+            '<label class="nbo-l" for="qpBook">Book name (optional)</label><input id="qpBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
+            '<label class="nbo-l" for="qpSrc">Chapter text (optional)</label><textarea id="qpSrc" class="nbo-in" rows="4" maxlength="7000" placeholder="Paste the lesson text here. Questions will then come only from it."></textarea></details>' +
             '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
             '<label>Answers' + qpSel('qpAns', [['none', 'No answers'], ['end', 'Answer key at the end'], ['below', 'Answer below each question']], s.ans || 'end') + '</label></div>' +
             '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
@@ -1571,17 +1597,23 @@
         qpFillSubj(s.subj); qpSync();
         $('qpType').addEventListener('change', qpSync);
         $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); });
+        $('qpSubj').addEventListener('change', function () {
+            qpBoardHint(); var v = this.value, lg = $('qpLang');
+            if (v === 'hindi' || v === 'maithili' || v === 'sanskrit') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';   // those papers are written in their own language
+        });
         $('qpGo').addEventListener('click', async function () {
             if (QP.busy) return;
             var err = $('qpErr'); err.textContent = '';
-            var m = $('qpType').value === 'model', cl = parseInt($('qpCls').value, 10), sj = m ? qpSubjFind(cl, $('qpSubj').value) : null;
-            var o = { topic: m ? sj[1] : qpTopic(), cls: cl, type: $('qpType').value, count: m ? QP_MODEL_TOTAL : parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value, subj: m ? sj[0] : '', subjN: sj };
+            var m = $('qpType').value === 'model', cl = parseInt($('qpCls').value, 10), sj = qpSubjFind(cl, $('qpSubj').value);
+            if (m && sj[0] === 'other') { err.textContent = 'Please choose a subject for the Model Set.'; return; }
+            var o = { topic: m ? sj[1] : (qpTopic() || (sj[0] === 'other' ? '' : sj[1] + ' (any chapters)')), cls: cl, type: $('qpType').value, count: m ? QP_MODEL_TOTAL : parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value, subj: sj[0], subjN: sj,
+                book: m ? '' : String($('qpBook').value || '').replace(/\s+/g, ' ').trim().slice(0, 80), src: m ? '' : String($('qpSrc').value || '').trim().slice(0, 7000) };
             if (!m) {
-                if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first.'; return; }
+                if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first, or choose a subject.'; return; }
                 var max = o.type === 'mcq' ? 50 : 30;
                 if (!(o.count >= 1)) o.count = 10; if (o.count > max) { o.count = max; $('qpCount').value = max; err.textContent = 'Maximum ' + max + ' questions for this type. Making ' + max + '.'; }
             }
-            LSX.set('nb_qp_opts', { topic: qpTopic(), cls: o.cls, type: o.type, count: m ? (QP.cnt || 10) : o.count, ans: o.ans, lang: o.lang, level: o.level, subj: o.subj });
+            LSX.set('nb_qp_opts', { topic: qpTopic(), book: o.book, cls: o.cls, type: o.type, count: m ? (QP.cnt || 10) : o.count, ans: o.ans, lang: o.lang, level: o.level, subj: o.subj });
             if (typeof window.nbCallAi !== 'function') { err.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
             QP.busy = true; var go = $('qpGo'); go.disabled = true;
             var r = await qpGenerate(o);
