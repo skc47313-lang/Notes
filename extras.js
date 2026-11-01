@@ -1435,9 +1435,9 @@
         if (b === 'ncert') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the NCERT textbook and the NCERT / CBSE syllabus of Class ' + o.cls + ' (chapter names, definitions, examples and exercises in NCERT style). ';
         else if (b === 'bseb') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the textbooks and syllabus prescribed by BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ' and the BSEB exam pattern, NOT NCERT / CBSE books. ' + (o.subj === 'hindi' ? '(For Hindi the books are, for example, the Kislay series, Godhuli, and the Hindi grammar book.) ' : '');
         else t = 'Use well-established facts only; for school topics follow the textbooks used in Bihar (BSEB / SCERT) or NCERT, whichever fits the topic. ';
-        if (!o.model) t += 'CHAPTER RULE (very important): the topic may be the name of a lesson, story, poem, essay or chapter from a school textbook, sometimes with the book name (for example "Kislay Bhag 3, chapter 2: Idgah"). First identify the REAL lesson in that book/subject and make every question from its actual content (author, characters, events, theme, message, important lines, vocabulary, grammar of that lesson). Never replace it with a different or generic topic. If you are NOT sure what that lesson contains, do not guess and do not invent: reply with only {"unsure":true}. ';
+        if (!o.model && !o.src) t += 'CHAPTER RULE (very important): the topic may be the name of a lesson, story, poem, essay or chapter from a school textbook, sometimes with the book name (for example "Kislay Bhag 3, chapter 2: Idgah"). First identify the REAL lesson in that book/subject and make every question from its actual content (author, characters, events, theme, message, important lines, vocabulary, grammar of that lesson). Never replace it with a different or generic topic. If you are NOT sure what that lesson contains, do not guess and do not invent: reply with only {"unsure":true}. ';
         if (o.book) t += 'The textbook is: "' + o.book + '". ';
-        if (o.src) t += 'SOURCE TEXT of the lesson is given below. Make ALL questions only from this text and its subject; do not add outside facts about it.\n"""\n' + o.src + '\n"""\n';
+        if (o.src) t += 'SOURCE TEXT of the lesson is given below (it may have been scanned from a photo or PDF, so ignore small spelling mistakes, broken words and stray symbols and understand the meaning). Never reply {"unsure":true} when source text is given. Make ALL questions only from this text and its subject; do not add outside facts about it.\n"""\n' + o.src + '\n"""\n';
         return t;
     }
     function qpPrompt(o, n, done, c) {
@@ -1585,9 +1585,17 @@
             '<div style="margin-top:10px"><label class="nbo-l" for="qpSubj" style="margin-top:0">Subject</label><select id="qpSubj" class="nbo-in"></select><div class="qp-board" id="qpBoard"></div></div>' +
             '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><p class="nbo-sub" style="margin:6px 0 0">Model Set: one PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks, from the whole book. A fresh set every time.</p></div>' +
             '<div id="qpTopicBox" style="margin-top:10px"><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
-            '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name or paste the chapter</summary>' +
+            '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
+            '<div class="qp-scan"><div class="qp-scan-t"><i class="fa-solid fa-camera"></i> Take a photo or upload the page</div>' +
+            '<div class="qp-scan-b"><button type="button" class="qp-sb" id="qpCam"><i class="fa-solid fa-camera"></i> Camera</button>' +
+            '<button type="button" class="qp-sb" id="qpImg"><i class="fa-solid fa-image"></i> Photo / Gallery</button>' +
+            '<button type="button" class="qp-sb" id="qpPdfUp"><i class="fa-solid fa-file-pdf"></i> PDF</button></div>' +
+            '<input type="file" id="qpFCam" accept="image/*" capture="environment" hidden>' +
+            '<input type="file" id="qpFImg" accept="image/*" multiple hidden>' +
+            '<input type="file" id="qpFPdf" accept="application/pdf,.pdf" hidden>' +
+            '<div class="qp-scan-s" id="qpScanSt" aria-live="polite"></div></div>' +
             '<label class="nbo-l" for="qpBook">Book name (optional)</label><input id="qpBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
-            '<label class="nbo-l" for="qpSrc">Chapter text (optional)</label><textarea id="qpSrc" class="nbo-in" rows="4" maxlength="7000" placeholder="Paste the lesson text here. Questions will then come only from it."></textarea></details>' +
+            '<label class="nbo-l" for="qpSrc">Chapter text (optional)</label><textarea id="qpSrc" class="nbo-in" rows="5" maxlength="12000" placeholder="Paste the lesson text here. Questions will then come only from it."></textarea></details>' +
             '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
             '<label>Answers' + qpSel('qpAns', [['none', 'No answers'], ['end', 'Answer key at the end'], ['below', 'Answer below each question']], s.ans || 'end') + '</label></div>' +
             '<div class="nbai-set"><label>Language' + qpSel('qpLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
@@ -1595,6 +1603,7 @@
             '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
             '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
         qpFillSubj(s.subj); qpSync();
+        qpScanInit();
         $('qpType').addEventListener('change', qpSync);
         $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); });
         $('qpSubj').addEventListener('change', function () {
@@ -1607,7 +1616,7 @@
             var m = $('qpType').value === 'model', cl = parseInt($('qpCls').value, 10), sj = qpSubjFind(cl, $('qpSubj').value);
             if (m && sj[0] === 'other') { err.textContent = 'Please choose a subject for the Model Set.'; return; }
             var o = { topic: m ? sj[1] : (qpTopic() || (sj[0] === 'other' ? '' : sj[1] + ' (any chapters)')), cls: cl, type: $('qpType').value, count: m ? QP_MODEL_TOTAL : parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value, subj: sj[0], subjN: sj,
-                book: m ? '' : String($('qpBook').value || '').replace(/\s+/g, ' ').trim().slice(0, 80), src: m ? '' : String($('qpSrc').value || '').trim().slice(0, 7000) };
+                book: m ? '' : String($('qpBook').value || '').replace(/\s+/g, ' ').trim().slice(0, 80), src: m ? '' : String($('qpSrc').value || '').trim().slice(0, 12000) };
             if (!m) {
                 if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first, or choose a subject.'; return; }
                 var max = o.type === 'mcq' ? 50 : 30;
@@ -1636,6 +1645,112 @@
             '<button type="button" class="nbo-skip" id="qpNew">Make another paper</button>';
         $('qpPdf').addEventListener('click', qpPrint);
         $('qpNew').addEventListener('click', qpForm);
+    }
+
+    /* ---------- Scan a page: camera / photo / PDF -> text (OCR runs on the phone, no AI vision needed) ---------- */
+    var QS = { tess: null, pdf: null, worker: null, busy: false };
+    function qpLoadScript(src) {
+        return new Promise(function (res, rej) {
+            var el = document.createElement('script'); el.src = src; el.async = true; el.crossOrigin = 'anonymous';
+            el.onload = res; el.onerror = function () { rej(new Error('Could not load ' + src)); };
+            document.head.appendChild(el);
+        });
+    }
+    function qpScanSt(t, bad) { var e = $('qpScanSt'); if (e) { e.textContent = t || ''; e.classList.toggle('qp-bad', !!bad); } }
+    async function qpTess() {
+        if (QS.tess) return QS.tess;
+        if (!window.Tesseract) await qpLoadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+        QS.tess = window.Tesseract; return QS.tess;
+    }
+    async function qpOcrWorker(lang) {
+        var T = await qpTess();
+        if (QS.worker && QS.worker.lang === lang) return QS.worker.w;
+        if (QS.worker) { try { await QS.worker.w.terminate(); } catch (e) {} QS.worker = null; }
+        var w = await T.createWorker(lang, 1, { logger: function (m) {
+            if (m && m.status === 'recognizing text') qpScanSt('Reading text… ' + Math.round((m.progress || 0) * 100) + '%');
+            else if (m && /loading/.test(m.status || '')) qpScanSt('Loading Hindi + English reader (first time only)…');
+        } });
+        QS.worker = { w: w, lang: lang }; return w;
+    }
+    function qpScanLang() {
+        var l = $('qpLang') ? $('qpLang').value : 'English', sj = $('qpSubj') ? $('qpSubj').value : '';
+        return (l === 'Hindi' || sj === 'hindi' || sj === 'maithili' || sj === 'sanskrit' || sj === 'sst') ? 'hin+eng' : 'eng+hin';
+    }
+    function qpImgToCanvas(file) {                               // shrink big camera photos (faster + less memory) and make them greyscale/contrasty
+        return new Promise(function (res, rej) {
+            var url = URL.createObjectURL(file), im = new Image();
+            im.onload = function () {
+                var max = 2000, k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+                c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+                var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.filter = 'grayscale(1) contrast(1.25)'; x.drawImage(im, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url); res(c);
+            };
+            im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('This image could not be opened.')); };
+            im.src = url;
+        });
+    }
+    function qpCleanText(t) { return String(t || '').replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim(); }
+    async function qpOcrCanvas(c) {
+        var w = await qpOcrWorker(qpScanLang()), r = await w.recognize(c);
+        return qpCleanText(r && r.data && r.data.text);
+    }
+    async function qpPdfLib() {
+        if (QS.pdf) return QS.pdf;
+        if (!window.pdfjsLib) await qpLoadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        QS.pdf = window.pdfjsLib; return QS.pdf;
+    }
+    async function qpReadPdf(file) {
+        var lib = await qpPdfLib(), buf = await file.arrayBuffer(), doc = await lib.getDocument({ data: buf }).promise, n = Math.min(doc.numPages, 12), out = [], i, pg, tc, txt, vp, cv;
+        for (i = 1; i <= n; i++) {
+            qpScanSt('Reading PDF page ' + i + ' of ' + n + '…');
+            pg = await doc.getPage(i);
+            tc = await pg.getTextContent();
+            txt = qpCleanText(tc.items.map(function (it) { return it.str + (it.hasEOL ? '\n' : ' '); }).join(''));
+            if (txt.replace(/\s/g, '').length < 40) {            // scanned page (no real text) -> OCR it
+                vp = pg.getViewport({ scale: 2 }); cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height;
+                await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+                txt = await qpOcrCanvas(cv);
+            }
+            if (txt) out.push(txt);
+            if (out.join('\n\n').length > 12000) break;
+        }
+        if (doc.numPages > n) qpScanSt('Only the first ' + n + ' pages were read.');
+        return out.join('\n\n');
+    }
+    async function qpScanFiles(files) {
+        if (QS.busy || !files || !files.length) return;
+        if (!navigator.onLine) { qpScanSt('You are offline. Connect to the internet to read a page.', true); return; }
+        QS.busy = true; var btns = document.querySelectorAll('.qp-sb'), i, parts = [], f, txt;
+        btns.forEach(function (b) { b.disabled = true; });
+        try {
+            for (i = 0; i < files.length && i < 6; i++) {
+                f = files[i];
+                qpScanSt((files.length > 1 ? 'Page ' + (i + 1) + ' of ' + Math.min(files.length, 6) + ': ' : '') + 'Preparing…');
+                if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) { if (f.size > 20 * 1024 * 1024) throw new Error('This PDF is too big (max 20 MB).'); txt = await qpReadPdf(f); }
+                else if (/^image\//.test(f.type)) txt = await qpOcrCanvas(await qpImgToCanvas(f));
+                else throw new Error('Please choose a photo or a PDF.');
+                if (txt) parts.push(txt);
+            }
+            var all = qpCleanText(parts.join('\n\n'));
+            if (all.replace(/\s/g, '').length < 20) { qpScanSt('No readable text found. Take a clear, straight photo in good light and try again.', true); return; }
+            var ta = $('qpSrc'), old = String(ta.value || '').trim(), max = 12000;
+            ta.value = (old ? old + '\n\n' + all : all).slice(0, max);
+            var det = $('qpMore'); if (det) det.open = true;
+            qpScanSt('Done. Text was added below (' + all.length + ' letters). Check it, fix mistakes if any, then tap "Make question paper".');
+            var er = $('qpErr'); if (er) er.textContent = '';
+        } catch (e) {
+            console.warn('scan failed', e);
+            qpScanSt(/load/i.test(String(e && e.message)) ? 'The reader could not be loaded. Check your internet and try again.' : (e && e.message ? e.message : 'Could not read this file. Please try another photo.'), true);
+        } finally { QS.busy = false; btns.forEach(function (b) { b.disabled = false; }); }
+    }
+    function qpScanInit() {
+        var map = [['qpCam', 'qpFCam'], ['qpImg', 'qpFImg'], ['qpPdfUp', 'qpFPdf']];
+        map.forEach(function (m) {
+            var b = $(m[0]), inp = $(m[1]); if (!b || !inp) return;
+            b.addEventListener('click', function () { if (!QS.busy) inp.click(); });
+            inp.addEventListener('change', function () { var fl = Array.prototype.slice.call(inp.files || []); inp.value = ''; qpScanFiles(fl); });
+        });
     }
     function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 120); }
     function qpObjs(txt) {                                       // pull the question objects out of the reply, even when it was cut off

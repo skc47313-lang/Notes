@@ -1051,3 +1051,13 @@ html.dark .nb-switch{border-color:#475569!important;background:#334155!important
 .qp-more{margin-top:10px;border:1px solid var(--nb-border);border-radius:12px;padding:8px 12px;background:var(--nb-surface-2)}
 .qp-more summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--theme-primary,#6366f1)}
 .qp-more textarea{resize:vertical;min-height:80px}
+
+/* AI Question Paper: scan a page (camera / photo / PDF) */
+.qp-scan{margin:10px 0 4px;padding:10px;border:1.5px dashed #a5b4fc;border-radius:12px;background:rgba(99,102,241,.06)}
+.qp-scan-t{font-size:12.5px;font-weight:700;color:#4f46e5;margin-bottom:8px}html.dark .qp-scan-t{color:#a5b4fc}
+.qp-scan-b{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.qp-sb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px;border-radius:10px;border:1px solid #c7d2fe;background:#fff;color:#4338ca;font-size:12px;font-weight:700;cursor:pointer}
+html.dark .qp-sb{background:#1e293b;border-color:#334155;color:#c7d2fe}
+.qp-sb i{font-size:18px}.qp-sb:disabled{opacity:.5;cursor:wait}
+.qp-scan-s{font-size:12px;margin-top:8px;color:var(--nb-muted,#64748b);min-height:0;line-height:1.4}.qp-scan-s:empty{display:none}
+.qp-scan-s.qp-bad{color:#dc2626}
