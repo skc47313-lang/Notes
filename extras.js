@@ -1518,11 +1518,27 @@
     };
     function qpLab(lang) { return QP_L[lang] || QP_L.English; }
     var QP_OTHER = ['other', 'Other / any topic', 'अन्य विषय', 'Anya vishay'];
-    function qpSubjList(cls) { return (cls <= 8 ? QP_SUBJ.low : (cls <= 10 ? QP_SUBJ.mid : QP_SUBJ.high)).concat([QP_OTHER]); }
+    var QP_NONHINDI = ['nonhindi', 'Non-Hindi', 'गैर-हिंदी', 'Non-Hindi'];   // BSEB Class 10 only: its questions come from the Class 8 Hindi book
+    function qpSubjList(cls) { var l = (cls <= 8 ? QP_SUBJ.low : (cls <= 10 ? QP_SUBJ.mid : QP_SUBJ.high)).slice(); if (cls === 10) l.push(QP_NONHINDI); return l.concat([QP_OTHER]); }
     /* Science + Maths follow NCERT; every other school subject follows BSEB / SCERT Bihar books */
     var QP_NCERT = { math: 1, science: 1, physics: 1, chemistry: 1, biology: 1 };
     function qpBoard(subj) { return subj === 'other' || !subj ? 'any' : (QP_NCERT[subj] ? 'ncert' : 'bseb'); }
     function qpBoardName(subj) { var b = qpBoard(subj); return b === 'ncert' ? 'NCERT' : (b === 'bseb' ? 'BSEB / SCERT Bihar' : ''); }
+    function qpBoardLine(subj, what) {
+        var n = qpBoardName(subj);
+        if (subj === 'nonhindi') return '<i class="fa-solid fa-book"></i> ' + what + ' will come from the <b>Class 8 Hindi book (Kislay Bhag-8)</b> of BSEB / SCERT Bihar';
+        return n ? '<i class="fa-solid fa-book"></i> ' + what + ' will follow <b>' + n + '</b> books' : what + ' will follow the best matching textbook';
+    }
+    /* chapter lists + book names for the Bihar board come from bseb-chapters.js */
+    function qpBookRule(o) {
+        var e = (window.NB_BSEB || {})[o.cls + '|' + o.subj], t = '';
+        if (o.subj === 'nonhindi') return 'NON-HINDI RULE (very important): this is the BSEB Class 10 Non-Hindi (Hindi for non-Hindi students) paper. Take everything ONLY from the Class 8 Hindi textbook of BSEB / SCERT Bihar (Kislay Bhag-8): its lessons, poems, vocabulary and Hindi grammar at Class 8 level, even though the student is in Class 10. Do NOT use the Class 10 Hindi book (Godhuli) or any other book. ';
+        if (!e || !e.groups) return o.subj === 'sst' ? 'SOCIAL SCIENCE RULE: in the Bihar board, Social Science is taught from separate SCERT Bihar books (History, Geography, Political Science / Civics, Economics and, in the higher classes, Disaster Management). If the topic starts with the name of a part, take everything only from that book and that chapter. Never use NCERT / CBSE content. ' : '';
+        t = 'BOOK RULE (very important): the books are ' + (e.book || 'the BSEB / SCERT Bihar books of this class') + '. Use ONLY these Bihar board books and their real chapters, never NCERT / CBSE or any other book. ';
+        if (e.groups.length > 1) t += 'The chapter name may start with the part (book) it belongs to; then take everything only from that part and that chapter. ';
+        if (o.model) t += 'The chapters of the book(s), in order: ' + e.groups.map(function (g) { return g.g + ' = ' + g.c.join(' | '); }).join(' ;; ') + '. ';
+        return t;
+    }
     function qpSubjFind(cls, key) { var l = qpSubjList(cls), i; for (i = 0; i < l.length; i++) if (l[i][0] === key) return l[i]; return l[0]; }
     function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1]); }
     function qpLangRule(lang, subj) {
@@ -1558,7 +1574,7 @@
     function qpSyllabus(o) {
         var b = qpBoard(o.subj), sn = o.subjN ? o.subjN[1] : o.topic, t = '';
         if (b === 'ncert') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the NCERT textbook and the NCERT / CBSE syllabus of Class ' + o.cls + ' (chapter names, definitions, examples and exercises in NCERT style). ';
-        else if (b === 'bseb') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the textbooks and syllabus prescribed by BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ' and the BSEB exam pattern, NOT NCERT / CBSE books. ' + (o.subj === 'hindi' ? '(For Hindi the books are, for example, the Kislay series, Godhuli, and the Hindi grammar book.) ' : '');
+        else if (b === 'bseb') t = 'SYLLABUS RULE (very important): the subject is ' + sn + '. Follow the textbooks and syllabus prescribed by BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ' and the BSEB exam pattern, NOT NCERT / CBSE books. ' + (o.subj === 'hindi' ? '(For Hindi the books are, for example, the Kislay series, Godhuli, and the Hindi grammar book.) ' : '') + qpBookRule(o);
         else t = 'Use well-established facts only; for school topics follow the textbooks used in Bihar (BSEB / SCERT) or NCERT, whichever fits the topic. ';
         if (!o.model && !o.src) t += 'CHAPTER RULE (very important): the topic may be the name of a lesson, story, poem, essay or chapter from a school textbook, sometimes with the book name (for example "Kislay Bhag 3, chapter 2: Idgah"). First identify the REAL lesson in that book/subject and make every question from its actual content (author, characters, events, theme, message, important lines, vocabulary, grammar of that lesson). Never replace it with a different or generic topic. If you are NOT sure what that lesson contains, do not guess and do not invent: reply with only {"unsure":true}. ';
         if (o.book) t += 'The textbook is: "' + o.book + '". ';
@@ -1567,7 +1583,7 @@
     }
     function qpPrompt(o, n, done, c) {
         var mcq = o.type === 'mcq', needA = o.ans !== 'none', sn = o.subjN && o.subj !== 'other' ? o.subjN[1] : '';
-        var what = o.model ? 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)' : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
+        var what = o.model ? (o.subj === 'nonhindi' ? 'the full Non-Hindi syllabus (all lessons of the Class 8 Hindi book Kislay Bhag-8)' : 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)') : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
         var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students (Bihar and all India). Make a question paper for Class ' + o.cls + ' on ' + what + '. Difficulty: ' + o.level + '. ' + qpLangRule(o.lang, o.subj) + ' ' + qpSyllabus(o) +
             'Be sure every answer is correct; never invent facts. ';
         if (mcq) s += 'Make EXACTLY ' + n + ' multiple-choice questions. Each has 4 options and exactly one correct option; vary the position of the correct option. Do not put "A)" or "B)" labels inside the option text. ';
@@ -1697,8 +1713,8 @@
         qpBoardHint();
     }
     function qpBoardHint() {
-        var b = $('qpBoard'), v = $('qpSubj') && $('qpSubj').value, n = qpBoardName(v); if (!b) return;
-        b.innerHTML = n ? '<i class="fa-solid fa-book"></i> Questions will follow <b>' + n + '</b> books' : 'Questions will follow the best matching textbook';
+        var b = $('qpBoard'), v = $('qpSubj') && $('qpSubj').value; if (!b) return;
+        b.innerHTML = qpBoardLine(v, 'Questions');
     }
     function qpForm() {
         QP.run++; QP.busy = false; QP.cnt = 0;
@@ -1709,7 +1725,7 @@
             '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['model', 'Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
             '<div style="margin-top:10px"><label class="nbo-l" for="qpSubj" style="margin-top:0">Subject</label><select id="qpSubj" class="nbo-in"></select><div class="qp-board" id="qpBoard"></div></div>' +
             '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><p class="nbo-sub" style="margin:6px 0 0">Model Set: one PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks, from the whole book. A fresh set every time.</p></div>' +
-            '<div id="qpTopicBox" style="margin-top:10px"><div id="qpChWrap"></div><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<div id="qpTopicBox" style="margin-top:10px"><div id="qpChWrap"></div><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="170" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
             qpScanHtml('qp') +
             '<label class="nbo-l" for="qpBook">Book name (optional)</label><input id="qpBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
@@ -1728,7 +1744,7 @@
         $('qpSubj').addEventListener('change', function () {
             chRender('qp');
             qpBoardHint(); var v = this.value, lg = $('qpLang');
-            if (v === 'hindi' || v === 'maithili' || v === 'sanskrit') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';   // those papers are written in their own language
+            if (v === 'hindi' || v === 'maithili' || v === 'sanskrit' || v === 'nonhindi' || v === 'sst') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';   // those papers are written in their own language
         });
         $('qpGo').addEventListener('click', async function () {
             if (QP.busy) return;
@@ -1793,7 +1809,7 @@
     }
     function qpScanLang() {
         var l = $(QS.p + 'Lang') ? $(QS.p + 'Lang').value : 'English', sj = $(QS.p + 'Subj') ? $(QS.p + 'Subj').value : '';
-        return (l === 'Hindi' || sj === 'hindi' || sj === 'maithili' || sj === 'sanskrit' || sj === 'sst') ? 'hin+eng' : 'eng+hin';
+        return (l === 'Hindi' || sj === 'hindi' || sj === 'maithili' || sj === 'sanskrit' || sj === 'nonhindi' || sj === 'sst') ? 'hin+eng' : 'eng+hin';
     }
     function qpImgToCanvas(file) {                               // shrink big camera photos (faster + less memory) and make them greyscale/contrasty
         return new Promise(function (res, rej) {
@@ -1882,7 +1898,7 @@
             inp.addEventListener('change', function () { var fl = Array.prototype.slice.call(inp.files || []); inp.value = ''; qpScanFiles(fl, p); });
         });
     }
-    function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 170); }
     function qpObjs(txt) {                                       // pull the question objects out of the reply, even when it was cut off
         txt = String(txt || '').replace(/```(?:json)?/gi, '');
         var i = txt.indexOf('{'); if (i < 0) return null;
@@ -2052,7 +2068,7 @@
         var sn = o.subjN && o.subj !== 'other' ? o.subjN[1] : '', b = qpBoard(o.subj), t;
         t = 'You are the Notes Maker inside Notes Bazar, a study app for Indian school students (Bihar and all India). Make ' + (o.type === 'short' ? 'SHORT' : 'LONG (detailed)') + ' study notes for Class ' + o.cls + (sn ? ', subject ' + sn : '') + ', chapter / topic: "' + o.topic + '". ' + qpLangRule(o.lang, o.subj) + ' ' + NP_LEVEL[npBand(o.cls)] + ' ';
         if (b === 'ncert') t += 'SYLLABUS RULE: follow the NCERT textbook and CBSE syllabus of Class ' + o.cls + '. ';
-        else if (b === 'bseb') t += 'SYLLABUS RULE: follow the textbooks and syllabus of BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ', NOT NCERT / CBSE books. ';
+        else if (b === 'bseb') t += 'SYLLABUS RULE: follow the textbooks and syllabus of BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ', NOT NCERT / CBSE books. ' + qpBookRule(o);
         else t += 'Use well-established facts only; follow the school textbooks (BSEB / SCERT Bihar or NCERT) that fit the topic. ';
         if (!o.src) t += 'CHAPTER RULE (very important): the topic may be a lesson, story, poem or chapter of a school textbook, sometimes with the book name. First identify the REAL lesson in that book and use its actual content (author, characters, events, theme, important lines, vocabulary, grammar). Never replace it with a different or generic topic. If you are NOT sure what that lesson contains, do not guess and do not invent: reply with only {"unsure":true}. ';
         if (o.book) t += 'The textbook is: "' + o.book + '". ';
@@ -2286,8 +2302,8 @@
 
     /* --- form --- */
     function npBoardHint() {
-        var b = $('npBoard'), v = $('npSubj') && $('npSubj').value, n = qpBoardName(v); if (!b) return;
-        b.innerHTML = n ? '<i class="fa-solid fa-book"></i> Notes will follow <b>' + n + '</b> books' : 'Notes will follow the best matching textbook';
+        var b = $('npBoard'), v = $('npSubj') && $('npSubj').value; if (!b) return;
+        b.innerHTML = qpBoardLine(v, 'Notes');
     }
     function npFillSubj(keep) {
         var cls = parseInt($('npCls').value, 10), sel = $('npSubj'), l = qpSubjList(cls);
@@ -2303,7 +2319,7 @@
             '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('npCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
             '<label>Notes type' + qpSel('npType', [['short', 'Short notes'], ['long', 'Long (full) notes']], s.type || 'short') + '</label></div>' +
             '<div style="margin-top:10px"><label class="nbo-l" for="npSubj" style="margin-top:0">Subject</label><select id="npSubj" class="nbo-in"></select><div class="qp-board" id="npBoard"></div></div>' +
-            '<div id="npTopicBox" style="margin-top:10px"><div id="npChWrap"></div><label class="nbo-l" for="npTopic">Chapter / topic</label><input id="npTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Idgah, Quadratic Equations" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<div id="npTopicBox" style="margin-top:10px"><div id="npChWrap"></div><label class="nbo-l" for="npTopic">Chapter / topic</label><input id="npTopic" class="nbo-in" maxlength="170" autocomplete="off" placeholder="e.g. Life Processes, Idgah, Quadratic Equations" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<div class="nbo-sub" id="npTypeHint" style="margin:6px 0 0"></div>' +
             '<details id="npMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
             '<label class="nbo-l" for="npBook">Book name (optional)</label><input id="npBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
@@ -2320,13 +2336,13 @@
         $('npSubj').addEventListener('change', function () {
             chRender('np');
             npBoardHint(); var v = this.value, lg = $('npLang');
-            if (v === 'hindi' || v === 'maithili' || v === 'sanskrit') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';
+            if (v === 'hindi' || v === 'maithili' || v === 'sanskrit' || v === 'nonhindi' || v === 'sst') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';
         });
         $('npBack').addEventListener('click', function () { NB.close('nbNt'); NB.openPdfMaker(); });
         $('npGo').addEventListener('click', async function () {
             if (NP.busy) return;
             var err = $('npErr'); err.textContent = '';
-            var cl = parseInt($('npCls').value, 10), sj = qpSubjFind(cl, $('npSubj').value), topic = String($('npTopic').value || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+            var cl = parseInt($('npCls').value, 10), sj = qpSubjFind(cl, $('npSubj').value), topic = String($('npTopic').value || '').replace(/\s+/g, ' ').trim().slice(0, 170);
             if (!topic && sj[0] !== 'other') topic = sj[1] + ' (important chapters)';
             if (topic.length < 2) { err.textContent = 'Please write the chapter or topic first, or choose a subject.'; return; }
             var o = { topic: topic, cls: cl, type: $('npType').value, lang: $('npLang').value, subj: sj[0], subjN: sj, pics: $('npPics').value === '1',
@@ -2372,25 +2388,40 @@
     };
     function chAiAll() { var a = LSX.get('nb_ch_ai', {}); return a && typeof a === 'object' ? a : {}; }
     function chGet(cls, subj) {
-        var k = cls + '|' + subj, c = chAiAll()[k];
+        var k = cls + '|' + subj, c = chAiAll()[k], d = (window.NB_BSEB || {})[k];
+        if (d && d.groups && d.groups.length) return { groups: d.groups, ai: false, approx: !!d.approx };     // fixed Bihar board list (bseb-chapters.js)
         if (CH[k]) return { list: CH[k], ai: false };
         return Array.isArray(c) && c.length ? { list: c, ai: true } : null;
     }
+    /* one flat list of {g: part, l: shown text, t: text that goes into the topic box} */
+    function chItems(r) {
+        var out = [];
+        if (r.groups) r.groups.forEach(function (g) { g.c.forEach(function (c, i) { out.push({ g: g.g, l: (i + 1) + '. ' + c, t: (g.tp || g.g) + ': ' + c }); }); });
+        else r.list.forEach(function (c, i) { out.push({ g: '', l: (i + 1) + '. ' + c, t: c }); });
+        return out;
+    }
     function chRender(p) {
         var w = $(p + 'ChWrap'), cs = $(p + 'Cls'), sb = $(p + 'Subj'); if (!w || !cs || !sb) return;
-        var cls = parseInt(cs.value, 10), subj = sb.value, r;
+        var cls = parseInt(cs.value, 10), subj = sb.value, r, items, html, last;
         if (subj === 'other') { w.innerHTML = ''; return; }
         r = chGet(cls, subj);
         if (r) {
-            w.innerHTML = '<label class="nbo-l" for="' + p + 'Ch" style="margin-top:0">Pick a chapter</label><select id="' + p + 'Ch" class="nbo-in"><option value="">Choose from the list…</option>' +
-                r.list.map(function (c, i) { return '<option value="' + i + '">' + (i + 1) + '. ' + NB.esc(c) + '</option>'; }).join('') +
-                '<option value="own">✍ My chapter is not here (I will type it)</option></select>' +
+            items = chItems(r); last = null;
+            html = '<label class="nbo-l" for="' + p + 'Ch" style="margin-top:0">Pick a chapter</label><select id="' + p + 'Ch" class="nbo-in"><option value="">Choose from the list…</option>';
+            items.forEach(function (it, i) {
+                if (it.g !== last) { if (last) html += '</optgroup>'; if (it.g) html += '<optgroup label="' + NB.esc(it.g) + '">'; last = it.g; }
+                html += '<option value="' + i + '">' + NB.esc(it.l) + '</option>';
+            });
+            if (last) html += '</optgroup>';
+            html += '<option value="own">✍ My chapter is not here (I will type it)</option></select>' +
                 (r.ai ? '<div class="nbo-sub" style="margin:4px 0 0">AI suggested list. Please check that it matches your book.</div>' : '') +
+                (r.approx ? '<div class="nbo-sub" style="margin:4px 0 0">Please check that this list matches your book. If a chapter is missing, choose “My chapter is not here”.</div>' : '') +
                 '<div class="nbo-sub" style="margin:8px 0 0">Or type the chapter yourself:</div>';
+            w.innerHTML = html;
             $(p + 'Ch').addEventListener('change', function () {
                 var t = $(p + 'Topic'); if (!t || this.value === '') return;
                 if (this.value === 'own') { t.value = ''; t.focus(); return; }
-                t.value = r.list[parseInt(this.value, 10)] || '';
+                t.value = (items[parseInt(this.value, 10)] || {}).t || '';
             });
         } else {
             w.innerHTML = '<button type="button" class="ch-ai-b" id="' + p + 'ChAi"><i class="fa-solid fa-list-ol"></i> Show chapter list (AI)</button><div class="nbo-sub" id="' + p + 'ChSt" style="margin:4px 0 6px" aria-live="polite"></div>';
@@ -2402,8 +2433,10 @@
         if (typeof window.nbCallAi !== 'function') { st.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
         if (!navigator.onLine) { st.textContent = 'You are offline.'; return; }
         btn.disabled = true; st.textContent = 'Getting the chapter list…';
-        var hindi = (subj === 'hindi' || subj === 'maithili' || subj === 'sanskrit');
-        var q = 'List the chapters / lessons of the ' + (b === 'ncert' ? 'NCERT' : 'BSEB / SCERT Bihar (Bihar government school)') + ' textbook for Class ' + cls + ' ' + sj[1] + ', in the order of the book. ' +
+        var hindi = (subj === 'hindi' || subj === 'maithili' || subj === 'sanskrit' || subj === 'nonhindi' || subj === 'sst');
+        var bc = subj === 'nonhindi' ? 8 : cls, sname = subj === 'nonhindi' ? 'Hindi (Kislay Bhag-8)' : sj[1];
+        var q = 'List the chapters / lessons of the ' + (b === 'ncert' ? 'NCERT' : 'BSEB / SCERT Bihar (Bihar government school)') + ' textbook for Class ' + bc + ' ' + sname + ', in the order of the book. ' +
+            (subj === 'sst' ? 'Social Science has separate books (History, Geography, Political Science, Economics, Disaster Management): start every item with the part name, like \"इतिहास: chapter name\". ' : '') +
             (hindi ? 'Write the chapter names in Devanagari script exactly as in the book. ' : 'Write the chapter names in English. ') +
             'Only list chapters you are SURE are in that real book. If you are not sure about this book, reply {"chapters":[]}. Never invent chapter names. Reply with ONLY one JSON object, no markdown: {"chapters":["Chapter 1 name","Chapter 2 name"]} (at most 40).';
         try { out = await window.nbCallAi([{ role: 'system', content: q }, { role: 'user', content: 'Give the chapter list now.' }], { timeout: 60000 }); } catch (e) { out = ''; }
