@@ -1579,21 +1579,14 @@
         QP.run++; QP.busy = false; QP.cnt = 0;
         var body = $('nbqpBody'), s = LSX.get('nb_qp_opts', null) || {}, pr = NB.profile();
         var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
-        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, or a full Model Set, with or without answers, and save them as a PDF.</p>' +
+        body.innerHTML = '<button type="button" class="np-back" id="qpBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button><h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, or a full Model Set, with or without answers, and save them as a PDF.</p>' +
             '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('qpCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
             '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['model', 'Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
             '<div style="margin-top:10px"><label class="nbo-l" for="qpSubj" style="margin-top:0">Subject</label><select id="qpSubj" class="nbo-in"></select><div class="qp-board" id="qpBoard"></div></div>' +
             '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><p class="nbo-sub" style="margin:6px 0 0">Model Set: one PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks, from the whole book. A fresh set every time.</p></div>' +
             '<div id="qpTopicBox" style="margin-top:10px"><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
-            '<div class="qp-scan"><div class="qp-scan-t"><i class="fa-solid fa-camera"></i> Take a photo or upload the page</div>' +
-            '<div class="qp-scan-b"><button type="button" class="qp-sb" id="qpCam"><i class="fa-solid fa-camera"></i> Camera</button>' +
-            '<button type="button" class="qp-sb" id="qpImg"><i class="fa-solid fa-image"></i> Photo / Gallery</button>' +
-            '<button type="button" class="qp-sb" id="qpPdfUp"><i class="fa-solid fa-file-pdf"></i> PDF</button></div>' +
-            '<input type="file" id="qpFCam" accept="image/*" capture="environment" hidden>' +
-            '<input type="file" id="qpFImg" accept="image/*" multiple hidden>' +
-            '<input type="file" id="qpFPdf" accept="application/pdf,.pdf" hidden>' +
-            '<div class="qp-scan-s" id="qpScanSt" aria-live="polite"></div></div>' +
+            qpScanHtml('qp') +
             '<label class="nbo-l" for="qpBook">Book name (optional)</label><input id="qpBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
             '<label class="nbo-l" for="qpSrc">Chapter text (optional)</label><textarea id="qpSrc" class="nbo-in" rows="5" maxlength="12000" placeholder="Paste the lesson text here. Questions will then come only from it."></textarea></details>' +
             '<div class="nbai-set"><label>How many questions<input id="qpCount" class="nbo-in" type="number" min="1" max="50" inputmode="numeric" value="' + (s.count || 10) + '"></label>' +
@@ -1603,7 +1596,8 @@
             '<div class="nbo-sub" id="qpSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="qpErr"></div>' +
             '<button type="button" class="nbo-save" id="qpGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make question paper</button>';
         qpFillSubj(s.subj); qpSync();
-        qpScanInit();
+        qpScanInit('qp');
+        $('qpBack').addEventListener('click', function () { NB.close('nbQp'); NB.openPdfMaker(); });
         $('qpType').addEventListener('change', qpSync);
         $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); });
         $('qpSubj').addEventListener('change', function () {
@@ -1648,7 +1642,7 @@
     }
 
     /* ---------- Scan a page: camera / photo / PDF -> text (OCR runs on the phone, no AI vision needed) ---------- */
-    var QS = { tess: null, pdf: null, worker: null, busy: false };
+    var QS = { tess: null, pdf: null, worker: null, busy: false, p: 'qp' };
     function qpLoadScript(src) {
         return new Promise(function (res, rej) {
             var el = document.createElement('script'); el.src = src; el.async = true; el.crossOrigin = 'anonymous';
@@ -1656,7 +1650,7 @@
             document.head.appendChild(el);
         });
     }
-    function qpScanSt(t, bad) { var e = $('qpScanSt'); if (e) { e.textContent = t || ''; e.classList.toggle('qp-bad', !!bad); } }
+    function qpScanSt(t, bad) { var e = $(QS.p + 'ScanSt'); if (e) { e.textContent = t || ''; e.classList.toggle('qp-bad', !!bad); } }
     async function qpTess() {
         if (QS.tess) return QS.tess;
         if (!window.Tesseract) await qpLoadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
@@ -1673,7 +1667,7 @@
         QS.worker = { w: w, lang: lang }; return w;
     }
     function qpScanLang() {
-        var l = $('qpLang') ? $('qpLang').value : 'English', sj = $('qpSubj') ? $('qpSubj').value : '';
+        var l = $(QS.p + 'Lang') ? $(QS.p + 'Lang').value : 'English', sj = $(QS.p + 'Subj') ? $(QS.p + 'Subj').value : '';
         return (l === 'Hindi' || sj === 'hindi' || sj === 'maithili' || sj === 'sanskrit' || sj === 'sst') ? 'hin+eng' : 'eng+hin';
     }
     function qpImgToCanvas(file) {                               // shrink big camera photos (faster + less memory) and make them greyscale/contrasty
@@ -1718,8 +1712,9 @@
         if (doc.numPages > n) qpScanSt('Only the first ' + n + ' pages were read.');
         return out.join('\n\n');
     }
-    async function qpScanFiles(files) {
+    async function qpScanFiles(files, pfx) {
         if (QS.busy || !files || !files.length) return;
+        QS.p = pfx || 'qp';
         if (!navigator.onLine) { qpScanSt('You are offline. Connect to the internet to read a page.', true); return; }
         QS.busy = true; var btns = document.querySelectorAll('.qp-sb'), i, parts = [], f, txt;
         btns.forEach(function (b) { b.disabled = true; });
@@ -1734,22 +1729,32 @@
             }
             var all = qpCleanText(parts.join('\n\n'));
             if (all.replace(/\s/g, '').length < 20) { qpScanSt('No readable text found. Take a clear, straight photo in good light and try again.', true); return; }
-            var ta = $('qpSrc'), old = String(ta.value || '').trim(), max = 12000;
+            var ta = $(QS.p + 'Src'), old = String(ta.value || '').trim(), max = 12000;
             ta.value = (old ? old + '\n\n' + all : all).slice(0, max);
-            var det = $('qpMore'); if (det) det.open = true;
+            var det = $(QS.p + 'More'); if (det) det.open = true;
             qpScanSt('Done. Text was added below (' + all.length + ' letters). Check it, fix mistakes if any, then tap "Make question paper".');
-            var er = $('qpErr'); if (er) er.textContent = '';
+            var er = $(QS.p + 'Err'); if (er) er.textContent = '';
         } catch (e) {
             console.warn('scan failed', e);
             qpScanSt(/load/i.test(String(e && e.message)) ? 'The reader could not be loaded. Check your internet and try again.' : (e && e.message ? e.message : 'Could not read this file. Please try another photo.'), true);
         } finally { QS.busy = false; btns.forEach(function (b) { b.disabled = false; }); }
     }
-    function qpScanInit() {
-        var map = [['qpCam', 'qpFCam'], ['qpImg', 'qpFImg'], ['qpPdfUp', 'qpFPdf']];
-        map.forEach(function (m) {
+    function qpScanHtml(p) {
+        return '<div class="qp-scan"><div class="qp-scan-t"><i class="fa-solid fa-camera"></i> Take a photo or upload the page</div>' +
+            '<div class="qp-scan-b"><button type="button" class="qp-sb" id="' + p + 'Cam"><i class="fa-solid fa-camera"></i> Camera</button>' +
+            '<button type="button" class="qp-sb" id="' + p + 'Img"><i class="fa-solid fa-image"></i> Photo / Gallery</button>' +
+            '<button type="button" class="qp-sb" id="' + p + 'PdfUp"><i class="fa-solid fa-file-pdf"></i> PDF</button></div>' +
+            '<input type="file" id="' + p + 'FCam" accept="image/*" capture="environment" hidden>' +
+            '<input type="file" id="' + p + 'FImg" accept="image/*" multiple hidden>' +
+            '<input type="file" id="' + p + 'FPdf" accept="application/pdf,.pdf" hidden>' +
+            '<div class="qp-scan-s" id="' + p + 'ScanSt" aria-live="polite"></div></div>';
+    }
+    function qpScanInit(p) {
+        p = p || 'qp';
+        [[p + 'Cam', p + 'FCam'], [p + 'Img', p + 'FImg'], [p + 'PdfUp', p + 'FPdf']].forEach(function (m) {
             var b = $(m[0]), inp = $(m[1]); if (!b || !inp) return;
             b.addEventListener('click', function () { if (!QS.busy) inp.click(); });
-            inp.addEventListener('change', function () { var fl = Array.prototype.slice.call(inp.files || []); inp.value = ''; qpScanFiles(fl); });
+            inp.addEventListener('change', function () { var fl = Array.prototype.slice.call(inp.files || []); inp.value = ''; qpScanFiles(fl, p); });
         });
     }
     function qpTopic() { return String(($('qpTopic') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 120); }
@@ -1814,6 +1819,366 @@
         NB.onClose.nbQp = function () { QP.run++; QP.busy = false; };
     }
     NB.openPaper = function () { closeSiteMenu(); if (!$('nbQp')) buildPaper(); NB.open('nbQp'); qpForm(); };
+
+    /* =====================================================================
+       AI PDF Maker (hub) + Notes Maker: colourful short / long notes as PDF
+       Structure comes from the AI (JSON blocks); the look, tables, flow charts,
+       mind maps and highlights are drawn here. Pictures come from Wikimedia Commons.
+       ===================================================================== */
+    var NP = { run: 0, busy: false, doc: null };
+    var NP_PAL = [['#2563eb', '#dbeafe'], ['#db2777', '#fce7f3'], ['#16a34a', '#dcfce7'], ['#ea580c', '#ffedd5'], ['#7c3aed', '#ede9fe'], ['#0891b2', '#cffafe']];
+    var NP_SEC = { short: [3, 4, 5, 6, 7], long: [5, 6, 8, 10, 12] };            // sections per class band: 1-2, 3-5, 6-8, 9-10, 11-12
+    var NP_WORDS = { short: [30, 45, 60, 80, 100], long: [90, 140, 200, 280, 360] };   // words per section per class band (higher class = more)
+    var NP_LEVEL = [
+        'CLASS LEVEL: Class 1-2. Use very short, very simple sentences and everyday examples a small child knows. No difficult words.',
+        'CLASS LEVEL: Class 3-5. Use simple language, small sentences, easy daily-life examples.',
+        'CLASS LEVEL: Class 6-8. Clear middle-school language, textbook definitions in simple words, easy formulas and examples.',
+        'CLASS LEVEL: Class 9-10 (board exam). Follow the textbook exactly: textbook definitions, laws, formulas with units, numerical examples, diagram-based points and exam-style points.',
+        'CLASS LEVEL: Class 11-12 (advanced board + entrance exam). Be precise and deeper: exact definitions, laws with conditions, derivations, exceptions, units and dimensions, higher-level examples and numericals.'
+    ];
+    var NP_L = {
+        English: { def: 'Definition', f: 'Formula', eg: 'Example', tip: 'Important', mn: 'Memory trick', short: 'Short Notes', long: 'Detailed Notes', cls: 'Class', cred: 'Pictures: Wikimedia Commons (free licences)' },
+        Hindi: { def: 'परिभाषा', f: 'सूत्र', eg: 'उदाहरण', tip: 'महत्वपूर्ण', mn: 'याद रखने की ट्रिक', short: 'संक्षिप्त नोट्स', long: 'विस्तृत नोट्स', cls: 'कक्षा', cred: 'चित्र: Wikimedia Commons (मुफ़्त लाइसेंस)' },
+        Hinglish: { def: 'Paribhasha', f: 'Sutra', eg: 'Udaharan', tip: 'Mahatvapurn', mn: 'Yaad rakhne ki trick', short: 'Sankshipt Notes', long: 'Vistrit Notes', cls: 'Class', cred: 'Pictures: Wikimedia Commons (free licences)' }
+    };
+    var NP_CSS = [
+        '.npw{font-family:"Segoe UI",Roboto,"Noto Sans Devanagari",Mangal,Arial,sans-serif;color:#1e293b;background:#fff;font-size:13px;line-height:1.55;text-align:left}',
+        '.npw,.npw *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+        '.npw .np-hd{background:linear-gradient(135deg,#4f46e5,#db2777 60%,#f59e0b);color:#fff;border-radius:14px;padding:16px 18px;margin:0 0 14px}',
+        '.npw .np-ht{font-size:22px;font-weight:800;line-height:1.25}.npw .np-hm{font-size:11.5px;margin-top:5px;font-weight:600;opacity:.95}',
+        '.npw .np-s{margin:0 0 16px}',
+        '.npw .np-s h2{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:7px 12px;border-radius:10px;background:var(--c);color:#fff;font-size:15px;font-weight:800;break-after:avoid;page-break-after:avoid}',
+        '.npw .np-n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:50%;background:#fff;color:var(--c);font-size:12px;font-weight:800}',
+        '.npw .np-b{margin:0 0 9px;break-inside:avoid;page-break-inside:avoid}',
+        '.npw .np-lb{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:1px 8px;border-radius:99px;background:var(--c);color:#fff;margin-right:6px;vertical-align:1px}',
+        '.npw .np-def{border-left:5px solid var(--c);background:var(--b);padding:8px 11px;border-radius:0 10px 10px 0}.npw .np-def b{color:var(--c)}',
+        '.npw mark{background:#fde047;color:#111;padding:0 3px;border-radius:3px}',
+        '.npw .np-pt{font-weight:800;color:var(--c);margin:0 0 3px}',
+        '.npw .np-p{list-style:none;margin:0;padding:0}.npw .np-p li{position:relative;padding-left:18px;margin:3px 0}',
+        '.npw .np-p li::before{content:"";position:absolute;left:3px;top:.55em;width:8px;height:8px;border-radius:50%;background:var(--c)}',
+        '.npw .np-f{border:2px dashed #7c3aed;background:#f5f3ff;border-radius:12px;padding:8px 12px;text-align:center}',
+        '.npw .np-fv{font-family:"Cambria Math","Segoe UI",serif;font-size:17px;font-weight:800;color:#5b21b6;margin:3px 0}.npw .np-fn{font-size:11.5px;color:#475569}',
+        '.npw .np-tw{overflow-x:auto}.npw .np-t{width:100%;border-collapse:collapse;font-size:12px}',
+        '.npw .np-t th{background:var(--c);color:#fff;padding:5px 7px;text-align:left;border:1px solid var(--c)}',
+        '.npw .np-t td{padding:5px 7px;border:1px solid #cbd5e1;vertical-align:top}.npw .np-t tr:nth-child(even) td{background:var(--b)}',
+        '.npw .np-fl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 4px}',
+        '.npw .np-fs{background:var(--b);border:2px solid var(--c);color:#111;border-radius:10px;padding:5px 10px;font-weight:600;font-size:12px}.npw .np-fa{color:var(--c);font-weight:800;font-size:17px}',
+        '.npw .np-eg{background:#ecfdf5;border-left:5px solid #16a34a;border-radius:0 10px 10px 0;padding:8px 11px}.npw .np-eg .np-lb{background:#16a34a}',
+        '.npw .np-tip{background:#fef9c3;border:1.5px solid #eab308;border-radius:10px;padding:7px 11px}.npw .np-tip .np-lb{background:#ca8a04}',
+        '.npw .np-mn{background:#fdf2f8;border:1.5px solid #db2777;border-radius:10px;padding:7px 11px}.npw .np-mn .np-lb{background:#db2777}',
+        '.npw .np-map{border:2px solid var(--b);border-radius:12px;padding:4px;background:#fff}.npw .np-map svg{width:100%;height:auto;display:block}',
+        '.npw .np-img{margin:0 0 9px;text-align:center;position:relative;break-inside:avoid;page-break-inside:avoid;border:2px solid var(--b);border-radius:12px;padding:6px;background:#fff}',
+        '.npw .np-img img{max-width:100%;max-height:250px;object-fit:contain}.npw .np-img figcaption{font-size:10.5px;color:#64748b;margin-top:2px}',
+        '.npw .np-rm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(15,23,42,.75);color:#fff;font-size:13px;line-height:24px;cursor:pointer;padding:0}',
+        '.npw .np-ft{text-align:center;font-size:10.5px;color:#64748b;margin-top:10px;border-top:1px solid #e2e8f0;padding-top:6px}',
+        '@media print{.npw .np-rm{display:none!important}}'
+    ].join('');
+
+    /* --- text helpers --- */
+    function npS(v, n) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n || 600); }
+    function npH(t) { return NB.esc(String(t || '')).replace(/\*\*(.+?)\*\*/g, '<mark>$1</mark>').replace(/\*\*/g, ''); }
+    function npStatus(t) { var e = $('npSt'); if (e) e.textContent = t || ''; }
+    function npJson(txt) {
+        txt = String(txt || '').replace(/```(?:json)?/gi, '');
+        var i = txt.indexOf('{'), j = txt.lastIndexOf('}'); if (i < 0 || j <= i) return null;
+        try { return JSON.parse(txt.slice(i, j + 1)); } catch (e) { return null; }
+    }
+    function npBlocks(txt) {                                     // blocks array, even from a reply that was cut off
+        var o = npJson(txt); if (o && Array.isArray(o.blocks)) return o.blocks;
+        txt = String(txt || '').replace(/```(?:json)?/gi, '');
+        var k = txt.indexOf('['), arr = [], depth = 0, st = -1, inS = false, esc = false, c, x;
+        if (k < 0) return null;
+        for (x = k + 1; x < txt.length; x++) {
+            c = txt[x];
+            if (inS) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inS = false; continue; }
+            if (c === '"') inS = true;
+            else if (c === '{') { if (!depth) st = x; depth++; }
+            else if (c === '}') { depth--; if (!depth && st > -1) { try { arr.push(JSON.parse(txt.slice(st, x + 1))); } catch (e) {} st = -1; } }
+        }
+        return arr;
+    }
+    function npNB(b) {
+        if (!b || typeof b.t !== 'string') return null;
+        var t = b.t, v, items, head, rows, cols, steps, nodes;
+        if (t === 'def') { v = npS(b.v, 800); return v ? { t: t, k: npS(b.k, 90), v: v } : null; }
+        if (t === 'pts') { items = (Array.isArray(b.items) ? b.items : []).map(function (x) { return npS(x, 320); }).filter(Boolean).slice(0, 14); return items.length ? { t: t, title: npS(b.title, 90), items: items } : null; }
+        if (t === 'formula') { v = npS(b.v, 320); return v ? { t: t, k: npS(b.k, 90), v: v, n: npS(b.n, 320) } : null; }
+        if (t === 'table') {
+            head = (Array.isArray(b.head) ? b.head : []).map(function (x) { return npS(x, 80); }).slice(0, 6); cols = head.length;
+            if (cols < 2 || !Array.isArray(b.rows)) return null;
+            rows = b.rows.filter(Array.isArray).slice(0, 12).map(function (r) { var o = r.slice(0, cols).map(function (x) { return npS(x, 180); }); while (o.length < cols) o.push(''); return o; });
+            return rows.length ? { t: t, title: npS(b.title, 90), head: head, rows: rows } : null;
+        }
+        if (t === 'flow') { steps = (Array.isArray(b.steps) ? b.steps : []).map(function (x) { return npS(x, 90); }).filter(Boolean).slice(0, 8); return steps.length >= 2 ? { t: t, title: npS(b.title, 90), steps: steps } : null; }
+        if (t === 'map') { nodes = (Array.isArray(b.nodes) ? b.nodes : []).map(function (x) { return npS(x, 60); }).filter(Boolean).slice(0, 8); return (nodes.length >= 3 && npS(b.center, 60)) ? { t: t, center: npS(b.center, 60), nodes: nodes } : null; }
+        if (t === 'eg') { v = String(b.v == null ? '' : b.v).replace(/\r/g, '').trim().slice(0, 1600); return v ? { t: t, title: npS(b.title, 90), v: v } : null; }
+        if (t === 'tip' || t === 'mnem') { v = npS(b.v, 420); return v ? { t: t === 'mnem' ? 'mn' : t, v: v } : null; }
+        return null;
+    }
+    function npLangOk(blocks, lang) {
+        var t = JSON.stringify(blocks), dev = (t.match(/[\u0900-\u097F]/g) || []).length, lat = (t.match(/[A-Za-z]/g) || []).length, tot = dev + lat;
+        if (tot < 40) return true;
+        return lang === 'Hindi' ? dev / tot >= 0.3 : dev / tot <= 0.1;
+    }
+
+    /* --- prompts --- */
+    function npBand(c) { return c <= 2 ? 0 : (c <= 5 ? 1 : (c <= 8 ? 2 : (c <= 10 ? 3 : 4))); }
+    function npCommon(o) {
+        var sn = o.subjN && o.subj !== 'other' ? o.subjN[1] : '', b = qpBoard(o.subj), t;
+        t = 'You are the Notes Maker inside Notes Bazar, a study app for Indian school students (Bihar and all India). Make ' + (o.type === 'short' ? 'SHORT' : 'LONG (detailed)') + ' study notes for Class ' + o.cls + (sn ? ', subject ' + sn : '') + ', chapter / topic: "' + o.topic + '". ' + qpLangRule(o.lang, o.subj) + ' ' + NP_LEVEL[npBand(o.cls)] + ' ';
+        if (b === 'ncert') t += 'SYLLABUS RULE: follow the NCERT textbook and CBSE syllabus of Class ' + o.cls + '. ';
+        else if (b === 'bseb') t += 'SYLLABUS RULE: follow the textbooks and syllabus of BSEB (Bihar School Examination Board) / SCERT Bihar for Class ' + o.cls + ', NOT NCERT / CBSE books. ';
+        else t += 'Use well-established facts only; follow the school textbooks (BSEB / SCERT Bihar or NCERT) that fit the topic. ';
+        if (!o.src) t += 'CHAPTER RULE (very important): the topic may be a lesson, story, poem or chapter of a school textbook, sometimes with the book name. First identify the REAL lesson in that book and use its actual content (author, characters, events, theme, important lines, vocabulary, grammar). Never replace it with a different or generic topic. If you are NOT sure what that lesson contains, do not guess and do not invent: reply with only {"unsure":true}. ';
+        if (o.book) t += 'The textbook is: "' + o.book + '". ';
+        if (o.src) t += 'SOURCE TEXT of the lesson is given below (it may be scanned from a photo or PDF, so ignore small spelling mistakes, broken words and stray symbols and understand the meaning). Never reply {"unsure":true} when source text is given. Make ALL the notes only from this text; do not add outside facts about it.\n"""\n' + o.src.slice(0, 9000) + '\n"""\n';
+        return t + 'Be sure every fact, definition and formula is correct; never invent facts. ';
+    }
+    function npOutlinePrompt(o, N, maxImg) {
+        return npCommon(o) + 'STEP 1: make ONLY the OUTLINE. Plan exactly ' + N + ' sections in the best teaching order (for a story, poem or lesson: introduction and author, summary, characters or main ideas, important lines and words, message). The last section must be a "Quick revision" section with the key points' + (o.type === 'long' ? ', and the section before it must be "Exam tips and common mistakes"' : '') + '. For each section give a short heading, ONE matching emoji as "icon", and "img": a short ENGLISH search phrase for a real labelled diagram or picture of that section (for example "human heart labelled diagram"), or an empty string if no picture would help. Use pictures for at most ' + maxImg + ' sections only (never for Quick revision, Maths working or grammar). Headings and the title are written in the chosen language. Reply with ONLY one JSON object, no markdown: {"title":"short notes title","sections":[{"h":"heading","icon":"📘","img":""}]} ' +
+            'Only if the topic is harmful, illegal or sexual, reply with one friendly sentence (no JSON).';
+    }
+    function npSecPrompt(o, outline, i, words) {
+        var list = outline.sections.map(function (s, k) { return (k + 1) + '. ' + s.h; }).join('; '), s = outline.sections[i], long = o.type === 'long', q;
+        q = npCommon(o) + 'The notes outline is: ' + list + '. NOW write ONLY section ' + (i + 1) + ' of ' + outline.sections.length + ': "' + s.h + '". Do not repeat what other sections cover. ';
+        q += 'Use these block types inside "blocks" (pick what fits; vary them): ' +
+            '{"t":"def","k":"term","v":"definition"} ; ' +
+            '{"t":"pts","title":"optional small heading","items":["point","point"]} ; ' +
+            '{"t":"formula","k":"formula name","v":"the formula","n":"meaning of each symbol and its unit"} ; ' +
+            '{"t":"table","title":"","head":["col1","col2"],"rows":[["a","b"]]} ; ' +
+            '{"t":"flow","title":"","steps":["step 1","step 2","step 3"]} for a process or sequence (3 to 7 short steps) ; ' +
+            '{"t":"map","center":"main idea","nodes":["part 1","part 2","part 3"]} for a mind map (3 to 8 short nodes) ; ' +
+            '{"t":"eg","title":"Example","v":"solved example, use \\n between steps"} ; ' +
+            '{"t":"tip","v":"important exam point"} ; {"t":"mnem","v":"memory trick or mnemonic"}. ';
+        q += 'Put **double stars** around the most important words (about 3 to 8 per section) so they get highlighted. Write formulas in plain Unicode text (x², √, ×, ÷, →, Δ, π), never LaTeX and never $ signs. ';
+        if (long) q += 'LONG NOTES: give the complete definition and clear explanation, EVERY important formula with the meaning of each symbol and its unit, derivation or working steps where the textbook has them, a comparison table when two or more things can be compared, a flow or map for processes, at least one solved example for Maths / Science numericals, and a tip' + (' and a memory trick when useful') + '. Write about ' + words + ' words in total for this section (formula and derivation sections may be a little longer). ';
+        else q += 'SHORT NOTES: keep it brief and quick to revise. Every definition is only 1 or 2 lines. Points are short (under 14 words). Add the formulas that matter. Use at most one table, flow or map and only if it really helps. About ' + words + ' words in total for this section. ';
+        if (/revision/i.test(s.h)) q += 'This is the quick revision section: use mostly "pts" (the most important points) and formulas only. ';
+        return q + 'Reply with ONLY one JSON object, no markdown: {"blocks":[ ... ]} Only if the topic is harmful, illegal or sexual, reply with one friendly sentence (no JSON).';
+    }
+
+    /* --- pictures (Wikimedia Commons) --- */
+    async function npImg(q) {
+        var ctrl = new AbortController(), tm = setTimeout(function () { ctrl.abort(); }, 9000), r, j, pages, arr, i, ii, p;
+        try {
+            r = await fetch('https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=10&gsrsearch=' + encodeURIComponent(q) + '&prop=imageinfo&iiprop=url|size|mime&iiurlwidth=700', { signal: ctrl.signal });
+            j = await r.json(); pages = j && j.query && j.query.pages; if (!pages) return null;
+            arr = Object.keys(pages).map(function (k) { return pages[k]; }).sort(function (a, b) { return (a.index || 0) - (b.index || 0); });
+            for (i = 0; i < arr.length; i++) {
+                p = arr[i]; ii = p.imageinfo && p.imageinfo[0];
+                if (!ii || !ii.thumburl || !/^image\/(jpeg|png|svg\+xml)$/.test(ii.mime || '') || (ii.width || 0) < 300) continue;
+                return { src: ii.thumburl, cap: String(p.title || '').replace(/^File:/i, '').replace(/\.[a-z]{3,4}$/i, '').replace(/_/g, ' ').slice(0, 90) };
+            }
+        } catch (e) {} finally { clearTimeout(tm); }
+        return null;
+    }
+
+    /* --- generation --- */
+    async function npSection(o, outline, i, words, run) {
+        var a, out, bl, nb;
+        for (a = 0; a < 2; a++) {
+            if (run !== NP.run) return null;
+            try { out = await window.nbCallAi([{ role: 'system', content: npSecPrompt(o, outline, i, words) }, { role: 'user', content: 'Write the section now. ' + qpLangRule(o.lang, o.subj) }], { timeout: 90000 }); } catch (e) { continue; }
+            bl = npBlocks(out); if (!bl) continue;
+            nb = bl.map(npNB).filter(Boolean);
+            if (nb.length && npLangOk(nb, o.lang)) return nb;
+        }
+        return [];
+    }
+    async function npGenerate(o) {
+        var run = ++NP.run, band = npBand(o.cls), N = NP_SEC[o.type][band], words = NP_WORDS[o.type][band], maxImg = o.pics ? (o.type === 'short' ? 2 : 4) : 0, outline = null, tries, out, j, msg = '', secs, res, next = 0, done = 0, notes = [];
+        npStatus('Planning the notes…');
+        for (tries = 0; tries < 2 && !outline; tries++) {
+            try { out = await window.nbCallAi([{ role: 'system', content: npOutlinePrompt(o, N, maxImg) }, { role: 'user', content: 'Make the outline now. ' + qpLangRule(o.lang, o.subj) }], { timeout: 90000 }); } catch (e) { continue; }
+            if (run !== NP.run) return null;
+            if (/"unsure"\s*:\s*true/i.test(String(out || '')) && !o.src) { msg = 'I am not sure what is in "' + o.topic + '". To get the real chapter, write the exact lesson name and book name, or paste / scan the chapter text in the box below, then try again.'; break; }
+            j = npJson(out);
+            if (j && Array.isArray(j.sections)) {
+                j.sections = j.sections.filter(function (s) { return s && typeof s.h === 'string' && s.h.trim(); }).slice(0, N + 1).map(function (s) { return { h: npS(s.h, 90), icon: npS(s.icon, 8) || '📘', img: npS(s.img, 80) }; });
+                if (j.sections.length >= 2) outline = j;
+            } else if (!j && out && !/\{/.test(out)) { msg = String(out).trim().slice(0, 300); break; }
+        }
+        if (!outline) return { msg: msg || 'The AI could not plan the notes right now. Please tap "Make notes" again.' };
+        secs = outline.sections; res = new Array(secs.length);
+        async function worker() {
+            var i;
+            while (next < secs.length) {
+                i = next++; if (run !== NP.run) return;
+                npStatus('Writing section ' + (i + 1) + ' of ' + secs.length + '…');
+                res[i] = await npSection(o, outline, i, words, run); done++;
+                npStatus('Written ' + done + ' of ' + secs.length + ' sections…');
+            }
+        }
+        await Promise.all([worker(), worker()]);
+        if (run !== NP.run) return null;
+        secs.forEach(function (s, i) { if (res[i] && res[i].length) notes.push({ h: s.h, icon: s.icon, img: s.img, blocks: res[i], pic: null }); });
+        if (!notes.length) return { msg: 'The AI could not write these notes in ' + o.lang + ' right now. Please tap "Make notes" again.' };
+        if (maxImg) {
+            npStatus('Finding pictures…');
+            var want = notes.filter(function (n) { return n.img; }).slice(0, maxImg);
+            await Promise.all(want.map(function (n) { return npImg(n.img).then(function (r) { n.pic = r; }); }));
+            if (run !== NP.run) return null;
+        }
+        return { title: String(outline.title || o.topic).slice(0, 120), notes: notes };
+    }
+
+    /* --- drawing --- */
+    function npWrap(t, n) {
+        var w = String(t).split(' '), L = [], cur = '';
+        w.forEach(function (x) { if (cur && (cur + ' ' + x).length > n) { L.push(cur); cur = x; } else cur = (cur ? cur + ' ' : '') + x; });
+        if (cur) L.push(cur); return L.slice(0, 3);
+    }
+    function npMapSvg(center, nodes, ci) {
+        var W = 640, H = 380, cx = W / 2, cy = H / 2, rx = 240, ry = 135, n = nodes.length, E = NB.esc, P = NP_PAL[ci % 6], lines = '', boxes = '', cl = npWrap(center, 14), i, a, x, y, ls, w, h, c, k;
+        var cw = Math.min(180, Math.max(100, Math.max.apply(null, cl.map(function (l) { return l.length; })) * 9.5 + 22)), ch = cl.length * 18 + 16;
+        for (i = 0; i < n; i++) {
+            a = -Math.PI / 2 + i * 2 * Math.PI / n; x = cx + rx * Math.cos(a); y = cy + ry * Math.sin(a);
+            ls = npWrap(nodes[i], 16); c = NP_PAL[(ci + i + 1) % 6];
+            w = Math.min(165, Math.max(80, Math.max.apply(null, ls.map(function (l) { return l.length; })) * 8.6 + 20)); h = ls.length * 16 + 14;
+            lines += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="' + c[0] + '" stroke-width="3" stroke-linecap="round"/>';
+            boxes += '<rect x="' + (x - w / 2).toFixed(1) + '" y="' + (y - h / 2).toFixed(1) + '" width="' + w + '" height="' + h + '" rx="11" fill="' + c[1] + '" stroke="' + c[0] + '" stroke-width="2"/><text x="' + x.toFixed(1) + '" y="' + (y - (ls.length - 1) * 8 + 4.5).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="600" fill="#111">' +
+                ls.map(function (l, q) { return '<tspan x="' + x.toFixed(1) + '"' + (q ? ' dy="16"' : '') + '>' + E(l) + '</tspan>'; }).join('') + '</text>';
+        }
+        boxes += '<rect x="' + (cx - cw / 2) + '" y="' + (cy - ch / 2) + '" width="' + cw + '" height="' + ch + '" rx="14" fill="' + P[0] + '"/><text x="' + cx + '" y="' + (cy - (cl.length - 1) * 9 + 5) + '" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">' +
+            cl.map(function (l, q) { return '<tspan x="' + cx + '"' + (q ? ' dy="18"' : '') + '>' + E(l) + '</tspan>'; }).join('') + '</text>';
+        return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img">' + lines + boxes + '</svg>';
+    }
+    function npBlockHtml(b, L, ci) {
+        var h = '<div class="np-b">', lbl = function (k) { return '<span class="np-lb">' + NB.esc(L[k]) + '</span>'; };
+        if (b.t === 'def') h += '<div class="np-def">' + lbl('def') + (b.k ? '<b>' + npH(b.k) + ':</b> ' : '') + npH(b.v) + '</div>';
+        else if (b.t === 'pts') h += (b.title ? '<div class="np-pt">' + npH(b.title) + '</div>' : '') + '<ul class="np-p">' + b.items.map(function (x) { return '<li>' + npH(x) + '</li>'; }).join('') + '</ul>';
+        else if (b.t === 'formula') h += '<div class="np-f">' + lbl('f') + (b.k ? '<b>' + npH(b.k) + '</b>' : '') + '<div class="np-fv">' + npH(b.v) + '</div>' + (b.n ? '<div class="np-fn">' + npH(b.n) + '</div>' : '') + '</div>';
+        else if (b.t === 'table') h += (b.title ? '<div class="np-pt">' + npH(b.title) + '</div>' : '') + '<div class="np-tw"><table class="np-t"><thead><tr>' + b.head.map(function (x) { return '<th>' + npH(x) + '</th>'; }).join('') + '</tr></thead><tbody>' + b.rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + npH(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+        else if (b.t === 'flow') h += (b.title ? '<div class="np-pt">' + npH(b.title) + '</div>' : '') + '<div class="np-fl">' + b.steps.map(function (x, i) { return (i ? '<span class="np-fa">➜</span>' : '') + '<span class="np-fs">' + npH(x) + '</span>'; }).join('') + '</div>';
+        else if (b.t === 'map') h += '<div class="np-map">' + npMapSvg(b.center, b.nodes, ci) + '</div>';
+        else if (b.t === 'eg') h += '<div class="np-eg">' + lbl('eg') + (b.title && b.title.toLowerCase() !== 'example' ? '<b>' + npH(b.title) + '</b> ' : '') + npH(b.v).replace(/\n/g, '<br>') + '</div>';
+        else if (b.t === 'tip') h += '<div class="np-tip">' + lbl('tip') + '💡 ' + npH(b.v) + '</div>';
+        else if (b.t === 'mn') h += '<div class="np-mn">' + lbl('mn') + '🧠 ' + npH(b.v) + '</div>';
+        return h + '</div>';
+    }
+    function npBody(d) {
+        var o = d.o, L = NP_L[o.lang] || NP_L.English, E = NB.esc, h = '', anyPic = false, bn = qpBoardName(o.subj);
+        h += '<div class="np-hd"><div class="np-ht">' + E(d.title) + '</div><div class="np-hm">Notes Bazar · ' + E(L.cls) + ' ' + o.cls + (o.subj !== 'other' ? ' · ' + E(qpSubjName(o)) : '') + ' · ' + E(L[o.type]) + (bn ? ' · ' + E(bn) : '') + '</div></div>';
+        d.notes.forEach(function (s, i) {
+            var P = NP_PAL[i % 6];
+            h += '<section class="np-s" style="--c:' + P[0] + ';--b:' + P[1] + '"><h2><span class="np-n">' + (i + 1) + '</span><span>' + E(s.icon) + '</span><span>' + E(s.h) + '</span></h2>';
+            if (s.pic) { anyPic = true; h += '<figure class="np-img"><img src="' + E(s.pic.src) + '" alt="' + E(s.pic.cap) + '" loading="eager"><figcaption>' + E(s.pic.cap) + '</figcaption><button type="button" class="np-rm" title="Remove picture" aria-label="Remove picture">✕</button></figure>'; }
+            s.blocks.forEach(function (b) { h += npBlockHtml(b, L, i); });
+            h += '</section>';
+        });
+        h += '<div class="np-ft">Notes Bazar · AI Notes Maker' + (anyPic ? ' · ' + E(L.cred) : '') + '</div>';
+        return h;
+    }
+    function npResult() {
+        var body = $('nbntBody'), d = NP.doc;
+        if (!$('npStyle')) { var st = document.createElement('style'); st.id = 'npStyle'; st.textContent = NP_CSS; document.head.appendChild(st); }
+        var pics = d.notes.some(function (s) { return s.pic; });
+        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-book-open"></i> Your notes</h3><p class="nbo-sub">' + d.notes.length + ' sections' + (pics ? '. Tap ✕ on a picture to remove it if it does not match.' : '') + '</p>' +
+            '<div class="nbqp-prev np-prev"><div class="npw" id="npDoc">' + npBody(d) + '</div></div>' +
+            '<button type="button" class="nbo-save" id="npPdf"><i class="fa-solid fa-download"></i> Download PDF</button>' +
+            '<p class="nbo-sub" style="margin:8px 0 0">In the window that opens, choose <b>Save as PDF</b> as the printer. If colours are missing, turn on <b>Background graphics</b>.</p>' +
+            '<button type="button" class="nbo-skip" id="npNew">Make other notes</button>';
+        $('npPdf').addEventListener('click', npPrint); $('npNew').addEventListener('click', npForm);
+        $('npDoc').addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.np-rm'); if (b && b.parentNode) b.parentNode.parentNode.removeChild(b.parentNode); });
+    }
+    function npPrint() {
+        var doc = $('npDoc'); if (!doc || !NP.doc) return;
+        var clone = doc.cloneNode(true); Array.prototype.forEach.call(clone.querySelectorAll('.np-rm'), function (x) { x.parentNode.removeChild(x); });
+        var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + NB.esc('Notes - ' + NP.doc.o.topic) + '</title><style>@page{size:A4;margin:12mm}body{margin:0}' + NP_CSS + '</style></head><body><div class="npw">' + clone.innerHTML + '</div></body></html>';
+        var f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+        document.body.appendChild(f);
+        var d = f.contentWindow.document; d.open(); d.write(html); d.close();
+        var go = function () {
+            try { f.contentWindow.focus(); f.contentWindow.print(); }
+            catch (e) { var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); setTimeout(function () { w.print(); }, 600); } else NB.toast('Please allow pop-ups to download the PDF.', 3500); }
+            setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 90000);
+        };
+        var imgs = Array.prototype.slice.call(d.images || []), t0 = Date.now();      // wait until the pictures are loaded (max 8 s)
+        (function wait() { if (imgs.every(function (im) { return im.complete; }) || Date.now() - t0 > 8000) setTimeout(go, 300); else setTimeout(wait, 200); })();
+        NB.toast('Choose "Save as PDF" as the printer in the next window.', 4500);
+    }
+
+    /* --- form --- */
+    function npBoardHint() {
+        var b = $('npBoard'), v = $('npSubj') && $('npSubj').value, n = qpBoardName(v); if (!b) return;
+        b.innerHTML = n ? '<i class="fa-solid fa-book"></i> Notes will follow <b>' + n + '</b> books' : 'Notes will follow the best matching textbook';
+    }
+    function npFillSubj(keep) {
+        var cls = parseInt($('npCls').value, 10), sel = $('npSubj'), l = qpSubjList(cls);
+        sel.innerHTML = l.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === keep ? ' selected' : '') + '>' + NB.esc(x[1] + (x[0] === 'other' ? '' : ' (' + x[2] + ')')) + '</option>'; }).join('');
+        npBoardHint();
+    }
+    function npForm() {
+        NP.run++; NP.busy = false;
+        var body = $('nbntBody'), s = LSX.get('nb_np_opts', null) || {}, pr = NB.profile();
+        var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
+        body.innerHTML = '<button type="button" class="np-back" id="npBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button>' +
+            '<h3 class="nbo-h"><i class="fa-solid fa-book-open"></i> AI Notes Maker</h3><p class="nbo-sub">Colourful notes as a PDF: definitions, formulas, tables, flow charts, mind maps and pictures, made for your class.</p>' +
+            '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('npCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
+            '<label>Notes type' + qpSel('npType', [['short', 'Short notes'], ['long', 'Long (full) notes']], s.type || 'short') + '</label></div>' +
+            '<div style="margin-top:10px"><label class="nbo-l" for="npSubj" style="margin-top:0">Subject</label><select id="npSubj" class="nbo-in"></select><div class="qp-board" id="npBoard"></div></div>' +
+            '<div style="margin-top:10px"><label class="nbo-l" for="npTopic">Chapter / topic</label><input id="npTopic" class="nbo-in" maxlength="120" autocomplete="off" placeholder="e.g. Life Processes, Idgah, Quadratic Equations" value="' + NB.esc(s.topic || '') + '"></div>' +
+            '<div class="nbo-sub" id="npTypeHint" style="margin:6px 0 0"></div>' +
+            '<details id="npMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
+            '<label class="nbo-l" for="npBook">Book name (optional)</label><input id="npBook" class="nbo-in" maxlength="80" autocomplete="off" placeholder="e.g. Kislay Bhag 3" value="' + NB.esc(s.book || '') + '">' +
+            qpScanHtml('np') +
+            '<label class="nbo-l" for="npSrc">Chapter text (optional)</label><textarea id="npSrc" class="nbo-in" rows="5" maxlength="12000" placeholder="Paste the lesson text here, or use Camera / Photo / PDF above. Notes will then come only from it."></textarea></details>' +
+            '<div class="nbai-set"><label>Language' + qpSel('npLang', [['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Hinglish', 'Hinglish']], s.lang || 'English') + '</label>' +
+            '<label>Pictures' + qpSel('npPics', [['1', 'Add pictures / diagrams'], ['0', 'No pictures']], s.pics === '0' ? '0' : '1') + '</label></div>' +
+            '<div class="nbo-sub" id="npSt" style="min-height:18px;margin:8px 0 0" aria-live="polite"></div><div class="nbo-err" id="npErr"></div>' +
+            '<button type="button" class="nbo-save" id="npGo"><i class="fa-solid fa-wand-magic-sparkles"></i> Make notes</button>';
+        npFillSubj(s.subj); qpScanInit('np');
+        var hint = function () { var t = $('npType').value, c = parseInt($('npCls').value, 10), b = npBand(c); $('npTypeHint').textContent = t === 'short' ? 'Short notes: quick 1 to 2 line definitions and key points (about ' + NP_SEC.short[b] + ' sections for Class ' + c + ').' : 'Long notes: full definitions, formulas, tables, diagrams, examples and exam tips (about ' + NP_SEC.long[b] + ' sections for Class ' + c + ').'; };
+        hint(); $('npType').addEventListener('change', hint);
+        $('npCls').addEventListener('change', function () { npFillSubj($('npSubj').value); hint(); });
+        $('npSubj').addEventListener('change', function () {
+            npBoardHint(); var v = this.value, lg = $('npLang');
+            if (v === 'hindi' || v === 'maithili' || v === 'sanskrit') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';
+        });
+        $('npBack').addEventListener('click', function () { NB.close('nbNt'); NB.openPdfMaker(); });
+        $('npGo').addEventListener('click', async function () {
+            if (NP.busy) return;
+            var err = $('npErr'); err.textContent = '';
+            var cl = parseInt($('npCls').value, 10), sj = qpSubjFind(cl, $('npSubj').value), topic = String($('npTopic').value || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+            if (!topic && sj[0] !== 'other') topic = sj[1] + ' (important chapters)';
+            if (topic.length < 2) { err.textContent = 'Please write the chapter or topic first, or choose a subject.'; return; }
+            var o = { topic: topic, cls: cl, type: $('npType').value, lang: $('npLang').value, subj: sj[0], subjN: sj, pics: $('npPics').value === '1',
+                book: String($('npBook').value || '').replace(/\s+/g, ' ').trim().slice(0, 80), src: String($('npSrc').value || '').trim().slice(0, 12000) };
+            LSX.set('nb_np_opts', { topic: String($('npTopic').value || '').trim(), book: o.book, cls: o.cls, type: o.type, lang: o.lang, subj: o.subj, pics: o.pics ? '1' : '0' });
+            if (typeof window.nbCallAi !== 'function') { err.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
+            NP.busy = true; var go = $('npGo'); go.disabled = true;
+            var r = await npGenerate(o);
+            NP.busy = false; if (go) go.disabled = false;
+            if (!r) return;                                        // window was closed while it was working
+            npStatus('');
+            if (r.msg) { err.textContent = r.msg; return; }
+            NP.doc = { o: o, title: r.title, notes: r.notes }; npResult();
+        });
+    }
+    function buildNotes() {
+        document.body.appendChild(NB.mk('<div class="nbo" id="nbNt" aria-hidden="true"><div class="nbo-card nbq nbqp" role="dialog" aria-modal="true" aria-label="AI Notes Maker">' +
+            '<button type="button" class="nbo-x" id="nbntX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="nbntBody"></div></div></div>'));
+        $('nbntX').addEventListener('click', function () { NB.close('nbNt'); });
+        NB.onClose.nbNt = function () { NP.run++; NP.busy = false; };
+    }
+    NB.openNotes = function () { closeSiteMenu(); NB.close('nbPm'); if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npForm(); };
+
+    /* --- hub: AI PDF Maker --- */
+    NB.openPdfMaker = function () {
+        closeSiteMenu();
+        if (!$('nbPm')) {
+            document.body.appendChild(NB.mk('<div class="nbo" id="nbPm" aria-hidden="true"><div class="nbo-card" role="dialog" aria-modal="true" aria-label="AI PDF Maker" style="max-width:440px">' +
+                '<button type="button" class="nbo-x" id="nbpmX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
+                '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI PDF Maker</h3><p class="nbo-sub">What do you want to make today?</p>' +
+                '<button type="button" class="pm-card" id="pmQp" style="--pm:linear-gradient(135deg,#0ea5e9,#6366f1)"><span class="pm-ic"><i class="fa-solid fa-file-circle-question"></i></span><span class="pm-tx"><b>Question Paper Maker</b><small>MCQ, short and long questions or a full Model Set, with answers, as PDF</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
+                '<button type="button" class="pm-card" id="pmNt" style="--pm:linear-gradient(135deg,#f97316,#db2777)"><span class="pm-ic"><i class="fa-solid fa-book-open"></i></span><span class="pm-tx"><b>Notes Maker</b><small>Colourful short or long notes with definitions, formulas, diagrams and pictures, as PDF</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
+                '</div></div>'));
+            $('nbpmX').addEventListener('click', function () { NB.close('nbPm'); });
+            $('pmQp').addEventListener('click', function () { NB.close('nbPm'); NB.openPaper(); });
+            $('pmNt').addEventListener('click', function () { NB.close('nbPm'); NB.openNotes(); });
+        }
+        NB.open('nbPm');
+    };
     function qpCta() {                                           // extra button on the "Tests" screen
         var a = $('nbqAi'); if (!a || $('nbqPaper')) return;
         var b = document.createElement('button'); b.type = 'button'; b.id = 'nbqPaper'; b.className = 'nbai-cta'; b.style.background = 'linear-gradient(135deg,#0ea5e9,#6366f1)';

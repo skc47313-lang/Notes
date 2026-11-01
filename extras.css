@@ -1061,3 +1061,11 @@ html.dark .qp-sb{background:#1e293b;border-color:#334155;color:#c7d2fe}
 .qp-sb i{font-size:18px}.qp-sb:disabled{opacity:.5;cursor:wait}
 .qp-scan-s{font-size:12px;margin-top:8px;color:var(--nb-muted,#64748b);min-height:0;line-height:1.4}.qp-scan-s:empty{display:none}
 .qp-scan-s.qp-bad{color:#dc2626}
+
+/* AI PDF Maker hub + Notes Maker */
+.np-back{border:0;background:transparent;color:var(--nb-muted,#64748b);font-size:12.5px;font-weight:700;cursor:pointer;padding:2px 0 6px;display:inline-flex;align-items:center;gap:6px}
+.pm-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:10px;padding:14px;border:0;border-radius:16px;color:#fff;background:var(--pm);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.pm-card:active{transform:scale(.98)}
+.pm-ic{flex:none;width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:22px}
+.pm-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.pm-tx b{font-size:15px}.pm-tx small{font-size:12px;opacity:.92;line-height:1.35}
+.np-prev{max-height:52dvh}
