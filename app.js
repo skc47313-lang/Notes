@@ -1863,7 +1863,12 @@ function sha256(str) {
                     body = mt[2];
                 }
             }
-            const contact = m.email && m.email !== '-' ? `<span class="text-[11px] text-slate-400"><i class="fa-solid fa-at mr-1"></i>${esc(m.email)}</span>` : '';
+            const legacyId = /^User ID: /.test(m.email || '') ? String(m.email).slice(9) : '';
+            const sid = m.userId || legacyId;
+            const idBadge = sid && sid !== 'guest'
+                ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300"><i class="fa-solid fa-id-badge mr-1"></i>User ID: @${esc(sid)}</span>`
+                : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500"><i class="fa-solid fa-user-slash mr-1"></i>Guest (not logged in)</span>`;
+            const contact = (m.email && m.email !== '-' && !legacyId ? `<span class="text-[11px] text-slate-400"><i class="fa-solid fa-at mr-1"></i>${esc(m.email)}</span>` : '') + idBadge;
             return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
                 <div class="flex items-start gap-3">
                     <div class="${st.color} text-white w-10 h-10 rounded-xl flex items-center justify-center shrink-0"><i class="fa-solid ${st.icon}"></i></div>
@@ -2125,18 +2130,27 @@ function sha256(str) {
             }
         };
 
+        // who is sending: the logged-in user id (shown to the admin on every support / complain / request)
+        function senderId() {
+            try { const ac = window.NB && window.NB.account && window.NB.account(); return ac && ac.userId ? String(ac.userId).slice(0, 40) : ''; } catch (e) { return ''; }
+        }
         async function pushMessage(m) {
             const { db, ref, set, push } = await loadSdk();
-            await set(push(ref(db, 'notes_bazar_messages')), { ...m, createdAt: Date.now(), reply: "" });
+            const uid = senderId(), base = { ...m, createdAt: Date.now(), reply: "" };
+            try {
+                await set(push(ref(db, 'notes_bazar_messages')), { ...base, userId: uid || 'guest' });
+            } catch (e1) {
+                // strict Firebase rules may not know the new "userId" field: keep the id inside the old "email" field instead
+                await set(push(ref(db, 'notes_bazar_messages')), { ...base, email: 'User ID: ' + (uid || 'guest') });
+            }
         }
 
         window.submitUserMessage = async function(e, type) {
             e.preventDefault();
             const name = document.getElementById(`${type}Name`).value;
-            const email = document.getElementById(`${type}Email`).value;
             const message = document.getElementById(`${type}Msg`).value;
             try {
-                await pushMessage({ type, name, email, message });
+                await pushMessage({ type, name, email: '-', message });
                 alert(`${type.charAt(0).toUpperCase() + type.slice(1)} submitted successfully!`);
                 closeAllModals();
                 document.getElementById(`${type}Form`).reset();
@@ -2151,7 +2165,7 @@ function sha256(str) {
             const g = id => document.getElementById(id).value.trim();
             const message = `[${g('wishType')} | ${g('wishClass')} | ${g('wishSubject')}] ${g('wishMsg')}`;
             try {
-                await pushMessage({ type: 'wish', name: g('wishName') || 'Anonymous', email: g('wishContact') || '-', message });
+                await pushMessage({ type: 'wish', name: g('wishName') || 'Anonymous', email: '-', message });
                 alert("Request received! We will try to upload it soon. 🙏");
                 closeModal('wishModal');
                 document.getElementById('wishForm').reset();
@@ -2465,7 +2479,43 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             btn.addEventListener('dragstart', e => e.preventDefault());
         }
 
+        // ===== Listen to a Bazar AI answer (browser text-to-speech, works offline on most phones) =====
+        let nbSpeakBtn = null;
+        function nbSpeakReset() {
+            if (nbSpeakBtn) { nbSpeakBtn.classList.remove('on'); const sp = nbSpeakBtn.querySelector('span'), ic = nbSpeakBtn.querySelector('i'); if (sp) sp.textContent = 'Listen'; if (ic) ic.className = 'fa-solid fa-volume-high'; }
+            nbSpeakBtn = null;
+        }
+        window.nbStopSpeak = function() { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {} nbSpeakReset(); };
+        window.nbSpeak = function(btn) {
+            const synth = window.speechSynthesis;
+            if (!synth || typeof SpeechSynthesisUtterance === 'undefined') { alert('Your browser cannot read aloud. Please try Chrome.'); return; }
+            if (nbSpeakBtn === btn) { nbStopSpeak(); return; }          // tap again = stop
+            nbStopSpeak();
+            const box = btn.parentNode.querySelector('.nb-say'); if (!box) return;
+            const c = box.cloneNode(true); c.querySelectorAll('button,a,script,style').forEach(n => n.remove());
+            c.querySelectorAll('br,li,p,div').forEach(n => n.insertAdjacentText('afterend', '. '));
+            let text = (c.textContent || '')
+                .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ')   // emojis are not read out
+                .replace(/[*_#`>~|]+/g, ' ').replace(/\s+/g, ' ').trim();
+            if (!text) return;
+            const hi = /[ऀ-ॿ]/.test(text), lang = hi ? 'hi-IN' : 'en-IN';
+            const voices = synth.getVoices() || [];
+            const voice = voices.find(v => v.lang === lang) || voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()) && (!hi || true)) || null;
+            const parts = text.match(/[^.!?।]+[.!?।]?/g) || [text], chunks = [];
+            let cur = '';
+            parts.forEach(p => { if ((cur + p).length > 170 && cur) { chunks.push(cur); cur = p; } else cur += p; });
+            if (cur.trim()) chunks.push(cur);
+            nbSpeakBtn = btn; btn.classList.add('on');
+            btn.querySelector('span').textContent = 'Stop'; btn.querySelector('i').className = 'fa-solid fa-circle-stop';
+            chunks.forEach((t, i) => {
+                const u = new SpeechSynthesisUtterance(t.trim()); u.lang = lang; if (voice) u.voice = voice; u.rate = 1; u.pitch = 1;
+                if (i === chunks.length - 1) { u.onend = u.onerror = () => { if (nbSpeakBtn === btn) nbSpeakReset(); }; }
+                synth.speak(u);
+            });
+        };
+
         window.clearAiChat = function() {
+            nbStopSpeak();
             aiHistory = [];
             document.getElementById('aiChatHistory').innerHTML = `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">👋 New chat started! What would you like to ask?</div></div>`;
         };
@@ -2481,7 +2531,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             document.getElementById('aiSendBtn').disabled = true;
             input.value = '';
 
-            const botBubble = (html, extra) => chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed">${html}${extra || ''}</div></div>`);
+            const botBubble = (html, extra) => chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed"><div class="nb-say">${html}</div>${extra || ''}<button type="button" class="nb-listen" onclick="nbSpeak(this)" aria-label="Listen to this answer"><i class="fa-solid fa-volume-high"></i><span>Listen</span></button></div></div>`);
             chat.insertAdjacentHTML('beforeend', `<div class="flex justify-end mb-3"><div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${esc(userText)}</div></div>`);
             chat.scrollTop = chat.scrollHeight;
 
@@ -2524,7 +2574,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             typing.remove();
             const note = offline ? `<div class="mt-2 text-[10px] text-amber-600">⚠️ Live AI is not reachable (${esc(aiWhy(aiLastErr))}), so ${wiki ? 'this answer is from Wikipedia' : 'this was answered in offline mode'}. <button type="button" onclick="nbAiRetry()" class="underline font-bold">Try the live AI again</button></div>` : '';
             const wikiHtml = wiki ? `<strong>${esc(wiki.title)}</strong><br>${esc(wiki.text).replace(/\n/g, '<br>')}` + (wiki.url ? `<br><a href="${wiki.url}" target="_blank" rel="noopener noreferrer" class="underline font-semibold">Read more on Wikipedia</a>` : '') : '';
-            botBubble((wiki ? wikiHtml : aiFmt(reply)) + note, aiRelatedHtml(related.list));
+            botBubble((wiki ? wikiHtml : aiFmt(reply)), note + aiRelatedHtml(related.list));
             finish();
         };
 
@@ -2545,7 +2595,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         }
 
         window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
-        window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); };
+        window.closeModal = function(id) { if (id === 'aiModal' && window.nbStopSpeak) nbStopSpeak(); document.getElementById(id).classList.add('hidden'); };
         window.closeAllModals = function() {
             document.querySelectorAll('.fixed[id$="Modal"]').forEach(el => el.classList.add('hidden'));
         };

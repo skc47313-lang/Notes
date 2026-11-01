@@ -1770,6 +1770,7 @@
                 ang: Math.round(num(s.ang, 0, 360, 135)), solid: col(s.solid, '#4f46e5'),
                 img: photo(s.img), imgM: photo(s.imgM), fit: s.fit === 'contain' ? 'contain' : 'cover', pos: /^(top|center|bottom)$/.test(s.pos) ? s.pos : 'center', ov: Math.round(num(s.ov, 0, 85, 35)),
                 tc: col(s.tc, '#ffffff'), al: s.al === 'left' ? 'left' : 'center',
+                ar: s.ar ? Math.round(num(s.ar, 0.8, 6, 3.2) * 100) / 100 : 0, arM: s.arM ? Math.round(num(s.arM, 0.8, 6, 1.33) * 100) / 100 : 0,
                 b: arr(s.b).slice(0, 2).map(btn).filter(Boolean)
             });
         });
@@ -1804,6 +1805,7 @@
             a.classList.add('hs-photo'); if (s.fit === 'contain') a.classList.add('hs-fit');
             a.style.setProperty('--hs-d', 'url("' + s.img + '")'); a.style.setProperty('--hs-m', 'url("' + (s.imgM || s.img) + '")');
             a.style.setProperty('--hs-o', 'rgba(0,0,0,' + o + ')'); a.style.setProperty('--hs-pos', s.pos || 'center');
+            if (s.ar) a.style.setProperty('--hs-ar', s.ar); if (s.arM) a.style.setProperty('--hs-arm', s.arM);
             if (!s.title && !s.text && !s.badge && !s.b.length) a.classList.add('hs-only');
         } else a.classList.add('dynamic-bg');                       // "theme" (and image without a link)
         var e;
@@ -2026,23 +2028,131 @@
             fr.readAsDataURL(file);
         });
     }
+    /* ---------- photo cropper: drag to move, zoom, pick the banner shape or a custom size ---------- */
+    var HC = null;                                                  // state of the open cropper
+    var HC_SHAPES = [['16:5', 'Wide banner', 16, 5], ['16:9', 'Standard', 16, 9], ['4:3', 'Classic', 4, 3], ['1:1', 'Square', 1, 1], ['custom', 'Custom size', 0, 0]];
+    function hcEl() { return $('nbHeroCrop'); }
+    function hcBuild() {
+        if (hcEl()) return;
+        var el = NB.mk('<div id="nbHeroCrop" class="nbo" role="dialog" aria-modal="true" aria-hidden="true" dir="ltr" style="z-index:75"><div class="nbo-card hc-card">'
+            + '<button type="button" class="nbo-x" data-hc="cancel" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>'
+            + '<h3 class="nbo-h"><i class="fa-solid fa-crop-simple dynamic-text"></i> Adjust photo</h3>'
+            + '<p class="nbo-sub">Drag the photo to move it. Zoom with the slider, the + / - buttons, the mouse wheel or two fingers.</p>'
+            + '<div class="hc-chips" id="hcChips">' + HC_SHAPES.map(function (x) { return '<button type="button" class="hz-btn" data-shape="' + x[0] + '">' + x[1] + (x[2] ? ' <small>' + x[0] + '</small>' : '') + '</button>'; }).join('') + '</div>'
+            + '<div class="hc-custom" id="hcCustom" style="display:none"><label>Width<input type="number" id="hcW" class="nbo-in" min="200" max="2400" value="1600" inputmode="numeric"></label><span>&times;</span><label>Height<input type="number" id="hcH" class="nbo-in" min="200" max="2400" value="500" inputmode="numeric"></label><em>px</em></div>'
+            + '<div class="hc-stage" id="hcStage"><img id="hcImg" alt="" draggable="false"><div class="hc-frame" id="hcFrame"></div></div>'
+            + '<div class="hc-zoom"><button type="button" class="hz-btn" data-hc="zout" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button><input type="range" id="hcZoom" min="100" max="500" step="1" value="100" aria-label="Zoom"><button type="button" class="hz-btn" data-hc="zin" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button><output id="hcZo">100%</output></div>'
+            + '<div class="hc-info" id="hcInfo"></div>'
+            + '<div class="hc-foot"><button type="button" class="hz-btn" data-hc="reset"><i class="fa-solid fa-rotate-left"></i> Reset</button><span><button type="button" class="hz-btn" data-hc="cancel">Cancel</button> <button type="button" class="hz-btn hz-pri" data-hc="use"><i class="fa-solid fa-check"></i> Use photo</button></span></div>'
+            + '</div></div>');
+        document.body.appendChild(el);
+        NB.onClose.nbHeroCrop = function () { hcFinish(null); };
+        el.addEventListener('click', function (e) {
+            var b = e.target.closest ? e.target.closest('[data-hc],[data-shape]') : null; if (!b || !HC) return;
+            var a = b.getAttribute('data-hc'), sh = b.getAttribute('data-shape');
+            if (sh) { HC.shape = sh; HC.keepZ = true; hcLayout(); return; }
+            if (a === 'cancel') NB.close('nbHeroCrop');
+            else if (a === 'use') hcUse();
+            else if (a === 'reset') { HC.z = 1; HC.cx = HC.iw / 2; HC.cy = HC.ih / 2; hcLayout(); }
+            else if (a === 'zin') hcZoom(HC.z * 1.15);
+            else if (a === 'zout') hcZoom(HC.z / 1.15);
+        });
+        $('hcZoom').addEventListener('input', function () { hcZoom(this.value / 100); });
+        $('hcW').addEventListener('input', function () { if (HC) hcLayout(); }); $('hcH').addEventListener('input', function () { if (HC) hcLayout(); });
+        var st0 = $('hcStage'), ptr = {}, last = 0;
+        st0.addEventListener('pointerdown', function (e) { if (!HC) return; try { st0.setPointerCapture(e.pointerId); } catch (x) {} ptr[e.pointerId] = { x: e.clientX, y: e.clientY }; last = hcPinch(ptr); });
+        st0.addEventListener('pointermove', function (e) {
+            if (!HC || !ptr[e.pointerId]) return;
+            var ids = Object.keys(ptr), p = ptr[e.pointerId], dx = e.clientX - p.x, dy = e.clientY - p.y;
+            ptr[e.pointerId] = { x: e.clientX, y: e.clientY };
+            if (ids.length >= 2) { var d = hcPinch(ptr); if (last && d) hcZoom(HC.z * d / last); last = d; return; }
+            HC.cx -= dx / HC.scale; HC.cy -= dy / HC.scale; hcLayout();
+        });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (n) { st0.addEventListener(n, function (e) { delete ptr[e.pointerId]; last = hcPinch(ptr); }); });
+        st0.addEventListener('wheel', function (e) { if (!HC) return; e.preventDefault(); hcZoom(HC.z * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
+        window.addEventListener('resize', function () { if (HC && NB.isOpen('nbHeroCrop')) hcLayout(); });
+    }
+    function hcPinch(ptr) { var k = Object.keys(ptr); if (k.length < 2) return 0; var a = ptr[k[0]], b = ptr[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+    function hcRatio() {
+        if (HC.shape === 'custom') {
+            var w = Math.max(200, Math.min(2400, +$('hcW').value || 1600)), h = Math.max(200, Math.min(2400, +$('hcH').value || 500));
+            return { r: Math.max(0.8, Math.min(6, w / h)), w: w, h: h };
+        }
+        var s = HC_SHAPES.filter(function (x) { return x[0] === HC.shape; })[0];
+        return { r: s[2] / s[3], w: 0, h: 0 };
+    }
+    function hcZoom(z) { HC.z = Math.max(1, Math.min(5, z)); hcLayout(); }
+    function hcLayout() {                                           // places the photo + the crop frame; keeps the photo covering the frame
+        var stg = $('hcStage'), sw = stg.clientWidth || 320, sh = stg.clientHeight || 280, R = hcRatio(), r = R.r, maxW = sw - 24, maxH = sh - 24, fw, fh;
+        if (maxW / maxH > r) { fh = maxH; fw = fh * r; } else { fw = maxW; fh = fw / r; }
+        var s0 = Math.max(fw / HC.iw, fh / HC.ih), scale = s0 * HC.z;
+        HC.fw = fw; HC.fh = fh; HC.scale = scale; HC.r = r;
+        HC.cx = Math.max(fw / 2 / scale, Math.min(HC.iw - fw / 2 / scale, HC.cx)); HC.cy = Math.max(fh / 2 / scale, Math.min(HC.ih - fh / 2 / scale, HC.cy));
+        var fl = (sw - fw) / 2, ft = (sh - fh) / 2, im = $('hcImg'), fr = $('hcFrame');
+        fr.style.cssText = 'left:' + fl + 'px;top:' + ft + 'px;width:' + fw + 'px;height:' + fh + 'px';
+        im.style.cssText = 'width:' + (HC.iw * scale) + 'px;height:' + (HC.ih * scale) + 'px;left:' + (fl + fw / 2 - HC.cx * scale) + 'px;top:' + (ft + fh / 2 - HC.cy * scale) + 'px';
+        $('hcZoom').value = Math.round(HC.z * 100); $('hcZo').textContent = Math.round(HC.z * 100) + '%';
+        $('hcCustom').style.display = HC.shape === 'custom' ? '' : 'none';
+        [].forEach.call($('hcChips').children, function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-shape') === HC.shape)); });
+        var o = hcOut(1600); $('hcInfo').textContent = 'Saved picture size: ' + o[0] + ' \u00d7 ' + o[1] + ' px (also made smaller for phones automatically)';
+    }
+    function hcOut(maxDim) {                                        // output pixel size for the chosen shape (long side <= maxDim)
+        var R = hcRatio(), w, h;
+        if (HC.shape === 'custom') { w = R.w; h = R.h; } else { w = 1600; h = Math.round(1600 / R.r); }
+        var k = Math.min(1, maxDim / Math.max(w, h)); return [Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k))];
+    }
+    function hcRender(maxDim, q) {
+        var o = hcOut(maxDim), c = document.createElement('canvas'), x = c.getContext('2d');
+        c.width = o[0]; c.height = o[1];
+        var sw = HC.fw / HC.scale, sh = HC.fh / HC.scale, sx = HC.cx - sw / 2, sy = HC.cy - sh / 2;
+        x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+        x.imageSmoothingQuality = 'high'; x.drawImage(HC.im, sx, sy, sw, sh, 0, 0, c.width, c.height);
+        var out = c.toDataURL('image/jpeg', q);
+        while (out.length > 600000 && q > 0.4) { q -= 0.08; out = c.toDataURL('image/jpeg', q); }
+        return out;
+    }
+    function hcUse() {
+        try {
+            var d = hcRender(1600, 0.8), m = hcRender(900, 0.76);
+            if (d.length > 880000 || m.length > 880000) { NB.toast('That photo is still too heavy after cropping. Zoom in a little or use a smaller custom size.', 4500); return; }
+            var ar = Math.round(HC.r * 100) / 100, done = HC.done; HC.done = null; NB.close('nbHeroCrop'); HC = null; if (done) done({ d: d, m: m, ar: ar });
+        } catch (e) { NB.toast('Could not crop that photo. Try another one.', 4000); }
+    }
+    function hcFinish(v) { var d = HC && HC.done; if (HC) HC.done = null; if (d) d(v); }
+    function openCrop(file, kind) {
+        return new Promise(function (res, rej) {
+            if (!file || !(/^image\//.test(file.type) || /\.(jpe?g|png|webp|gif|bmp|avif|jfif)$/i.test(file.name || ''))) { rej(new Error('Please choose an image file (JPG, PNG or WebP).')); return; }
+            if (file.size > 25 * 1024 * 1024) { rej(new Error('That photo is too large (max 25 MB).')); return; }
+            var url = URL.createObjectURL(file), im = new Image();
+            im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('This image format is not supported here (for example HEIC). Please choose a JPG, PNG or WebP photo.')); };
+            im.onload = function () {
+                hcBuild();
+                HC = { im: im, iw: im.naturalWidth, ih: im.naturalHeight, cx: im.naturalWidth / 2, cy: im.naturalHeight / 2, z: 1, shape: kind === 'm' ? '4:3' : '16:5', done: function (v) { URL.revokeObjectURL(url); res(v); } };
+                $('hcImg').src = url;
+                NB.open('nbHeroCrop');
+                requestAnimationFrame(function () { if (HC) hcLayout(); });
+                setTimeout(function () { if (HC) hcLayout(); }, 120);
+            };
+            im.src = url;
+        });
+    }
     var picking = 'd';
     function pickFile(kind) { picking = kind; var f = $('hzFile'); f.value = ''; f.click(); }
     function onFile() {
         var f = this.files && this.files[0]; if (!f || !st) return;
-        var kind = picking; msg('Processing photo…');
-        var wantD = kind !== 'm';
-        Promise.all([wantD ? readPhoto(f, 1600, 0.78) : null, readPhoto(f, 900, 0.74)]).then(function (r) {
+        var kind = picking; msg('Opening photo');
+        openCrop(f, kind).then(function (r) {
+            if (!r || !st) { msg(''); return; }
             if (kind === 'new') {
-                if (st.cfg.slides.length >= MAXS) { msg('You can have up to ' + MAXS + ' slides.', 'err'); return; }
+                if (st.cfg.slides.length >= MAXS) { msg('You can have up to ' + MAXS + ' slides.', 'err'); NB.toast('You can have up to ' + MAXS + ' slides.', 3500); return; }
                 var n = newSlide(); n.bg = 'img'; n.title = ''; n.text = ''; n.badge = ''; n.icon = ''; n.ov = 0; n.b = [{ t: '', a: 'notes', u: '', s: 'light' }, { t: '', a: 'notes', u: '', s: 'light' }];
-                n.img = r[0]; n.imgM = r[1]; st.cfg.slides.push(n); st.sel = st.cfg.slides.length - 1;
+                n.img = r.d; n.imgM = r.m; n.ar = r.ar; n.arM = 0; st.cfg.slides.push(n); st.sel = st.cfg.slides.length - 1;
             } else {
                 var s = slide(); if (!s) return;
-                if (kind === 'm') s.imgM = r[1]; else { s.bg = 'img'; s.img = r[0]; s.imgM = r[1]; }
+                if (kind === 'm') { s.imgM = r.m; s.arM = r.ar; } else { s.bg = 'img'; s.img = r.d; s.imgM = r.m; s.ar = r.ar; s.arM = 0; }
             }
-            dirty(); renderAll(); msg('Photo added. It is set for both PC and phone ✓', 'ok');
-        }).catch(function (e) { msg(e.message || 'Could not use that photo.', 'err'); });
+            dirty(); renderAll(); msg('Photo added. Press Publish to show it to everyone.', 'ok');
+        }).catch(function (e) { var t = (e && e.message) || 'Could not use that photo.'; msg(t, 'err'); NB.toast(t, 4500); });
     }
     function renderForm() {
         var s = slide(), el = $('hzForm');
@@ -2060,7 +2170,7 @@
         }
         if (s.bg === 'solid') o += '<div class="hz-grid hz-3">' + colorF('Colour', 'solid', s.solid) + '</div>';
         if (s.bg === 'img') {
-            o += '<div class="hz-ph"><div class="hz-ph-box"><span class="nbo-l">Photo (desktop &amp; mobile)</span>' + thumb(s.img) +
+            o += '<div class="hz-ph"><div class="hz-ph-box"><span class="nbo-l">Photo (desktop &amp; mobile) – you can zoom &amp; crop it</span>' + thumb(s.img) +
                 '<div class="hz-ph-b"><button type="button" class="hz-btn hz-pri" data-hz="pick-d"><i class="fa-solid fa-upload"></i> ' + (s.img ? 'Change photo' : 'Upload photo') + '</button>' + (s.img ? '<button type="button" class="hz-btn hz-danger" data-hz="clr-d"><i class="fa-solid fa-xmark"></i> Remove</button>' : '') + '</div></div>' +
                 '<div class="hz-ph-box"><span class="nbo-l">Mobile photo (optional)</span>' + thumb(s.imgM || s.img, !s.imgM) +
                 '<div class="hz-ph-b"><button type="button" class="hz-btn" data-hz="pick-m"><i class="fa-solid fa-mobile-screen"></i> ' + (s.imgM ? 'Change' : 'Upload different') + '</button>' + (s.imgM ? '<button type="button" class="hz-btn hz-danger" data-hz="clr-m"><i class="fa-solid fa-xmark"></i> Use main photo</button>' : '') + '</div></div></div>' +
@@ -2374,7 +2484,15 @@
         pop:     { n: 'Pop',         notes: [[700, 0, .12, 'sine', .6], [1100, .08, .16, 'sine', .5]] },
         dingdong:{ n: 'Ding-dong',   notes: [[784, 0, .45, 'sine', .5], [587.3, .35, .8, 'sine', .5]] },
         sparkle: { n: 'Sparkle',     notes: [[1318.5, 0, .18, 'triangle', .35], [1568, .1, .18, 'triangle', .35], [2093, .2, .35, 'triangle', .35]] },
-        soft:    { n: 'Soft note',   notes: [[392, 0, .6, 'sine', .4], [523.3, .2, .9, 'sine', .35]] }
+        soft:    { n: 'Soft note',   notes: [[392, 0, .6, 'sine', .4], [523.3, .2, .9, 'sine', .35]] },
+        loudbell:{ n: 'Loud bell',   loud: 1, notes: [[1046.5, 0, 1.4, 'sawtooth', .9], [2093, 0, 1, 'square', .45], [1568, 0, 1.2, 'triangle', .7]] },
+        horn:    { n: 'Air horn',    loud: 1, notes: [[349.2, 0, .9, 'sawtooth', 1], [440, 0, .9, 'sawtooth', .9], [523.3, 0, .9, 'square', .6]] },
+        urgent:  { n: 'Urgent alert',loud: 1, notes: [[1200, 0, .14, 'square', .85], [800, .18, .14, 'square', .85], [1200, .36, .14, 'square', .85], [800, .54, .26, 'square', .85]] },
+        buzzer:  { n: 'Loud buzzer', loud: 1, notes: [[220, 0, .5, 'sawtooth', 1], [233, 0, .5, 'sawtooth', 1], [220, .62, .5, 'sawtooth', 1], [233, .62, .5, 'sawtooth', 1]] },
+        megaphone:{ n: 'Megaphone alert', loud: 1, notes: [[600, 0, .25, 'square', 1], [900, .25, .25, 'square', 1], [600, .5, .25, 'square', 1], [900, .75, .35, 'square', 1]] },
+        clockring:{ n: 'Alarm clock',  loud: 1, notes: [[1800, 0, .08, 'square', .9], [1800, .12, .08, 'square', .9], [1800, .24, .08, 'square', .9], [1800, .36, .08, 'square', .9], [1800, .48, .08, 'square', .9], [1800, .6, .2, 'square', .9]] },
+        thunder: { n: 'Thunder bell', loud: 1, notes: [[130.8, 0, 1.2, 'sawtooth', 1], [196, 0, 1.2, 'sawtooth', .9], [1318.5, .05, 1, 'square', .6], [2637, .05, .8, 'square', .35]] },
+        trumpet: { n: 'Trumpet blast', loud: 1, notes: [[392, 0, .25, 'sawtooth', 1], [392, .3, .25, 'sawtooth', 1], [523.3, .6, .7, 'sawtooth', 1], [659.3, .6, .7, 'square', .6]] }
     };
     var RT = {
         melody:  { n: 'Morning melody', p: 2.6, notes: [[523.3, 0, .22, 'triangle', .45], [659.3, .25, .22, 'triangle', .45], [784, .5, .22, 'triangle', .45], [659.3, .75, .22, 'triangle', .45], [523.3, 1, .22, 'triangle', .45], [659.3, 1.25, .22, 'triangle', .45], [784, 1.5, .22, 'triangle', .45], [1046.5, 1.8, .6, 'triangle', .5]] },
@@ -2382,8 +2500,34 @@
         rise:    { n: 'Rising tone',    p: 1.9, notes: [[440, 0, .22, 'sine', .5], [554.4, .24, .22, 'sine', .5], [659.3, .48, .22, 'sine', .5], [880, .72, .6, 'sine', .55]] },
         digital: { n: 'Digital beep',   p: 1.2, notes: [[1400, 0, .1, 'square', .16], [1400, .17, .1, 'square', .16], [1400, .34, .1, 'square', .16], [1900, .6, .25, 'square', .16]] },
         gentle:  { n: 'Gentle wake-up', p: 3.2, notes: [[523.3, 0, 1, 'sine', .45], [659.3, .55, 1, 'sine', .45], [784, 1.1, 1.5, 'sine', .45]] },
-        temple:  { n: 'Temple bells',   p: 3.4, notes: [[1046.5, 0, 1.6, 'sine', .42], [1568, 0, 1.2, 'sine', .1], [880, .9, 1.7, 'sine', .42], [1318.5, .9, 1.2, 'sine', .1]] }
+        temple:  { n: 'Temple bells',   p: 3.4, notes: [[1046.5, 0, 1.6, 'sine', .42], [1568, 0, 1.2, 'sine', .1], [880, .9, 1.7, 'sine', .42], [1318.5, .9, 1.2, 'sine', .1]] },
+        siren:   { n: 'Loud siren',     loud: 1, p: 2.3, notes: [[700, 0, .55, 'sawtooth', 1], [1100, .55, .55, 'sawtooth', 1], [700, 1.1, .55, 'sawtooth', 1], [1100, 1.65, .55, 'sawtooth', 1]] },
+        fire:    { n: 'Fire alarm',     loud: 1, p: 1.1, notes: [[2000, 0, .14, 'square', .9], [2000, .22, .14, 'square', .9], [2000, .44, .14, 'square', .9], [2000, .66, .14, 'square', .9]] },
+        ring:    { n: 'Loud phone ring',loud: 1, p: 2.2, notes: [[1400, 0, .4, 'square', .8], [1000, 0, .4, 'square', .8], [1400, .5, .4, 'square', .8], [1000, .5, .4, 'square', .8]] },
+        blaster: { n: 'Wake-up blaster',loud: 1, p: 2.4, notes: [[523.3, 0, .3, 'sawtooth', 1], [659.3, .3, .3, 'sawtooth', 1], [784, .6, .3, 'sawtooth', 1], [1046.5, .9, .3, 'sawtooth', 1], [784, 1.2, .3, 'sawtooth', 1], [1046.5, 1.5, .7, 'sawtooth', 1]] },
+        hornloop:{ n: 'Air horn blast', loud: 1, p: 1.9, notes: [[349.2, 0, .8, 'sawtooth', 1], [440, 0, .8, 'sawtooth', 1], [523.3, 0, .8, 'square', .6], [349.2, 1, .6, 'sawtooth', 1], [440, 1, .6, 'sawtooth', 1]] },
+        police:  { n: 'Police siren',   loud: 1, p: 1.6, notes: [[950, 0, .4, 'square', .9], [650, .4, .4, 'square', .9], [950, .8, .4, 'square', .9], [650, 1.2, .4, 'square', .9]] },
+        rocket:  { n: 'Rocket alarm',   loud: 1, p: 1.5, notes: [[400, 0, .3, 'sawtooth', 1], [600, .3, .3, 'sawtooth', 1], [800, .6, .3, 'sawtooth', 1], [1200, .9, .5, 'square', .9]] },
+        drumroll:{ n: 'Loud wake-up bell', loud: 1, p: 2, notes: [[1568, 0, .15, 'square', .9], [1047, .15, .15, 'square', .9], [1568, .3, .15, 'square', .9], [1047, .45, .15, 'square', .9], [1568, .6, .15, 'square', .9], [2093, .85, .8, 'sawtooth', .8]] }
     };
+    /* tones the user adds from their own phone / PC (kept in IndexedDB; ids look like "c:abc123") */
+    var CT = {}, CT_DB = 'nb_tones', CT_MAX = 8, CT_BYTES = 5 * 1024 * 1024, CT_PRE = /^c:[a-z0-9]{3,16}$/;
+    function ctDb() {
+        return new Promise(function (res, rej) {
+            if (!window.indexedDB) { rej(new Error('no idb')); return; }
+            var rq = indexedDB.open(CT_DB, 1);
+            rq.onupgradeneeded = function () { rq.result.createObjectStore('t', { keyPath: 'id' }); };
+            rq.onsuccess = function () { res(rq.result); }; rq.onerror = function () { rej(rq.error); };
+        });
+    }
+    function ctTx(mode, fn) { return ctDb().then(function (db) { return new Promise(function (res, rej) { var tx = db.transaction('t', mode), r = fn(tx.objectStore('t')); tx.oncomplete = function () { res(r && r.result); }; tx.onerror = tx.onabort = function () { rej(tx.error); }; }); }); }
+    function ctLoad() {
+        ctTx('readonly', function (st) { return st.getAll(); }).then(function (all) {
+            (all || []).forEach(function (r) { if (r && r.blob && !CT['c:' + r.id]) CT['c:' + r.id] = { n: r.name, url: URL.createObjectURL(r.blob) }; });
+            if ($('nbSnd') && NB.isOpen('nbSnd')) paintSnd(); ctTodoOpts();
+        }).catch(function () {});
+    }
+    function ctKeys() { return Object.keys(CT); }
     var AC = null;
     function ctx() {
         if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; try { AC = new C(); } catch (e) { return null; } }
@@ -2395,13 +2539,22 @@
 
     function snd() {
         var s = LSX.get(SKEY, null) || {};
-        return { on: s.on !== false, n: NT[s.n] ? s.n : 'chime', r: RT[s.r] ? s.r : 'melody', v: typeof s.v === 'number' ? Math.max(.1, Math.min(1, s.v)) : .8 };
+        return { on: s.on !== false, n: NT[s.n] || CT_PRE.test(s.n || '') ? s.n : 'chime', r: RT[s.r] || CT_PRE.test(s.r || '') ? s.r : 'melody', v: typeof s.v === 'number' ? Math.max(.1, Math.min(1, s.v)) : .8 };
     }
     function saveSnd(patch) { var s = snd(); for (var k in patch) s[k] = patch[k]; LSX.set(SKEY, s); }
 
     /* kind 'n' = notification tone (plays once), 'r' = reminder ringtone (repeats until stopped); force = ignore the on/off switch (preview) */
     function play(kind, key, loopMs, force) {
         var S = snd(); if (!S.on && !force) return null;
+        if (CT_PRE.test(key || '') && CT[key]) {                               // a tone from the user's own device
+            var au = new Audio(CT[key].url), tm2 = 0, dead = false; au.volume = S.v; au.loop = !!loopMs;
+            var stop2 = function () { if (dead) return; dead = true; clearTimeout(tm2); try { au.pause(); au.currentTime = 0; } catch (e) {} };
+            try { var pr = au.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+            tm2 = setTimeout(stop2, loopMs || 8000);
+            if (!loopMs) au.addEventListener('ended', stop2);
+            return { stop: stop2 };
+        }
+        if (CT_PRE.test(key || '')) key = kind === 'n' ? 'chime' : 'melody';       // custom tone not loaded (or deleted): use the default
         var c = ctx(); if (!c) return null;
         var def = (kind === 'n' ? NT : RT)[key] || (kind === 'n' ? NT.chime : RT.melody);
         var master = c.createGain(); master.gain.value = 1; master.connect(c.destination);
@@ -2463,9 +2616,14 @@
 
     /* ---------- to-do dialog ---------- */
     var sel = '', editing = null;
+    function ctOpts() {
+        return '<option value="">Default tone</option>' + Object.keys(RT).map(function (k) { return '<option value="' + k + '">' + (RT[k].loud ? 'Loud: ' : '') + RT[k].n + '</option>'; }).join('') +
+            ctKeys().map(function (k) { return '<option value="' + k + '">My tone: ' + esc(CT[k].n) + '</option>'; }).join('');
+    }
+    function ctTodoOpts() { var sl = $('nbTdTone'); if (!sl) return; var v = sl.value; sl.innerHTML = ctOpts(); sl.value = v; }
     function ensureTd() {
         if ($('nbTd')) return;
-        var opts = '<option value="">Default tone</option>' + Object.keys(RT).map(function (k) { return '<option value="' + k + '">' + RT[k].n + '</option>'; }).join('');
+        var opts = ctOpts();
         var m = NB.mk('<div class="nbo" id="nbTd" aria-hidden="true"><div class="nbo-card nbtd-card" role="dialog" aria-modal="true" aria-labelledby="nbTdT">' +
             '<button type="button" class="nbo-x" id="nbTdX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
             '<h3 class="nbo-h" id="nbTdT">To-Do List</h3><p class="nbo-sub">Pick a day, then set what to study and when.</p>' +
@@ -2554,6 +2712,7 @@
         NB.closeSiteMenu();
         ensureTd();
         var keys = weekKeys(), today = NB.dayKey();
+        ctTodoOpts();
         sel = day && keys.indexOf(day) >= 0 ? day : (keys.indexOf(sel) >= 0 && !day ? sel : today);
         resetForm(); renderTd(); NB.open('nbTd');
     };
@@ -2563,10 +2722,13 @@
         if ($('nbSnd')) return;
         var m = NB.mk('<div class="nbo" id="nbSnd" aria-hidden="true"><div class="nbo-card nbsn-card" role="dialog" aria-modal="true" aria-labelledby="nbSnT">' +
             '<button type="button" class="nbo-x" id="nbSnX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
-            '<h3 class="nbo-h" id="nbSnT">Reminder &amp; notification tones</h3><p class="nbo-sub">Tap a tone to select it and hear it.</p>' +
+            '<h3 class="nbo-h" id="nbSnT">Reminder &amp; notification tones</h3><p class="nbo-sub">Tap a tone to select it and hear it. Tones marked with the speaker icon are extra loud. You can also add your own tone from your phone or PC.</p>' +
             '<label class="nbtd-chk nbsn-on"><input type="checkbox" id="nbSnOn"><span>Play sounds</span></label>' +
+            '<input type="file" id="nbSnFile" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac" class="nb-hide">' +
             '<div class="nbsn-h"><i class="fa-solid fa-bell"></i> Notification tone</div><div class="nbsn-list" id="nbSnN" role="radiogroup" aria-label="Notification tone"></div>' +
+            '<button type="button" class="nbsn-add" data-add="n"><i class="fa-solid fa-folder-open"></i> Add a tone from my device</button>' +
             '<div class="nbsn-h"><i class="fa-solid fa-clock"></i> Reminder ringtone</div><div class="nbsn-list" id="nbSnR" role="radiogroup" aria-label="Reminder ringtone"></div>' +
+            '<button type="button" class="nbsn-add" data-add="r"><i class="fa-solid fa-folder-open"></i> Add a tone from my device</button>' +
             '<div class="nbsn-h"><i class="fa-solid fa-volume-high"></i> Volume</div><input type="range" id="nbSnV" min="10" max="100" step="5" aria-label="Volume" class="nbsn-v">' +
             '<p class="nbo-note">Tones play while Notes Bazar is open. Your phone\'s own notification sound is controlled by your phone settings.</p>' +
             '</div></div>');
@@ -2575,8 +2737,13 @@
         $('nbSnOn').addEventListener('change', function () { saveSnd({ on: this.checked }); });
         $('nbSnV').addEventListener('input', function () { saveSnd({ v: this.value / 100 }); });
         $('nbSnV').addEventListener('change', function () { preview('n', snd().n); });
+        var addKind = 'n';
+        m.addEventListener('click', function (e) { var a = e.target.closest('[data-add]'); if (!a) return; addKind = a.getAttribute('data-add'); var f = $('nbSnFile'); f.value = ''; f.click(); });
+        $('nbSnFile').addEventListener('change', function () { var f = this.files && this.files[0]; if (f) ctAdd(f, addKind); });
         ['N', 'R'].forEach(function (K) {
             $('nbSn' + K).addEventListener('click', function (e) {
+                var d = e.target.closest('[data-del]');
+                if (d) { ctDel(d.getAttribute('data-del')); return; }
                 var b = e.target.closest('[data-k]'); if (!b) return;
                 var kind = K === 'N' ? 'n' : 'r'; saveSnd(kind === 'n' ? { n: b.dataset.k } : { r: b.dataset.k });
                 paintSnd(); preview(kind, b.dataset.k);
@@ -2586,9 +2753,35 @@
     function paintSnd() {
         var S = snd();
         $('nbSnOn').checked = S.on; $('nbSnV').value = Math.round(S.v * 100);
-        function rows(map, cur) { return Object.keys(map).map(function (k) { return '<button type="button" role="radio" class="nbsn-r" data-k="' + k + '" aria-checked="' + (k === cur) + '"><i class="fa-solid fa-circle-play"></i><span>' + map[k].n + '</span><i class="fa-solid fa-check nbsn-ok"></i></button>'; }).join(''); }
+        function rows(map, cur) {
+            return Object.keys(map).map(function (k) { return '<button type="button" role="radio" class="nbsn-r' + (map[k].loud ? ' nbsn-loud' : '') + '" data-k="' + k + '" aria-checked="' + (k === cur) + '"><i class="fa-solid ' + (map[k].loud ? 'fa-volume-high' : 'fa-circle-play') + '"></i><span>' + map[k].n + '</span><i class="fa-solid fa-check nbsn-ok"></i></button>'; }).join('') +
+                ctKeys().map(function (k) { return '<div class="nbsn-cw"><button type="button" role="radio" class="nbsn-r nbsn-my" data-k="' + k + '" aria-checked="' + (k === cur) + '" title="' + esc(CT[k].n) + '"><i class="fa-solid fa-music"></i><span>' + esc(CT[k].n) + '</span><i class="fa-solid fa-check nbsn-ok"></i></button><button type="button" class="nbsn-del" data-del="' + k + '" aria-label="Delete this tone"><i class="fa-solid fa-trash"></i></button></div>'; }).join('');
+        }
         $('nbSnN').innerHTML = rows(NT, S.n); $('nbSnR').innerHTML = rows(RT, S.r);
     }
+    function ctAdd(f, kind) {
+        var okT = /^audio\//.test(f.type) || /\.(mp3|wav|ogg|oga|m4a|aac|opus|weba|flac)$/i.test(f.name || '');
+        if (!okT) { NB.toast('Please choose an audio file (MP3, WAV, OGG or M4A).', 3800); return; }
+        if (f.size > CT_BYTES) { NB.toast('That file is too big. Choose a tone under 5 MB.', 3800); return; }
+        if (ctKeys().length >= CT_MAX) { NB.toast('You can keep up to ' + CT_MAX + ' tones. Delete one first.', 3800); return; }
+        var id = Math.random().toString(36).slice(2, 10), key = 'c:' + id, name = String(f.name || 'My tone').replace(/\.[^.]+$/, '').replace(/[<>]/g, '').trim().slice(0, 24) || 'My tone';
+        var url = URL.createObjectURL(f), t = new Audio(url);
+        t.onerror = function () { URL.revokeObjectURL(url); NB.toast('This device cannot play that file. Try an MP3 or WAV.', 4000); };
+        t.onloadedmetadata = function () {
+            CT[key] = { n: name, url: url };
+            ctTx('readwrite', function (st) { return st.put({ id: id, name: name, blob: f }); }).catch(function () { NB.toast('Added for now, but this browser could not save it for next time.', 4000); });
+            saveSnd(kind === 'n' ? { n: key } : { r: key }); paintSnd(); ctTodoOpts(); preview(kind, key);
+            NB.toast('Tone added: ' + name, 2600);
+        };
+    }
+    function ctDel(key) {
+        var t = CT[key]; if (!t || !confirm('Delete the tone "' + t.n + '"?')) return;
+        try { URL.revokeObjectURL(t.url); } catch (e) {} delete CT[key];
+        ctTx('readwrite', function (st) { return st.delete(key.slice(2)); }).catch(function () {});
+        var S = snd(), patch = {}; if (S.n === key) patch.n = 'chime'; if (S.r === key) patch.r = 'melody'; saveSnd(patch);
+        paintSnd(); ctTodoOpts();
+    }
+    ctLoad();
     NB.openSounds = function () { NB.closeSiteMenu(); ensureSnd(); paintSnd(); NB.open('nbSnd'); };
 
     /* ---------- reminders ---------- */
@@ -2619,7 +2812,7 @@
         }
         rings[it.id] = 1;
         stopRing();
-        ringH = play('r', it.tn && RT[it.tn] ? it.tn : snd().r, late ? 6000 : 40000);
+        ringH = play('r', it.tn && (RT[it.tn] || CT_PRE.test(it.tn)) ? it.tn : snd().r, late ? 6000 : 40000);
         try { if (origNotify) origNotify('Time to study: ' + it.x, fmtT(it.t) + ' · Notes Bazar'); } catch (e) {}
     }
     var lastW = mondayKey();

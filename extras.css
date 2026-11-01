@@ -976,3 +976,36 @@ html.dark .nb-switch{border-color:#475569!important;background:#334155!important
 .qp-off .nbo-l{opacity:.5}
 .qp-subwrap{margin:0 0 10px;padding:10px;border-radius:14px;border:1px dashed var(--theme-primary,#6366f1);background:rgba(99,102,241,.06)}
 .qp-subwrap select.nbo-in{padding:9px 10px;font-size:13px}
+
+/* ---- Hero photo slides (these rules were missing, so photos never showed) ---- */
+.hs-slide.hs-photo{background-color:#0f172a;background-image:linear-gradient(var(--hs-o,rgba(0,0,0,.35)),var(--hs-o,rgba(0,0,0,.35))),var(--hs-d);background-size:100% 100%,cover;background-position:0 0,center var(--hs-pos,center);background-repeat:no-repeat;min-height:260px}
+.hs-slide.hs-photo.hs-fit{background-size:100% 100%,contain}
+.hs-slide.hs-photo.hs-only{padding:0;min-height:0;aspect-ratio:var(--hs-ar,16/5)}
+@media (max-width:640px){
+  .hs-slide.hs-photo{background-image:linear-gradient(var(--hs-o,rgba(0,0,0,.35)),var(--hs-o,rgba(0,0,0,.35))),var(--hs-m,var(--hs-d));min-height:210px}
+  .hs-slide.hs-photo.hs-only{min-height:0;aspect-ratio:var(--hs-arm,var(--hs-ar,16/9))}
+}
+/* ---- Hero photo cropper ---- */
+.hc-card{max-width:520px}
+.hc-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.hc-chips .hz-btn{padding:7px 10px}.hc-chips .hz-btn small{opacity:.7;font-weight:600}
+.hc-chips .hz-btn[aria-pressed="true"]{border-color:var(--theme-primary,#6366f1);background:rgba(99,102,241,.12);color:var(--theme-primary,#6366f1)}
+.hc-custom{display:flex;align-items:flex-end;gap:8px;margin:0 0 8px}.hc-custom label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--nb-muted);flex:1;min-width:0}.hc-custom .nbo-in{padding:8px 10px}.hc-custom em{font-style:normal;font-size:11px;font-weight:700;color:var(--nb-muted);padding-bottom:10px}
+.hc-stage{position:relative;height:min(300px,42dvh);border-radius:14px;overflow:hidden;background:#0b1020;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.hc-stage:active{cursor:grabbing}
+.hc-stage img{position:absolute;max-width:none;pointer-events:none}
+.hc-frame{position:absolute;border:2px solid #fff;box-shadow:0 0 0 999px rgba(2,6,23,.62);pointer-events:none;border-radius:4px}
+.hc-zoom{display:flex;align-items:center;gap:8px;margin:10px 0 4px}.hc-zoom input{flex:1;min-width:0;accent-color:var(--theme-primary,#6366f1)}.hc-zoom output{width:44px;text-align:right;font-size:12px;font-weight:700}
+.hc-info{font-size:11.5px;color:var(--nb-muted);margin:4px 0 10px}
+.hc-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* ---- Tones: loud + my own tones ---- */
+.nbsn-loud>i:first-child{color:#ef4444}
+.nbsn-cw{display:flex;gap:4px;min-width:0}.nbsn-cw .nbsn-r{flex:1;min-width:0}
+.nbsn-del{flex:none;width:38px;border-radius:12px;border:1px solid var(--nb-border);background:var(--nb-surface-2);color:#ef4444;cursor:pointer}
+.nbsn-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1.5px dashed var(--theme-primary,#6366f1);background:rgba(99,102,241,.06);color:var(--theme-primary,#6366f1);font-size:12.5px;font-weight:700;cursor:pointer}
+
+/* ---- Listen to Bazar AI answers ---- */
+.nb-listen{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 11px;border-radius:999px;border:1px solid var(--nb-border,#cbd5e1);background:var(--nb-surface,#fff);color:var(--theme-primary,#6366f1);font-size:11px;font-weight:700;cursor:pointer}
+.nb-listen:hover{background:var(--nb-hover,#f1f5f9)}
+.nb-listen.on{background:var(--theme-primary,#6366f1);color:#fff;border-color:transparent}
