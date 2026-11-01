@@ -2135,14 +2135,37 @@ function sha256(str) {
             try { const ac = window.NB && window.NB.account && window.NB.account(); return ac && ac.userId ? String(ac.userId).slice(0, 40) : ''; } catch (e) { return ''; }
         }
         async function pushMessage(m) {
-            const { db, ref, set, push } = await loadSdk();
             const uid = senderId(), base = { ...m, createdAt: Date.now(), reply: "" };
-            try {
-                await set(push(ref(db, 'notes_bazar_messages')), { ...base, userId: uid || 'guest' });
-            } catch (e1) {
-                // strict Firebase rules may not know the new "userId" field: keep the id inside the old "email" field instead
-                await set(push(ref(db, 'notes_bazar_messages')), { ...base, email: 'User ID: ' + (uid || 'guest') });
+            const shapes = [{ ...base, userId: uid || 'guest' }, { ...base, email: 'User ID: ' + (uid || 'guest') }];
+            const errs = [];
+            let sdk = null;
+            try { sdk = await loadSdk(); } catch (e) { errs.push('sdk: ' + (e && (e.code || e.message))); }
+            // 1) Firebase SDK (two data shapes: new field first, then the old strict-rules shape)
+            if (sdk) {
+                for (const body of shapes) {
+                    try { await Promise.race([sdk.set(sdk.push(sdk.ref(sdk.db, 'notes_bazar_messages')), body), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))]); return; }
+                    catch (e) { errs.push('sdk: ' + (e && (e.code || e.message))); }
+                }
             }
+            // 2) plain REST (works even when the SDK could not load), with the login token when there is one, then without
+            let tok = '';
+            try { const u = sdk && sdk.auth && sdk.auth.currentUser; if (u) tok = await u.getIdToken(); } catch (e) {}
+            for (const withTok of (tok ? [true, false] : [false])) {
+                for (const body of shapes) {
+                    try {
+                        const r = await fetch(DBURL + '/notes_bazar_messages.json' + (withTok ? '?auth=' + encodeURIComponent(tok) : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                        if (r.ok) return;
+                        errs.push('rest: HTTP ' + r.status);
+                    } catch (e) { errs.push('rest: ' + (e && e.message)); }
+                }
+            }
+            const er = new Error(errs.join(' | ')); er.reasons = errs; throw er;
+        }
+        function sendFailText(err) {
+            const why = String((err && err.message) || err || '');
+            if (/permission|denied|HTTP 40[13]/i.test(why)) return 'Submission failed: Firebase Rules are not allowing new messages.\n\nAdmin: open Firebase Console > Realtime Database > Rules and allow writes to "notes_bazar_messages" (public .write with a field check).';
+            if (/network|fetch|offline|timeout|Failed to fetch|sdk:/i.test(why)) return 'Submission failed: could not reach the server. Please check your internet connection and try again.\n\n(' + why.slice(0, 160) + ')';
+            return 'Submission failed.\n\n(' + why.slice(0, 160) + ')';
         }
 
         window.submitUserMessage = async function(e, type) {
@@ -2155,7 +2178,7 @@ function sha256(str) {
                 closeAllModals();
                 document.getElementById(`${type}Form`).reset();
             } catch(err) {
-                alert("Submission failed.");
+                console.error(err); alert(sendFailText(err));
             }
         };
 
@@ -2170,7 +2193,7 @@ function sha256(str) {
                 closeModal('wishModal');
                 document.getElementById('wishForm').reset();
             } catch (err) {
-                alert("Submission failed. Check your internet connection.");
+                console.error(err); alert(sendFailText(err));
             }
         };
 
@@ -2485,33 +2508,17 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             if (nbSpeakBtn) { nbSpeakBtn.classList.remove('on'); const sp = nbSpeakBtn.querySelector('span'), ic = nbSpeakBtn.querySelector('i'); if (sp) sp.textContent = 'Listen'; if (ic) ic.className = 'fa-solid fa-volume-high'; }
             nbSpeakBtn = null;
         }
-        window.nbStopSpeak = function() { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {} nbSpeakReset(); };
+        window.nbStopSpeak = function() { try { window.NB && NB.voice && NB.voice.stop(); } catch (e) {} nbSpeakReset(); };
         window.nbSpeak = function(btn) {
-            const synth = window.speechSynthesis;
-            if (!synth || typeof SpeechSynthesisUtterance === 'undefined') { alert('Your browser cannot read aloud. Please try Chrome.'); return; }
+            const V = window.NB && NB.voice;
+            if (!V || !V.ok()) { alert('Your browser cannot read aloud. Please try Chrome.'); return; }
             if (nbSpeakBtn === btn) { nbStopSpeak(); return; }          // tap again = stop
             nbStopSpeak();
             const box = btn.parentNode.querySelector('.nb-say'); if (!box) return;
-            const c = box.cloneNode(true); c.querySelectorAll('button,a,script,style').forEach(n => n.remove());
-            c.querySelectorAll('br,li,p,div').forEach(n => n.insertAdjacentText('afterend', '. '));
-            let text = (c.textContent || '')
-                .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ')   // emojis are not read out
-                .replace(/[*_#`>~|]+/g, ' ').replace(/\s+/g, ' ').trim();
-            if (!text) return;
-            const hi = /[ऀ-ॿ]/.test(text), lang = hi ? 'hi-IN' : 'en-IN';
-            const voices = synth.getVoices() || [];
-            const voice = voices.find(v => v.lang === lang) || voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()) && (!hi || true)) || null;
-            const parts = text.match(/[^.!?।]+[.!?।]?/g) || [text], chunks = [];
-            let cur = '';
-            parts.forEach(p => { if ((cur + p).length > 170 && cur) { chunks.push(cur); cur = p; } else cur += p; });
-            if (cur.trim()) chunks.push(cur);
+            const text = V.clean(box); if (!text) return;
             nbSpeakBtn = btn; btn.classList.add('on');
             btn.querySelector('span').textContent = 'Stop'; btn.querySelector('i').className = 'fa-solid fa-circle-stop';
-            chunks.forEach((t, i) => {
-                const u = new SpeechSynthesisUtterance(t.trim()); u.lang = lang; if (voice) u.voice = voice; u.rate = 1; u.pitch = 1;
-                if (i === chunks.length - 1) { u.onend = u.onerror = () => { if (nbSpeakBtn === btn) nbSpeakReset(); }; }
-                synth.speak(u);
-            });
+            V.say(text, { onend: () => { if (nbSpeakBtn === btn) nbSpeakReset(); } });   // voice + speed come from Menu > Voice & speed
         };
 
         window.clearAiChat = function() {
@@ -2558,6 +2565,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                 if (curLang === 'hi') sys += '\nThe user chose Hindi in the app: reply in Hindi (Devanagari) unless they write in another language.';
                 if (curLang === 'mai') sys += '\nThe user chose Maithili in the app: reply in Maithili (Devanagari) where you can, otherwise simple Hindi.';
                 if (!['en', 'hi', 'mai'].includes(curLang)) sys += '\nThe user chose ' + LANG_EN[curLang] + ' in the app: reply in ' + LANG_EN[curLang] + ' (native script) where you can, otherwise simple Hindi.';
+                if (window.NB_LIVE) sys += '\nThis is a LIVE VOICE conversation: answer like a friendly teacher speaking, in 1-3 short sentences, plain words, no lists, no markdown, no emojis.';
                 if (related.intent) {
                     sys += related.list.length
                         ? '\n\nMatching items on Notes Bazar for this request:\n' + related.list.map((i, n) => `${n + 1}. ${i.title} (${i.type || 'note'}, ${i.className || ''}, ${i.subject || ''})`).join('\n')
@@ -2595,7 +2603,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         }
 
         window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
-        window.closeModal = function(id) { if (id === 'aiModal' && window.nbStopSpeak) nbStopSpeak(); document.getElementById(id).classList.add('hidden'); };
+        window.closeModal = function(id) { if (id === 'aiModal') { if (window.nbStopSpeak) nbStopSpeak(); if (window.NB && NB.live) NB.live.stop(); } document.getElementById(id).classList.add('hidden'); };
         window.closeAllModals = function() {
             document.querySelectorAll('.fixed[id$="Modal"]').forEach(el => el.classList.add('hidden'));
         };

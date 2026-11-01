@@ -2439,6 +2439,7 @@
                 setTimeout(function () { var s = $('nbPlan'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); break;
             case 'todo': if (NB.openTodo) NB.openTodo(); break;
             case 'sounds': if (NB.openSounds) NB.openSounds(); break;
+            case 'voice': if (NB.openVoice) NB.openVoice(); break;
             case 'help': call('openModal', 'supportModal'); break;
             case 'report': call('openModal', 'complainModal'); break;
             case 'about': call('openModal', 'aboutModal'); break;
@@ -2833,4 +2834,259 @@
     setInterval(tick, 15000);
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') tick(); });
     setTimeout(tick, 2500);
+})();
+
+/* =====================================================================
+   Bazar AI voice: 15 voice styles (8 female + 7 male, soft / normal / strong), speed control,
+   "Listen" engine shared by the chat, and the Live voice assistant.
+   Menu: three lines > "Voice & speed".  Uses the phone / PC text-to-speech voices (works offline).
+   ===================================================================== */
+(function () {
+    'use strict';
+    var NB = window.NB = window.NB || {};
+    var $ = function (id) { return document.getElementById(id); };
+    var VKEY = 'nb_voice';
+    // g = gender, st = style, p = pitch, r = speed multiplier, v = loudness
+    var PROFILES = [
+        { id: 'f1', n: 'Ananya', g: 'f', st: 'Normal', p: 1.05, r: 1.0, v: .85 },
+        { id: 'f2', n: 'Priya', g: 'f', st: 'Soft', p: 1.15, r: .92, v: .6 },
+        { id: 'f3', n: 'Riya', g: 'f', st: 'Strong', p: 1.0, r: 1.05, v: 1 },
+        { id: 'f4', n: 'Kavya', g: 'f', st: 'Normal', p: 1.25, r: 1.0, v: .85 },
+        { id: 'f5', n: 'Meera', g: 'f', st: 'Soft', p: .95, r: .88, v: .55 },
+        { id: 'f6', n: 'Neha', g: 'f', st: 'Strong', p: 1.2, r: 1.08, v: 1 },
+        { id: 'f7', n: 'Sana', g: 'f', st: 'Normal', p: .9, r: .96, v: .85 },
+        { id: 'f8', n: 'Isha', g: 'f', st: 'Soft', p: 1.3, r: .9, v: .6 },
+        { id: 'm1', n: 'Arjun', g: 'm', st: 'Normal', p: .95, r: 1.0, v: .85 },
+        { id: 'm2', n: 'Rohan', g: 'm', st: 'Strong', p: .85, r: 1.05, v: 1 },
+        { id: 'm3', n: 'Vikram', g: 'm', st: 'Strong', p: .7, r: .98, v: 1 },
+        { id: 'm4', n: 'Aman', g: 'm', st: 'Soft', p: 1.0, r: .9, v: .6 },
+        { id: 'm5', n: 'Karan', g: 'm', st: 'Normal', p: .8, r: 1.0, v: .85 },
+        { id: 'm6', n: 'Dev', g: 'm', st: 'Soft', p: .88, r: .88, v: .55 },
+        { id: 'm7', n: 'Raj', g: 'm', st: 'Normal', p: .72, r: .95, v: .85 }
+    ];
+    var FEM = /female|woman|zira|heera|swara|neerja|samantha|priya|veena|kalpana|aria|jenny|sonia|susan|hazel|karen|moira|tessa|fiona|victoria|google (hindi|uk english female|us english)|lekha|kanya|aditi|raveena|sara|natasha|libby|emily|olivia|nova/i;
+    var MAL = /\bmale\b|\bman\b|david|mark|hemant|prabhat|ravi|madhur|guy|george|james|daniel|alex|fred|rishi|ryan|eric|brian|christopher|liam|prabhas/i;
+    var VOICES = [];
+    function ok() { return !!(window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined'); }
+    function loadVoices() { try { VOICES = window.speechSynthesis.getVoices() || []; } catch (e) { VOICES = []; } }
+    if (ok()) { loadVoices(); try { window.speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (e) { window.speechSynthesis.onvoiceschanged = loadVoices; } }
+    function cfg() {
+        var s = {}; try { s = JSON.parse(localStorage.getItem(VKEY) || '{}') || {}; } catch (e) {}
+        var id = PROFILES.some(function (p) { return p.id === s.id; }) ? s.id : 'f1';
+        var sp = typeof s.speed === 'number' ? Math.max(.5, Math.min(1.6, s.speed)) : .95;
+        return { id: id, speed: sp };
+    }
+    function save(patch) { var c = cfg(); for (var k in patch) c[k] = patch[k]; try { localStorage.setItem(VKEY, JSON.stringify(c)); } catch (e) {} }
+    function prof(id) { return PROFILES.filter(function (p) { return p.id === id; })[0] || PROFILES[0]; }
+    function quality(v) { return /natural|neural|online|google|microsoft|enhanced|premium/i.test(v.name) ? 1 : 0; }
+    function pickVoice(p, lang) {
+        var pre = lang.slice(0, 2).toLowerCase();
+        var pool = VOICES.filter(function (v) { return v.lang && v.lang.replace('_', '-').toLowerCase().indexOf(pre) === 0; });
+        if (!pool.length) return null;
+        pool.sort(function (a, b) { return quality(b) - quality(a); });
+        var same = pool.filter(function (v) { return p.g === 'f' ? (FEM.test(v.name) && !MAL.test(v.name)) : (MAL.test(v.name) && !FEM.test(v.name)); });
+        var list = same.length ? same : pool;
+        var idx = (+p.id.slice(1) - 1) % list.length;                 // different profiles use different system voices when the device has several
+        return list[idx] || list[0];
+    }
+    function clean(el) {
+        var c = el.cloneNode(true);
+        c.querySelectorAll('button,a,script,style').forEach(function (n) { n.remove(); });
+        c.querySelectorAll('br,li,p,div').forEach(function (n) { n.insertAdjacentText('afterend', '. '); });
+        return (c.textContent || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ').replace(/https?:\/\/\S+/g, ' ').replace(/[*_#`>~|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    var token = 0;
+    function stop() { token++; try { if (ok()) window.speechSynthesis.cancel(); } catch (e) {} }
+    function say(text, o) {
+        o = o || {}; if (!ok() || !text) { if (o.onend) o.onend(); return; }
+        stop(); var my = token;
+        var c = cfg(), p = prof(o.id || c.id), hi = /[ऀ-ॿ]/.test(text), lang = hi ? 'hi-IN' : 'en-IN';
+        var voice = pickVoice(p, lang);
+        var parts = text.match(/[^.!?।]+[.!?।]?/g) || [text], chunks = [], cur = '';
+        parts.forEach(function (s) { if ((cur + s).length > 160 && cur) { chunks.push(cur); cur = s; } else cur += s; });
+        if (cur.trim()) chunks.push(cur);
+        if (o.onstart) o.onstart();
+        chunks.forEach(function (t, i) {
+            var u = new SpeechSynthesisUtterance(t.trim()); u.lang = voice ? voice.lang : lang; if (voice) u.voice = voice;
+            u.pitch = Math.max(.1, Math.min(2, p.p)); u.volume = p.v; u.rate = Math.max(.4, Math.min(2, (o.speed || c.speed) * p.r));
+            if (i === chunks.length - 1) u.onend = u.onerror = function () { if (my === token && o.onend) o.onend(); };
+            window.speechSynthesis.speak(u);
+        });
+    }
+    NB.voice = { ok: ok, say: say, stop: stop, clean: clean, cfg: cfg, profiles: PROFILES };
+
+    /* ---------- settings dialog ---------- */
+    var SAMPLE = 'Hello! I am Bazar AI. Main aapki padhai mein madad karungi. Ask me any doubt.';
+    var SAMPLE_M = 'Hello! I am Bazar AI. Main aapki padhai mein madad karunga. Ask me any doubt.';
+    function rows(g) {
+        var cur = cfg().id;
+        return PROFILES.filter(function (p) { return p.g === g; }).map(function (p) {
+            var ic = p.st === 'Strong' ? 'fa-volume-high' : p.st === 'Soft' ? 'fa-feather' : 'fa-circle-play';
+            return '<button type="button" role="radio" class="nbsn-r nbv-r" data-v="' + p.id + '" aria-checked="' + (p.id === cur) + '"><i class="fa-solid ' + ic + '"></i><span>' + p.n + ' <small>' + p.st + '</small></span><i class="fa-solid fa-check nbsn-ok"></i></button>';
+        }).join('');
+    }
+    function paint() {
+        $('nbVF').innerHTML = rows('f'); $('nbVM').innerHTML = rows('m');
+        var s = cfg().speed; $('nbVSp').value = Math.round(s * 100); $('nbVSo').textContent = s.toFixed(2).replace(/0$/, '') + '×';
+    }
+    function sample() { var p = prof(cfg().id); say(p.g === 'm' ? SAMPLE_M : SAMPLE); }
+    function ensure() {
+        if ($('nbVoice')) return;
+        var m = NB.mk('<div class="nbo" id="nbVoice" aria-hidden="true"><div class="nbo-card nbsn-card" role="dialog" aria-modal="true" aria-labelledby="nbVT">' +
+            '<button type="button" class="nbo-x" id="nbVX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
+            '<h3 class="nbo-h" id="nbVT">Voice &amp; speed</h3><p class="nbo-sub">Choose the voice Bazar AI uses when it reads answers aloud and talks in Live mode.</p>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-person-dress"></i> Girl voices</div><div class="nbsn-list" id="nbVF" role="radiogroup" aria-label="Girl voices"></div>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-person"></i> Boy voices</div><div class="nbsn-list" id="nbVM" role="radiogroup" aria-label="Boy voices"></div>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-gauge-high"></i> Speaking speed <output id="nbVSo" class="nbv-so"></output></div>' +
+            '<input type="range" id="nbVSp" min="50" max="160" step="5" aria-label="Speaking speed" class="nbsn-v"><div class="nbv-sl"><span>Slow</span><span>Normal</span><span>Fast</span></div>' +
+            '<button type="button" class="nbsn-add" id="nbVPlay"><i class="fa-solid fa-play"></i> Play sample</button>' +
+            '<p class="nbo-note" id="nbVNote">Voices come from your phone / PC. Soft = quiet and gentle, Normal = clear, Strong = loud. If the sound is not clear, try another voice or lower the speed.</p>' +
+            '</div></div>');
+        document.body.appendChild(m);
+        $('nbVX').addEventListener('click', function () { stop(); NB.close('nbVoice'); });
+        NB.onClose.nbVoice = function () { stop(); };
+        $('nbVPlay').addEventListener('click', sample);
+        $('nbVSp').addEventListener('input', function () { save({ speed: this.value / 100 }); $('nbVSo').textContent = (this.value / 100).toFixed(2).replace(/0$/, '') + '×'; });
+        $('nbVSp').addEventListener('change', sample);
+        m.addEventListener('click', function (e) { var b = e.target.closest('[data-v]'); if (!b) return; save({ id: b.getAttribute('data-v') }); paint(); sample(); });
+    }
+    NB.openVoice = function () {
+        if (NB.closeSiteMenu) NB.closeSiteMenu();
+        ensure(); paint();
+        if (!ok()) $('nbVNote').textContent = 'This browser cannot read aloud. Please open Notes Bazar in Chrome, Edge or Safari.';
+        NB.open('nbVoice');
+    };
+})();
+
+/* =====================================================================
+   Live voice assistant (AI window, right side button): talk, Bazar AI answers by voice, then listens again.
+   ===================================================================== */
+(function () {
+    'use strict';
+    var NB = window.NB = window.NB || {};
+    var $ = function (id) { return document.getElementById(id); };
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var L = { on: false, state: 'idle', rec: null, lang: 'hi-IN', muted: false, tries: 0 };
+    var LABEL = { idle: 'Tap the circle to talk', listening: 'Listening…', thinking: 'Thinking…', speaking: 'Speaking… tap to interrupt', muted: 'Mic is off' };
+    function build() {
+        if ($('nbLive')) return;
+        var el = NB.mk('<div id="nbLive" class="nbl" aria-hidden="true" role="dialog" aria-label="Live voice assistant"><div class="nbl-card">' +
+            '<div class="nbl-top"><b><i class="fa-solid fa-wave-square"></i> Live with Bazar AI</b><button type="button" class="nbl-x" data-l="close" aria-label="Close live mode"><i class="fa-solid fa-xmark"></i></button></div>' +
+            '<button type="button" class="nbl-orb" id="nbLOrb" data-l="orb" aria-label="Talk"><span></span><span></span><i class="fa-solid fa-microphone"></i></button>' +
+            '<div class="nbl-st" id="nbLSt" role="status" aria-live="polite"></div>' +
+            '<div class="nbl-tx" id="nbLTx"></div>' +
+            '<div class="nbl-bar"><button type="button" class="nbl-b" data-l="lang" id="nbLLang"></button><button type="button" class="nbl-b" data-l="mute" id="nbLMute"><i class="fa-solid fa-microphone-slash"></i> Mic off</button><button type="button" class="nbl-b" data-l="voice"><i class="fa-solid fa-sliders"></i> Voice</button><button type="button" class="nbl-b nbl-end" data-l="close"><i class="fa-solid fa-phone-slash"></i> End</button></div>' +
+            '</div></div>');
+        document.body.appendChild(el);
+        el.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-l]'); if (!b) return; var a = b.getAttribute('data-l');
+            if (a === 'close') stopLive();
+            else if (a === 'orb') { if (L.state === 'speaking') { NB.voice.stop(); listen(); } else if (L.state === 'idle' || L.state === 'muted') { L.muted = false; listen(); } else if (L.state === 'listening') { try { L.rec && L.rec.stop(); } catch (x) {} } }
+            else if (a === 'lang') { L.lang = L.lang === 'hi-IN' ? 'en-IN' : 'hi-IN'; paintBar(); if (L.state === 'listening') { abortRec(); listen(); } }
+            else if (a === 'mute') { L.muted = !L.muted; if (L.muted) { abortRec(); NB.voice.stop(); setState('muted'); } else listen(); paintBar(); }
+            else if (a === 'voice') { NB.openVoice(); $('nbVoice').style.zIndex = 90; }
+        });
+    }
+    function paintBar() {
+        $('nbLLang').innerHTML = '<i class="fa-solid fa-language"></i> ' + (L.lang === 'hi-IN' ? 'हिंदी / Hinglish' : 'English');
+        $('nbLMute').innerHTML = L.muted ? '<i class="fa-solid fa-microphone"></i> Mic on' : '<i class="fa-solid fa-microphone-slash"></i> Mic off';
+    }
+    function setState(s) { L.state = s; var o = $('nbLOrb'); if (!o) return; o.className = 'nbl-orb ' + s; $('nbLSt').textContent = LABEL[s] || ''; }
+    function abortRec() { var r = L.rec; L.rec = null; if (r) { r.onend = r.onerror = r.onresult = null; try { r.abort(); } catch (e) {} } }
+    function listen() {
+        if (!L.on || L.muted) return;
+        if (!SR) { NB.toast('Live voice needs Chrome, Edge or Safari.', 4000); stopLive(); return; }
+        abortRec(); NB.voice.stop();
+        var r = new SR(), got = '', finalText = '';
+        r.lang = L.lang; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+        r.onresult = function (e) {
+            var t = '', f = '';
+            for (var i = e.resultIndex; i < e.results.length; i++) { var x = e.results[i][0].transcript; if (e.results[i].isFinal) f += x; else t += x; }
+            if (f) finalText += f; got = (finalText + t).trim(); $('nbLTx').textContent = got; L.tries = 0;
+        };
+        r.onerror = function (e) {
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { NB.toast('Please allow the microphone to talk with Bazar AI.', 5000); stopLive(); }
+        };
+        r.onend = function () {
+            if (L.rec !== r) return; L.rec = null;
+            var q = (finalText || got).trim();
+            if (q) send(q);
+            else if (L.on && !L.muted) { L.tries++; if (L.tries > 4) { L.tries = 0; setState('idle'); } else setTimeout(listen, 250); }
+        };
+        L.rec = r; setState('listening'); $('nbLTx').textContent = '';
+        try { r.start(); } catch (e) { setTimeout(listen, 400); }
+    }
+    async function send(q) {
+        setState('thinking'); $('nbLTx').textContent = '“' + q + '”';
+        var chat = $('aiChatHistory'), before = chat ? chat.querySelectorAll('.nb-say').length : 0;
+        window.NB_LIVE = true;
+        try { await window.sendAiMessage(q); } catch (e) {}
+        window.NB_LIVE = false;
+        if (!L.on) return;
+        var all = chat ? chat.querySelectorAll('.nb-say') : [], last = all.length > before ? all[all.length - 1] : null;
+        var text = last ? NB.voice.clean(last) : '';
+        if (!text) { listen(); return; }
+        setState('speaking');
+        NB.voice.say(text, { onend: function () { if (L.on && L.state === 'speaking') listen(); } });
+    }
+    function stopLive() {
+        L.on = false; abortRec(); NB.voice.stop(); setState('idle'); window.NB_LIVE = false;
+        var el = $('nbLive'); if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden', 'true'); }
+    }
+    NB.live = { stop: stopLive, isOn: function () { return L.on; } };
+    NB.openLive = function () {
+        if (!SR) { NB.toast('Live voice needs Chrome, Edge or Safari. Your browser does not support it.', 4500); return; }
+        build(); L.on = true; L.muted = false; L.tries = 0; paintBar();
+        $('nbLive').classList.add('open'); $('nbLive').setAttribute('aria-hidden', 'false'); $('nbLTx').textContent = '';
+        listen();
+    };
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && L.on) stopLive(); });
+})();
+
+/* =====================================================================
+   Admin > Appearance > website layout: show only 6 designs, "See more" reveals the rest below (no overlap)
+   ===================================================================== */
+(function () {
+    'use strict';
+    var SHOW = 6, busy = false, t = 0;
+    function same(el) { var k = el.children, n = k.length, i; if (n < SHOW + 2) return false; for (i = 1; i < n; i++) if (k[i].tagName !== k[0].tagName) return false; return true; }
+    function find(panel) {
+        var best = null, score = 0, all = panel.querySelectorAll('*'), i;
+        for (i = 0; i < all.length; i++) {
+            var el = all[i]; if (!same(el) || el.hasAttribute('data-nbmore-btn')) continue;
+            var n = el.children.length, sc = n, ctx = '', p = el, d = 0;
+            while (p && p !== panel && d < 4) { ctx += ' ' + (p.previousElementSibling ? p.previousElementSibling.textContent : '') + ' ' + (p.getAttribute('aria-label') || ''); p = p.parentElement; d++; }
+            if (/layout|design/i.test(ctx)) sc += 40;
+            if (n >= 20 && n <= 26) sc += 25; if (n === 23) sc += 25;
+            if (el.querySelector('input[type="color"]')) sc -= 40;
+            if (sc > score) { score = sc; best = el; }
+        }
+        return score >= 30 ? best : null;
+    }
+    function apply(panel) {
+        var g = find(panel); if (!g) return;
+        var kids = Array.prototype.slice.call(g.children), open = g.getAttribute('data-nbmore') === 'open';
+        g.setAttribute('data-nbmore', open ? 'open' : 'closed');
+        kids.forEach(function (k, i) { k.classList.toggle('nbmore-h', !open && i >= SHOW); });
+        var b = g.nextElementSibling && g.nextElementSibling.hasAttribute('data-nbmore-btn') ? g.nextElementSibling : null;
+        if (!b) {
+            b = document.createElement('button'); b.type = 'button'; b.className = 'nbmore-btn'; b.setAttribute('data-nbmore-btn', '1');
+            b.addEventListener('click', function () {
+                var o = g.getAttribute('data-nbmore') === 'open', ks = Array.prototype.slice.call(g.children);
+                g.setAttribute('data-nbmore', o ? 'closed' : 'open');
+                ks.forEach(function (k, i) { if (i >= SHOW) { k.classList.toggle('nbmore-h', o); if (!o) { k.classList.remove('nbmore-in'); void k.offsetWidth; k.classList.add('nbmore-in'); } } });
+                label(b, g, !o);
+            });
+            g.parentNode.insertBefore(b, g.nextSibling);
+        }
+        label(b, g, open);
+    }
+    function label(b, g, open) { var n = g.children.length - SHOW; b.setAttribute('aria-expanded', String(open)); b.innerHTML = open ? '<i class="fa-solid fa-chevron-up"></i> Show less' : 'See more (' + n + ' more) <i class="fa-solid fa-chevron-down"></i>'; }
+    function run() { var panel = document.getElementById('adminPanel-appearance'); if (!panel || busy) return; busy = true; try { apply(panel); } catch (e) { console.warn('layout see-more', e); } setTimeout(function () { busy = false; }, 0); }
+    function init() {
+        var panel = document.getElementById('adminPanel-appearance'); if (!panel) return;
+        new MutationObserver(function () { if (busy) return; clearTimeout(t); t = setTimeout(run, 60); }).observe(panel, { childList: true, subtree: true });
+        run();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
