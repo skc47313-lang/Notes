@@ -1510,43 +1510,111 @@
         '.qpw .qp-meta{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;border-top:1.5px solid #111;border-bottom:1.5px solid #111;padding:5px 0;margin:8px 0 14px;font-weight:600;font-size:12px}' +
         '.qpw .qp-q{margin:0 0 12px;page-break-inside:avoid;break-inside:avoid}.qpw .qp-qt{display:flex;gap:10px;justify-content:space-between}' +
         '.qpw .qp-m{white-space:nowrap;font-weight:700;font-size:12px}' +
-        '.qpw .qp-hq{margin:7px 0 0;padding-top:6px;border-top:1px dashed #bbb}.qpw .qp-hi{margin:4px 0 0;padding-top:4px;border-top:1px dashed #a5b4fc}' +
+        '.qpw .qp-cov{border:1.5px solid #111;padding:7px 10px;margin:8px 0 10px;font-size:12px}.qpw .qp-cov-t{text-align:center;font-weight:800;font-size:13px;margin-bottom:6px}.qpw .qp-cov-r{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;justify-content:space-between;margin:4px 0}.qpw .qp-cov-f b{margin-right:6px}' +
+        '.qpw .qp-bxs{display:inline-flex;gap:2px;vertical-align:middle}.qpw .qp-bx{display:inline-block;width:15px;height:19px;border:1px solid #111}.qpw .qp-code{display:inline-block;min-width:54px;padding:2px 8px;border:1.5px solid #111;text-align:center;font-weight:800;letter-spacing:2px}' +
+        '.qpw .qp-en{margin:1px 0 0 17px;color:#222}.qpw .qp-hi{margin:2px 0 0}' +
+        '.qpw .qp-ins{margin:0 0 12px;padding:6px 10px;border:1px solid #999;font-size:12px;line-height:1.5}.qpw .qp-ins b{display:block;margin-bottom:2px}.qpw .qp-ins ol{margin:0;padding-left:20px}.qpw .qp-ins li{margin:0 0 3px}.qpw .qp-ins li i{display:block;font-style:normal;color:#333}' +
         '.qpw .qp-o{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 16px;margin:4px 0 0 22px}' +
         '.qpw .qp-a{margin:6px 0 0 22px;padding:5px 9px;background:#eef2ff;border-left:3px solid #6366f1;font-size:12.5px}.qpw .qp-a.qp-k{margin-left:0}' +
         '.qpw .qp-sum{margin:0 0 12px;font-weight:600;line-height:1.9}.qpw .qp-brk{page-break-before:always;break-before:page}' +
         '.qpw h2{page-break-after:avoid;break-after:avoid}.qpw h2.qp-h3{font-size:13px;margin:12px 0 6px;border-bottom:1px dashed #bbb}.qpw .qp-inst{font-size:12px;font-style:italic;margin:0 0 10px;color:#333}';
     /* ---- Model Set layout: 80 MCQ (1 mark) + 15 short (2 marks) + 10 long (5 marks) = 160 marks ---- */
-    var QP_MODEL = { mcq: 80, short: 15, long: 10 }, QP_MODEL_TOTAL = 105, QP_MARKS = { mcq: 1, short: 2, long: 5 };
+    /* ---- Model Set layouts (edit the numbers here to change the paper) ----
+       Science / Maths:  Full = 80 objective + 25 short (2 marks) + 8 long (5 marks)   | Half = 40 + 15 + 4
+       Other subjects:   Full = 70 objective + 20 short (2 marks) + 8 long (5 marks)   | Half = 35 + 10 + 4
+       Science is split equally between Physics, Chemistry and Biology.
+       Social Science is split equally between History, Political Science, Economics, Geography and Disaster
+       Management (Disaster Management has no 5-mark question, as in the BSEB paper). */
+    var QP_LAYOUT = {
+        sci:   { full: { mcq: 80, short: 25, long: 8 }, half: { mcq: 40, short: 15, long: 4 } },
+        other: { full: { mcq: 70, short: 20, long: 8 }, half: { mcq: 35, short: 10, long: 4 } }
+    };
+    var QP_MARKS = { mcq: 1, short: 2, long: 5 };
+    var QP_SCI_PARTS = [{ key: 'physics', en: 'Physics', hi: 'भौतिक विज्ञान' }, { key: 'chemistry', en: 'Chemistry', hi: 'रसायन विज्ञान' }, { key: 'biology', en: 'Biology', hi: 'जीव विज्ञान' }];
+    var QP_SST_PARTS = [{ key: 'history', en: 'History', hi: 'इतिहास' }, { key: 'polsci', en: 'Political Science', hi: 'राजनीति विज्ञान' }, { key: 'economics', en: 'Economics', hi: 'अर्थशास्त्र' }, { key: 'geography', en: 'Geography', hi: 'भूगोल' }, { key: 'disaster', en: 'Disaster Management', hi: 'आपदा प्रबंधन', noLong: true }];
+    function qpDist(total, n) { var a = [], i, b = Math.floor(total / n), r = total % n; for (i = 0; i < n; i++) a.push(b + (i < r ? 1 : 0)); return a; }
+    function qpParts(o) {                                         // subject parts that get an equal share of the paper, or null
+        if (o.subj === 'science') return QP_SCI_PARTS;
+        if (o.subj === 'sst') {
+            var e = (window.NB_BSEB || {})[o.cls + '|sst'], txt = e && e.groups ? e.groups.map(function (g) { return g.g; }).join(' ') : '';
+            var l = txt ? QP_SST_PARTS.filter(function (p) { return txt.indexOf(p.en) > -1; }) : QP_SST_PARTS.slice(0, o.cls >= 9 ? 5 : 4);
+            return l.length ? l : QP_SST_PARTS;
+        }
+        return null;
+    }
+    /* Class 12 Science / Maths follow the real BSEB Intermediate paper:
+       Physics, Chemistry, Biology (70 marks theory): 70 objective (any 35) + 20 short (any 10) + 6 long (any 3)
+       Maths (100 marks): 100 objective (any 50) + 30 short (any 15) + 8 long (any 4)
+       Full Model Set = the whole paper with the "attempt any" choice; Half Model Set = only the questions to attempt, all compulsory. */
+    function qpLay(o) {
+        var sci = !!QP_NCERT[o.subj], l;
+        if (o.cls === 12 && sci) {
+            var m = o.subj === 'math', f = m ? { mcq: 100, short: 30, long: 8 } : { mcq: 70, short: 20, long: 6 }, a = m ? { mcq: 50, short: 15, long: 4 } : { mcq: 35, short: 10, long: 3 };
+            return o.half ? { mcq: a.mcq, short: a.short, long: a.long, att: null } : { mcq: f.mcq, short: f.short, long: f.long, att: a };
+        }
+        l = QP_LAYOUT[sci ? 'sci' : 'other'][o.half ? 'half' : 'full'];
+        return { mcq: l.mcq, short: l.short, long: l.long, att: null };
+    }
+    function qpPlan(o) {                                          // [{k, part, n}] in paper order
+        var lay = qpLay(o), parts = qpParts(o), plan = [];
+        ['mcq', 'short', 'long'].forEach(function (k) {
+            if (!parts) { plan.push({ k: k, part: null, n: lay[k] }); return; }
+            var el = parts.filter(function (p) { return !(k === 'long' && p.noLong); }), d = qpDist(lay[k], el.length);
+            el.forEach(function (p, i) { if (d[i] > 0) plan.push({ k: k, part: p, n: d[i] }); });
+        });
+        return plan;
+    }
+    function qpPlanCount(o) { var c = { mcq: 0, short: 0, long: 0 }; qpPlan(o).forEach(function (t) { c[t.k] += t.n; }); return c; }
     var QP_SUBJ = {
         low: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['evs', 'EVS', 'पर्यावरण अध्ययन', 'Paryavaran Adhyayan'], ['computer', 'Computer', 'कंप्यूटर', 'Computer'], ['gk', 'General Knowledge', 'सामान्य ज्ञान', 'Samanya Gyan'], ['maithili', 'Maithili', 'मैथिली', 'Maithili']],
         mid: [['math', 'Maths', 'गणित', 'Ganit'], ['science', 'Science', 'विज्ञान', 'Vigyan'], ['sst', 'Social Science', 'सामाजिक विज्ञान', 'Samajik Vigyan'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['sanskrit', 'Sanskrit', 'संस्कृत', 'Sanskrit'], ['maithili', 'Maithili', 'मैथिली', 'Maithili'], ['it', 'Information Technology', 'सूचना प्रौद्योगिकी', 'Information Technology']],
         high: [['physics', 'Physics', 'भौतिक विज्ञान', 'Bhautik Vigyan'], ['chemistry', 'Chemistry', 'रसायन विज्ञान', 'Rasayan Vigyan'], ['biology', 'Biology', 'जीव विज्ञान', 'Jeev Vigyan'], ['math', 'Maths', 'गणित', 'Ganit'], ['english', 'English', 'अंग्रेज़ी', 'Angrezi'], ['hindi', 'Hindi', 'हिंदी', 'Hindi'], ['maithili', 'Maithili', 'मैथिली', 'Maithili'], ['accountancy', 'Accountancy', 'लेखाशास्त्र', 'Lekhashastra'], ['business', 'Business Studies', 'व्यवसाय अध्ययन', 'Vyavsay Adhyayan'], ['economics', 'Economics', 'अर्थशास्त्र', 'Arthshastra'], ['history', 'History', 'इतिहास', 'Itihas'], ['geography', 'Geography', 'भूगोल', 'Bhugol'], ['polsci', 'Political Science', 'राजनीति विज्ञान', 'Rajneeti Vigyan'], ['cs', 'Computer Science', 'कंप्यूटर विज्ञान', 'Computer Vigyan']]
     };
     var QP_L = {
-        English: { cls: 'Class', total: 'Total marks', time: 'Time', min: 'min', hrs: '3 hours', name: 'Name', date: 'Date', ans: 'Answer', key: 'Answer Key', set: 'Model Set',
+        English: { cls: 'Class', total: 'Total marks', time: 'Time', min: 'min', hrs: '3 hours 15 min (incl. 15 min reading time)', hrsH: '2 hours', name: 'Name', date: 'Date', ans: 'Answer', key: 'Answer Key', set: 'Full Model Set', half: 'Half Model Set', insH: 'Instructions', roll: 'Roll No.', scode: 'Subject Code', bsl: 'Question Booklet Sl. No.', exam: 'Matriculation (Class 10) Examination', fm: 'Full Marks', exam12: 'Intermediate (Class 12) Examination', anyN: 'Attempt any {n}',
             types: { mcq: 'Objective (MCQ)', short: 'Subjective: short answer', long: 'Subjective: long answer', mixed: 'Subjective: mixed' },
             secs: ['Section A: Objective questions (1 mark each)', 'Section B: Short answer questions (2 marks each)', 'Section C: Long answer questions (5 marks each)'],
-            inst: 'All questions are compulsory. Section A has 80 objective questions (1 mark each), Section B has 15 short-answer questions (2 marks each) and Section C has 10 long-answer questions (5 marks each).' },
-        Hindi: { cls: 'कक्षा', total: 'कुल अंक', time: 'समय', min: 'मिनट', hrs: '3 घंटे', name: 'नाम', date: 'दिनांक', ans: 'उत्तर', key: 'उत्तर कुंजी', set: 'मॉडल सेट',
+            ins: ['All questions are compulsory. Section A has {m} objective questions (1 mark each), Section B has {s} short-answer questions (2 marks each) and Section C has {l} long-answer questions (5 marks each).',
+                'Objective questions: choose the correct option (A, B, C or D). In the real exam, darken the circle of your answer on the OMR sheet with a blue or black ball pen only.',
+                'Short and long answer questions: write the answers in your own words as far as possible.',
+                'The figures in the right margin show the full marks of the question.',
+                'There is no negative marking. Use of any electronic device is not allowed.'] },
+        Hindi: { cls: 'कक्षा', total: 'कुल अंक', time: 'समय', min: 'मिनट', hrs: '3 घंटे 15 मिनट (15 मिनट प्रश्न-पत्र पढ़ने का अतिरिक्त समय)', hrsH: '2 घंटे', name: 'नाम', date: 'दिनांक', ans: 'उत्तर', key: 'उत्तर कुंजी', set: 'फुल मॉडल सेट', half: 'हाफ मॉडल सेट', insH: 'निर्देश', roll: 'अनुक्रमांक', scode: 'विषय कोड', bsl: 'प्रश्न पुस्तिका क्रमांक', exam: 'माध्यमिक (मैट्रिक) परीक्षा', fm: 'पूर्णांक', exam12: 'इंटरमीडिएट (कक्षा 12) परीक्षा', anyN: 'किन्हीं {n} प्रश्नों के उत्तर दें',
             types: { mcq: 'वस्तुनिष्ठ (बहुविकल्पीय)', short: 'लघु उत्तरीय प्रश्न', long: 'दीर्घ उत्तरीय प्रश्न', mixed: 'विषयनिष्ठ (मिश्रित)' },
             secs: ['खंड अ: वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक)', 'खंड ब: लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक)', 'खंड स: दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक)'],
-            inst: 'सभी प्रश्न अनिवार्य हैं। खंड अ में 80 वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक), खंड ब में 15 लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक) और खंड स में 10 दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक) हैं।' },
-        Hinglish: { cls: 'Class', total: 'Kul ank', time: 'Samay', min: 'minute', hrs: '3 ghante', name: 'Naam', date: 'Dinank', ans: 'Uttar', key: 'Uttar Kunji', set: 'Model Set',
+            ins: ['सभी प्रश्न अनिवार्य हैं। खंड अ में {m} वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक), खंड ब में {s} लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक) तथा खंड स में {l} दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक) हैं।',
+                'वस्तुनिष्ठ प्रश्नों में सही विकल्प (A, B, C या D) चुनें। वास्तविक परीक्षा में उत्तर OMR शीट पर केवल नीले या काले बॉल पेन से वृत्त भरकर दें।',
+                'लघु एवं दीर्घ उत्तरीय प्रश्नों के उत्तर यथासंभव अपने शब्दों में लिखें।',
+                'दाहिनी ओर हाशिये पर दिए गए अंक प्रश्न के पूर्णांक निर्दिष्ट करते हैं।',
+                'ऋणात्मक अंकन नहीं है। किसी भी इलेक्ट्रॉनिक उपकरण का प्रयोग वर्जित है।'] },
+        Hinglish: { cls: 'Class', total: 'Kul ank', time: 'Samay', min: 'minute', hrs: '3 ghante 15 minute (15 minute padhne ka alag samay)', hrsH: '2 ghante', name: 'Naam', date: 'Dinank', ans: 'Uttar', key: 'Uttar Kunji', set: 'Full Model Set', half: 'Half Model Set', insH: 'Nirdesh', roll: 'Roll No.', scode: 'Vishay Code', bsl: 'Prashn Pustika Kramank', exam: 'Madhyamik (Matric) Pariksha', fm: 'Purnank', exam12: 'Intermediate (Class 12) Pariksha', anyN: 'Kisi bhi {n} ke uttar dijiye',
             types: { mcq: 'Vastunishth (MCQ)', short: 'Laghu uttariya prashn', long: 'Dirgh uttariya prashn', mixed: 'Vishayanishth (mishrit)' },
             secs: ['Khand A: Vastunishth prashn (har ek 1 ank)', 'Khand B: Laghu uttariya prashn (har ek 2 ank)', 'Khand C: Dirgh uttariya prashn (har ek 5 ank)'],
-            inst: 'Sabhi prashn anivarya hain. Khand A me 80 vastunishth prashn (har ek 1 ank), Khand B me 15 laghu uttariya prashn (har ek 2 ank) aur Khand C me 10 dirgh uttariya prashn (har ek 5 ank) hain.' }
+            ins: ['Sabhi prashn anivarya hain. Khand A me {m} vastunishth prashn (har ek 1 ank), Khand B me {s} laghu uttariya prashn (har ek 2 ank) aur Khand C me {l} dirgh uttariya prashn (har ek 5 ank) hain.',
+                'Vastunishth prashn: sahi vikalp (A, B, C ya D) chuniye. Asli pariksha me uttar OMR sheet par sirf neele ya kale ball pen se gola bharkar dijiye.',
+                'Laghu aur dirgh uttariya prashnon ke uttar jahan tak ho sake apne shabdon me likhiye.',
+                'Daahine hashiye me diye gaye ank prashn ke purnank dikhate hain.',
+                'Rinatmak (negative) marking nahi hai. Kisi bhi electronic upkaran ka prayog mana hai.'] }
     };
-    /* "Both" = English first, Hindi below it. Labels become "English / हिंदी". */
+    /* "Both" = Hindi first (as in the BSEB paper), the same text in English right below it. Labels become "हिंदी / English". */
     function qpLab(lang) {
         if (lang !== 'Both') return QP_L[lang] || QP_L.English;
         if (QP_L.Both) return QP_L.Both;
-        var e = QP_L.English, h = QP_L.Hindi, j = function (a, b) { return a + ' / ' + b; }, o = {};
-        ['cls', 'total', 'time', 'min', 'hrs', 'name', 'date', 'ans', 'key', 'set'].forEach(function (k) { o[k] = j(e[k], h[k]); });
+        var e = QP_L.English, h = QP_L.Hindi, j = function (a, b) { return b + ' / ' + a; }, o = {};
+        ['cls', 'total', 'time', 'min', 'hrs', 'hrsH', 'name', 'date', 'ans', 'key', 'set', 'half', 'insH', 'roll', 'scode', 'bsl', 'exam', 'exam12', 'fm'].forEach(function (k) { o[k] = j(e[k], h[k]); });
         o.types = {}; Object.keys(e.types).forEach(function (k) { o.types[k] = j(e.types[k], h.types[k]); });
         o.secs = e.secs.map(function (x, i) { return j(x, h.secs[i]); });
-        o.inst = e.inst + ' ' + h.inst;
+        o.ins = h.ins.map(function (x, i) { return [x, e.ins[i]]; });
+        o.insA = h.insA.map(function (x, i) { return [x, e.insA[i]]; });
+        o.anyN = h.anyN + ' / ' + e.anyN;
         QP_L.Both = o; return o;
     }
+    QP_L.English.insA = ['Section A has {m} objective questions (1 mark each): answer any {am} of them on the OMR sheet. Section B has {s} short-answer questions (2 marks each): answer any {as}; and {l} long-answer questions (5 marks each): answer any {al}.',
+        'If more than {am} objective questions are answered, only the first {am} answers are evaluated.'];
+    QP_L.Hindi.insA = ['खंड-अ में {m} वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक) हैं, किन्हीं {am} प्रश्नों के उत्तर OMR शीट पर दें। खंड-ब में {s} लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक) हैं, किन्हीं {as} के उत्तर दें; तथा {l} दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक) हैं, किन्हीं {al} के उत्तर दें।',
+        'यदि {am} से अधिक वस्तुनिष्ठ प्रश्नों के उत्तर दिए जाएँगे, तो केवल प्रथम {am} उत्तरों का मूल्यांकन होगा।'];
+    QP_L.Hinglish.insA = ['Khand A me {m} vastunishth prashn (har ek 1 ank) hain, kisi bhi {am} ke uttar OMR sheet par dijiye. Khand B me {s} laghu uttariya prashn (har ek 2 ank) hain, kisi bhi {as} ke uttar dijiye; aur {l} dirgh uttariya prashn (har ek 5 ank) hain, kisi bhi {al} ke uttar dijiye.',
+        'Agar {am} se zyada vastunishth prashnon ke uttar diye gaye, to sirf pehle {am} uttaron ka mulyankan hoga.'];
     var QP_LANGSUBJ = { hindi: 1, english: 1, maithili: 1, sanskrit: 1, nonhindi: 1 };   // language subjects never get the "Both" option
     function qpLim(o, n) { return o.lang === 'Both' ? Math.max(2, Math.ceil(n / 2)) : n; }   // a bilingual question is twice as long, so fewer per AI call
     var QP_OTHER = ['other', 'Other / any topic', 'अन्य विषय', 'Anya vishay'];
@@ -1572,7 +1640,7 @@
         return t;
     }
     function qpSubjFind(cls, key) { var l = qpSubjList(cls), i; for (i = 0; i < l.length; i++) if (l[i][0] === key) return l[i]; return l[0]; }
-    function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Both' ? (s[1] === s[2] ? s[1] : s[1] + ' / ' + s[2]) : (o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1])); }
+    function qpSubjName(o) { var s = o.subjN || ['', o.topic, o.topic, o.topic]; return o.lang === 'Both' ? (s[1] === s[2] ? s[1] : s[2] + ' / ' + s[1]) : (o.lang === 'Hindi' ? s[2] : (o.lang === 'Hinglish' ? s[3] : s[1])); }
     function qpLangRule(lang, subj) {
         if (lang === 'Hindi' && subj === 'maithili') return 'LANGUAGE RULE (very important): the subject is Maithili, so write EVERYTHING in Maithili language using Devanagari script only (मैथिली). Every question, option, explanation and answer must be in Devanagari. Do NOT use English/Roman letters or Hinglish.';
         if (lang === 'Both') return 'LANGUAGE RULE (very important): BILINGUAL paper. Write EVERY question twice: first in English and then the same question in Hindi (Devanagari script). Put the English question in "q" and its exact Hindi translation in "qh"; for multiple-choice put the 4 English options in "o" and the same 4 options in Hindi in "oh" (same order, so the correct index is the same); put the English explanation in "e" and the Hindi explanation in "eh"; for written questions put the English model answer in "ans" and the Hindi model answer in "ansh". The Hindi must say exactly the same thing as the English. Fields "q", "o", "e", "ans" must contain only English; fields "qh", "oh", "eh", "ansh" must contain only Hindi in Devanagari (numbers, symbols and chemical formulas may stay as they are). Never leave a Hindi field empty.';
@@ -1623,14 +1691,16 @@
     }
     function qpPrompt(o, n, done, c) {
         var mcq = o.type === 'mcq', needA = o.ans !== 'none', sn = o.subjN && o.subj !== 'other' ? o.subjN[1] : '';
-        var what = o.model ? (o.subj === 'nonhindi' ? 'the full Non-Hindi syllabus (all lessons of the Class 8 Hindi book Kislay Bhag-3)' : 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)') : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
+        var pt = o.part ? o.part.en : '';
+        var what = o.model && pt ? 'only the ' + pt + ' portion of the full ' + o.topic + ' syllabus (only the ' + pt + ' chapters / book of Class ' + o.cls + ')' : o.model ? (o.subj === 'nonhindi' ? 'the full Non-Hindi syllabus (all lessons of the Class 8 Hindi book Kislay Bhag-3)' : 'the full ' + o.topic + ' syllabus (all chapters of the Class ' + o.cls + ' ' + o.topic + ' book)') : 'this chapter / topic' + (sn ? ' of the subject ' + sn : '') + ': "' + o.topic + '"';
         var s = 'You are the Question Paper Maker inside Notes Bazar, a study app for Indian school students (Bihar and all India). Make a question paper for Class ' + o.cls + ' on ' + what + '. Difficulty: ' + o.level + '. ' + qpLangRule(o.lang, o.subj) + ' ' + qpSyllabus(o) +
             'Be sure every answer is correct; never invent facts. ';
         if (mcq) s += 'Make EXACTLY ' + n + ' multiple-choice questions. Each has 4 options and exactly one correct option; vary the position of the correct option. Do not put "A)" or "B)" labels inside the option text. ';
         else if (o.type === 'short') s += 'Make EXACTLY ' + n + ' short-answer questions, 2 marks each' + (needA ? ', with a model answer of 2 to 4 lines' : '') + '. ';
         else if (o.type === 'long') s += 'Make EXACTLY ' + n + ' long-answer questions, 5 marks each' + (needA ? ', with a complete model answer in 6 to 10 lines or points' : '') + '. ';
         else s += 'Make EXACTLY ' + n + ' subjective questions, a mix of 2, 3 and 5 mark questions' + (needA ? ', with a model answer whose length fits the marks' : '') + '. ';
-        if (c.N) s += 'This is part of a Model Set that must cover the WHOLE syllabus. Divide the textbook into ' + c.N + ' equal parts in chapter order and take the questions of THIS batch from part ' + c.seg + ' of ' + c.N + ', each question from a different concept. ';
+        if (pt) s += 'PART RULE (very important): this batch is only for the ' + pt + ' part of ' + o.topic + '. EVERY question must be strictly from ' + pt + ' (its chapters / book) and from nothing else; never from the other parts. ';
+        if (c.N) s += 'This is part of a Model Set that must cover the WHOLE syllabus' + (pt ? ' of ' + pt : '') + '. Divide ' + (pt ? 'the ' + pt + ' portion' : 'the textbook') + ' into ' + c.N + ' equal parts in chapter order and take the questions of THIS batch from part ' + c.seg + ' of ' + c.N + ', each question from a different concept. ';
         s += 'Variation code ' + c.seed + ': use it so this paper is different from any other paper on the same subject (different concepts, examples, names and numbers). ';
         s += 'Reply with ONLY one JSON object and nothing else (no markdown fences, no extra words): ';
         var both = o.lang === 'Both';
@@ -1681,57 +1751,88 @@
         return pool.length ? { qs: pool } : { msg: r.msg };
     }
     async function qpGenModel(o, run, hist) {
-        var seed = qpSeed(), seen = {}, pM = [], pS = [], pL = [], avoid = qpPick(hist, 30), oM, oS, oL, mp = qpShuf(8), sp = qpShuf(2), lp = qpShuf(2), res, i;
+        var seed = qpSeed(), seen = {}, avoid = qpPick(hist, 30), plan = qpPlan(o), total = 0, cancelled = false, pass, i;
         hist.forEach(function (k) { seen[k] = 1; });               // never repeat questions from the earlier model sets
-        oM = Object.assign({}, o, { type: 'mcq', model: true }); oS = Object.assign({}, o, { type: 'short', model: true }); oL = Object.assign({}, o, { type: 'long', model: true });
-        var prog = function (f) { qpStatus('Making your model set… ' + (pM.length + pS.length + pL.length) + ' of ' + QP_MODEL_TOTAL + ' questions' + (f ? ' (trying again)' : '')); };
-        var mk = function (pool, lim, segs, N) { return { run: run, pool: pool, seen: seen, seed: seed, avoid: avoid, lim: lim, segs: segs, N: N, prog: prog }; };
-        res = await Promise.all([                                    // 4 chains run side by side so it finishes sooner
-            qpGenSec(oM, 40, mk(pM, 10, mp.slice(0, 4), 8)), qpGenSec(oM, 40, mk(pM, 10, mp.slice(4), 8)),
-            qpGenSec(oS, QP_MODEL.short, mk(pS, 8, sp, 2)), qpGenSec(oL, QP_MODEL.long, mk(pL, 5, lp, 2))]);
-        for (i = 0; i < res.length; i++) if (res[i] === null) return null;
-        if (pM.length < QP_MODEL.mcq && (res = await qpGenSec(oM, QP_MODEL.mcq - pM.length, mk(pM, 10, qpShuf(8), 8))) === null) return null;
-        if (pS.length < QP_MODEL.short && (res = await qpGenSec(oS, QP_MODEL.short - pS.length, mk(pS, 8, qpShuf(2), 2))) === null) return null;
-        if (pL.length < QP_MODEL.long && (res = await qpGenSec(oL, QP_MODEL.long - pL.length, mk(pL, 5, qpShuf(2), 2))) === null) return null;
-        var secs = [{ k: 'mcq', qs: pM.slice(0, QP_MODEL.mcq) }, { k: 'short', qs: pS.slice(0, QP_MODEL.short) }, { k: 'long', qs: pL.slice(0, QP_MODEL.long) }], all = [];
-        secs.forEach(function (s) { all = all.concat(s.qs); });
+        plan.forEach(function (t) { t.pool = []; t.o = Object.assign({}, o, { type: t.k, model: true, part: t.part }); total += t.n; });
+        var prog = function (f) { var d = 0; plan.forEach(function (t) { d += t.pool.length; }); qpStatus('Making your ' + (o.half ? 'half model set' : 'model set') + '… ' + d + ' of ' + total + ' questions' + (f ? ' (trying again)' : '')); };
+        var lims = { mcq: 10, short: 8, long: 5 };
+        var mk = function (t) {
+            var N = t.k === 'mcq' ? Math.min(8, Math.max(1, Math.ceil(t.n / 6))) : Math.min(3, Math.max(1, Math.ceil(t.n / 4)));
+            return { run: run, pool: t.pool, seen: seen, seed: seed, avoid: avoid, lim: lims[t.k], segs: N > 1 ? qpShuf(N) : null, N: N > 1 ? N : 0, prog: prog };
+        };
+        for (pass = 0; pass < 2 && !cancelled; pass++) {           // second pass fills whatever the first pass could not make
+            var idx = 0;
+            var worker = async function () {
+                var t, need, r;
+                while (idx < plan.length && !cancelled) {
+                    t = plan[idx++]; need = t.n - t.pool.length; if (need <= 0) continue;
+                    r = await qpGenSec(t.o, need, mk(t));
+                    if (r === null) { cancelled = true; return; }
+                }
+            };
+            await Promise.all([worker(), worker(), worker(), worker()]);   // 4 chains run side by side so it finishes sooner
+        }
+        if (cancelled) return null;
+        var secs = [], all = [];
+        plan.forEach(function (t) { if (t.pool.length) { var qs = t.pool.slice(0, t.n); secs.push({ k: t.k, part: t.part, qs: qs }); all = all.concat(qs); } });
         return all.length ? { qs: all, secs: secs } : { msg: 'Could not make the model set right now. Please try again in a moment.' };
     }
     function qpNl(s) { return NB.esc(s).replace(/\n/g, '<br>'); }
-    function qpAns(q, mcq, num, L) {
-        var h = '<div class="qp-a' + (num ? ' qp-k' : '') + '"><b>' + (num ? 'Q' + num + '. ' : L.ans + ': ') + (mcq ? '(' + 'ABCDEF'[q.a] + ') ' + NB.esc(q.o[q.a]) : '') + '</b>';
-        if (mcq) h += q.e ? ' · ' + NB.esc(q.e) : '';
+    function qpAns(q, mcq, num, L) {                             // Both: the Hindi answer first, the English one right below it
+        var both = !!q.qh, E = NB.esc, h = '<div class="qp-a' + (num ? ' qp-k' : '') + '"><b>' + (num ? (both ? num + '. ' : 'Q' + num + '. ') : L.ans + ': ');
+        if (mcq) h += '(' + 'ABCDEF'[q.a] + ') ' + (both && q.oh && q.oh[q.a] ? E(q.oh[q.a]) + ' / ' : '') + E(q.o[q.a]);
+        h += '</b>';
+        if (mcq) { if (both) { if (q.eh) h += '<div class="qp-hi">' + E(q.eh) + '</div>'; if (q.e) h += '<div class="qp-hi">' + E(q.e) + '</div>'; } else h += q.e ? ' · ' + E(q.e) : ''; }
+        else if (both) h += '<div class="qp-hi">' + qpNl(q.ansh || '') + '</div><div class="qp-hi">' + qpNl(q.ans) + '</div>';
         else h += qpNl(q.ans);
-        if (q.qh) {                                              // Both: the Hindi answer sits right below the English one
-            h += '<div class="qp-hi">' + (mcq ? '<b>(' + 'ABCDEF'[q.a] + ') ' + NB.esc((q.oh || [])[q.a] || '') + '</b>' + (q.eh ? ' · ' + NB.esc(q.eh) : '') : qpNl(q.ansh || ''));
-            h += '</div>';
-        }
         return h + '</div>';
     }
-    function qpQ(q, mcq, num, marks, below, L) {
-        var h = '<div class="qp-q"><div class="qp-qt"><span><b>Q' + num + '.</b> ' + NB.esc(q.q) + '</span>' + (marks ? '<span class="qp-m">[' + marks + ']</span>' : '') + '</div>';
-        if (mcq) h += '<div class="qp-o">' + q.o.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + NB.esc(t) + '</span>'; }).join('') + '</div>';
-        if (q.qh) {                                              // Both: English question + options above, the same question + options in Hindi below
-            h += '<div class="qp-hq">' + NB.esc(q.qh) + '</div>';
-            if (mcq && q.oh) h += '<div class="qp-o">' + q.oh.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + NB.esc(t) + '</span>'; }).join('') + '</div>';
-        }
+    function qpQ(q, mcq, num, marks, below, L) {                 // Both: Hindi question + English question together, options as "हिंदी / English"
+        var both = !!q.qh, E = NB.esc;
+        var h = '<div class="qp-q"><div class="qp-qt"><span><b>' + (both ? num + '.' : 'Q' + num + '.') + '</b> ' + E(both ? q.qh : q.q) + '</span>' + (marks ? '<span class="qp-m">[' + marks + ']</span>' : '') + '</div>';
+        if (both) h += '<div class="qp-en">' + E(q.q) + '</div>';
+        if (mcq) h += '<div class="qp-o">' + q.o.map(function (t, j) { return '<span>(' + 'ABCDEF'[j] + ') ' + (both && q.oh && q.oh.length === q.o.length ? E(q.oh[j]) + ' / ' : '') + E(t) + '</span>'; }).join('') + '</div>';
         if (below) h += qpAns(q, mcq, 0, L);
         return h + '</div>';
     }
     function qpMeta(L, total, time) { return '<div class="qp-meta"><span>' + L.total + ': ' + total + '</span><span>' + L.time + ': ' + time + '</span><span>' + L.name + ': ______________</span><span>' + L.date + ': __________</span></div>'; }
+    var QP_SCODE = { hindi: '101', maithili: '104', sanskrit: '105', math: '110', sst: '111', science: '112', english: '113' };   // BSEB Class 10 subject codes
+    function qpCover(L, o, total, time) {                        // first-page block of the BSEB paper
+        var E = NB.esc, code = o.cls === 10 && QP_SCODE[o.subj] ? QP_SCODE[o.subj] : '', box = '<span class="qp-bx"></span>', i, boxes = '';
+        for (i = 0; i < 10; i++) boxes += box;
+        return '<div class="qp-cov"><div class="qp-cov-t">' + E(o.cls === 12 ? L.exam12 : L.exam) + '</div>' +
+            '<div class="qp-cov-r"><div class="qp-cov-f"><b>' + E(L.roll) + '</b><div class="qp-bxs">' + boxes + '</div></div>' +
+            '<div class="qp-cov-f qp-cov-s"><b>' + E(L.scode) + '</b><div class="qp-code">' + (code ? E(code) : '&nbsp;') + '</div></div></div>' +
+            '<div class="qp-cov-r"><div class="qp-cov-f"><b>' + E(L.bsl) + '</b> ____________</div>' +
+            '<div class="qp-cov-f"><b>' + E(L.time) + ':</b> ' + E(time) + '</div><div class="qp-cov-f"><b>' + E(L.fm) + ':</b> ' + total + '</div></div></div>';
+    }
+    function qpPartName(pt, lang) { return lang === 'Both' ? pt.hi + ' / ' + pt.en : (lang === 'Hindi' ? pt.hi : pt.en); }
+    function qpInsHtml(L, cnt, att) {
+        var f = function (t) { return NB.esc(t).replace(/\{m\}/g, cnt.mcq).replace(/\{s\}/g, cnt.short).replace(/\{l\}/g, cnt.long).replace(/\{am\}/g, att ? att.mcq : '').replace(/\{as\}/g, att ? att.short : '').replace(/\{al\}/g, att ? att.long : ''); };
+        var lines = L.ins.slice();
+        if (att && L.insA) { lines[0] = L.insA[0]; lines.splice(1, 0, L.insA[1]); }
+        return '<div class="qp-ins"><b>' + NB.esc(L.insH) + '</b><ol>' + lines.map(function (x) { return '<li>' + (Array.isArray(x) ? f(x[0]) + '<i>' + f(x[1]) + '</i>' : f(x)) + '</li>'; }).join('') + '</ol></div>';
+    }
     function qpBodyModel(p) {
-        var o = p.o, L = qpLab(o.lang), E = NB.esc, h = '', n = 0, total = 0, starts = [];
-        p.secs.forEach(function (s) { total += s.qs.length * QP_MARKS[s.k]; });
-        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(L.set) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + (qpBoardName(o.subj) ? ' · ' + qpBoardName(o.subj) : '') + ' · ' + E(L.set) + '</div>' + qpMeta(L, total, L.hrs) + '<div class="qp-inst">' + E(L.inst) + '</div>';
-        p.secs.forEach(function (s, si) {
-            starts.push(n); h += '<h2>' + E(L.secs[si]) + '</h2>';
+        var o = p.o, L = qpLab(o.lang), E = NB.esc, h = '', n = 0, total = 0, starts = [], cnt = { mcq: 0, short: 0, long: 0 }, lastK = '', kinds = ['mcq', 'short', 'long'];
+        p.secs.forEach(function (s) { total += s.qs.length * QP_MARKS[s.k]; cnt[s.k] += s.qs.length; });
+        var att = qpLay(o).att; if (att && (cnt.mcq < att.mcq || cnt.short < att.short || cnt.long < att.long)) att = null;
+        if (att) total = att.mcq + att.short * 2 + att.long * 5;
+        var anyT = function (k) { return att ? ' (' + (L.anyN || '').replace(/\{n\}/g, att[k]) + ')' : ''; };
+        var setName = o.half ? L.half : L.set;
+        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(setName) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + (qpBoardName(o.subj) ? ' · ' + qpBoardName(o.subj) : '') + ' · ' + E(setName) + '</div>' + qpCover(L, o, total, o.half ? L.hrsH : L.hrs) + qpMeta(L, total, o.half ? L.hrsH : L.hrs).replace(/<span>[^<]*(?:Time|समय|Samay)[^<]*<\/span>/, '') + qpInsHtml(L, cnt, att);
+        p.secs.forEach(function (s) {
+            starts.push(n);
+            if (s.k !== lastK) { h += '<h2>' + E(L.secs[kinds.indexOf(s.k)] + anyT(s.k)) + '</h2>'; lastK = s.k; }
+            if (s.part) h += '<h2 class="qp-h3">' + E(qpPartName(s.part, o.lang)) + '</h2>';
             s.qs.forEach(function (q) { n++; h += qpQ(q, s.k === 'mcq', n, s.k === 'mcq' ? 0 : QP_MARKS[s.k], o.ans === 'below', L); });
         });
         if (o.ans === 'end') {
-            h += '<div class="qp-brk"></div><h2>' + E(L.key) + '</h2>';
+            h += '<div class="qp-brk"></div><h2>' + E(L.key) + '</h2>'; lastK = '';
             p.secs.forEach(function (s, si) {
                 if (!s.qs.length) return;
-                h += '<h2 class="qp-h3">' + E(L.secs[si]) + '</h2>';
+                if (s.k !== lastK) { h += '<h2 class="qp-h3">' + E(L.secs[kinds.indexOf(s.k)]) + '</h2>'; lastK = s.k; }
+                if (s.part) h += '<div class="qp-sum" style="margin-bottom:4px"><u>' + E(qpPartName(s.part, o.lang)) + '</u></div>';
                 if (s.k === 'mcq') h += '<div class="qp-sum">' + s.qs.map(function (q, i) { return (starts[si] + i + 1) + '-' + 'ABCDEF'[q.a]; }).join(' &nbsp; ') + '</div>';
                 s.qs.forEach(function (q, i) { h += '<div class="qp-q">' + qpAns(q, s.k === 'mcq', starts[si] + i + 1, L) + '</div>'; });
             });
@@ -1752,9 +1853,16 @@
         }
         return h;
     }
+    function qpFormOpts() { var tv = $('qpType').value; return { cls: parseInt($('qpCls').value, 10), subj: $('qpSubj').value, half: tv === 'half' }; }
+    function qpModelTotal(o) { var c = qpPlanCount(o); return c.mcq + c.short + c.long; }
+    function qpModelText(o) {
+        var c = qpPlanCount(o), parts = qpParts(o), at = qpLay(o).att, marks = at ? at.mcq + at.short * 2 + at.long * 5 : c.mcq + c.short * 2 + c.long * 5;
+        return '<p class="nbo-sub" style="margin:6px 0 0">' + (o.half ? 'Half Model Set' : 'Full Model Set') + ': one PDF with ' + c.mcq + ' objective (1 mark)' + (at ? ', attempt any ' + at.mcq : '') + ' + ' + c.short + ' short answer (2 marks)' + (at ? ', attempt any ' + at.short : '') + ' + ' + c.long + ' long answer (5 marks)' + (at ? ', attempt any ' + at.long : '') + ' questions = ' + marks + ' marks' + (at ? ' (BSEB Class 12 pattern)' : '') + ', from the whole book' +
+            (parts ? ', shared equally between ' + parts.map(function (p) { return p.en; }).join(', ') : '') + '. BSEB style instructions are printed on top. A fresh set every time.</p>';
+    }
     function qpSync() {                                           // Model Set: topic + question count are not needed
-        var m = $('qpType').value === 'model', t = $('qpTopic'), c = $('qpCount'), w = $('qpSubWrap');
-        if (m) { if (!c.disabled) QP.cnt = c.value; t.disabled = true; c.disabled = true; c.value = QP_MODEL_TOTAL; t.placeholder = 'Not needed for Model Set'; w.style.display = ''; }
+        var tv = $('qpType').value, m = tv === 'model' || tv === 'half', t = $('qpTopic'), c = $('qpCount'), w = $('qpSubWrap');
+        if (m) { if (!c.disabled) QP.cnt = c.value; t.disabled = true; c.disabled = true; c.value = qpModelTotal(qpFormOpts()); t.placeholder = 'Not needed for Model Set'; w.style.display = ''; w.innerHTML = qpModelText(qpFormOpts()); }
         else { t.disabled = false; c.disabled = false; if (QP.cnt) { c.value = QP.cnt; QP.cnt = 0; } t.placeholder = 'e.g. Idgah, Life Processes, Algebra'; w.style.display = 'none'; }
         t.parentNode.classList.toggle('qp-off', m); $('qpMore').style.display = m ? 'none' : '';
     }
@@ -1776,14 +1884,14 @@
         b.innerHTML = qpBoardLine(v, 'Questions');
     }
     function qpForm() {
-        QP.run++; QP.busy = false; QP.cnt = 0;
+        QP.run++; QP.busy = false; QP.cnt = 0; QP.fromMy = false;
         var body = $('nbqpBody'), s = LSX.get('nb_qp_opts', null) || {}, pr = NB.profile();
         var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
-        body.innerHTML = '<button type="button" class="np-back" id="qpBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button><h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, or a full Model Set, with or without answers, and save them as a PDF.</p>' +
+        body.innerHTML = '<button type="button" class="np-back" id="qpBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button><h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI Question Paper</h3><p class="nbo-sub">Make objective or subjective questions on any topic, or a Half / Full Model Set, with or without answers, and save them as a PDF.</p>' +
             '<div class="nbai-set" style="margin-top:10px"><label>Class' + qpSel('qpCls', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return [n, 'Class ' + n]; }), cls) + '</label>' +
-            '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['model', 'Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
+            '<label>Question type' + qpSel('qpType', [['mcq', 'Objective (MCQ)'], ['short', 'Subjective: short (2 marks)'], ['long', 'Subjective: long (5 marks)'], ['mixed', 'Subjective: mixed'], ['half', 'Half Model Set (half paper)'], ['model', 'Full Model Set (full paper)']], s.type || 'mcq') + '</label></div>' +
             '<div style="margin-top:10px"><label class="nbo-l" for="qpSubj" style="margin-top:0">Subject</label><select id="qpSubj" class="nbo-in"></select><div class="qp-board" id="qpBoard"></div></div>' +
-            '<div id="qpSubWrap" class="qp-subwrap" style="display:none"><p class="nbo-sub" style="margin:6px 0 0">Model Set: one PDF with 80 objective (1 mark) + 15 short answer (2 marks) + 10 long answer (5 marks) questions = 160 marks, from the whole book. A fresh set every time.</p></div>' +
+            '<div id="qpSubWrap" class="qp-subwrap" style="display:none"></div>' +
             '<div id="qpTopicBox" style="margin-top:10px"><div id="qpChWrap"></div><label class="nbo-l" for="qpTopic">Chapter / topic</label><input id="qpTopic" class="nbo-in" maxlength="170" autocomplete="off" placeholder="e.g. Idgah, Life Processes, Algebra" value="' + NB.esc(s.topic || '') + '"></div>' +
             '<details id="qpMore" class="qp-more"><summary>Better accuracy: add the book name, or photo / PDF / paste of the chapter</summary>' +
             qpScanHtml('qp') +
@@ -1799,26 +1907,26 @@
         qpScanInit('qp');
         $('qpBack').addEventListener('click', function () { NB.close('nbQp'); NB.openPdfMaker(); });
         $('qpType').addEventListener('change', qpSync);
-        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); chRender('qp'); qpLangFix(false); });
+        $('qpCls').addEventListener('change', function () { qpFillSubj($('qpSubj').value); chRender('qp'); qpLangFix(false); qpSync(); });
         $('qpSubj').addEventListener('change', function () {
             chRender('qp');
             qpBoardHint(); var v = this.value, lg = $('qpLang');
             if (v === 'hindi' || v === 'maithili' || v === 'sanskrit' || v === 'nonhindi' || v === 'sst') lg.value = 'Hindi'; else if (v === 'english') lg.value = 'English';   // those papers are written in their own language
-            qpLangFix(false);
+            qpLangFix(false); qpSync();
         });
         $('qpGo').addEventListener('click', async function () {
             if (QP.busy) return;
             var err = $('qpErr'); err.textContent = '';
-            var m = $('qpType').value === 'model', cl = parseInt($('qpCls').value, 10), sj = qpSubjFind(cl, $('qpSubj').value);
+            var tv = $('qpType').value, m = tv === 'model' || tv === 'half', cl = parseInt($('qpCls').value, 10), sj = qpSubjFind(cl, $('qpSubj').value);
             if (m && sj[0] === 'other') { err.textContent = 'Please choose a subject for the Model Set.'; return; }
-            var o = { topic: m ? sj[1] : (qpTopic() || (sj[0] === 'other' ? '' : sj[1] + ' (any chapters)')), cls: cl, type: $('qpType').value, count: m ? QP_MODEL_TOTAL : parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value, subj: sj[0], subjN: sj,
+            var o = { topic: m ? sj[1] : (qpTopic() || (sj[0] === 'other' ? '' : sj[1] + ' (any chapters)')), cls: cl, type: m ? 'model' : tv, half: tv === 'half', count: m ? qpModelTotal({ cls: cl, subj: sj[0], half: tv === 'half' }) : parseInt($('qpCount').value, 10), ans: $('qpAns').value, lang: $('qpLang').value, level: $('qpLevel').value, subj: sj[0], subjN: sj,
                 book: m ? '' : String($('qpBook').value || '').replace(/\s+/g, ' ').trim().slice(0, 80), src: m ? '' : String($('qpSrc').value || '').trim().slice(0, 12000) };
             if (!m) {
                 if (o.topic.length < 2) { err.textContent = 'Please write the topic or chapter first, or choose a subject.'; return; }
                 var max = o.type === 'mcq' ? 50 : 30;
                 if (!(o.count >= 1)) o.count = 10; if (o.count > max) { o.count = max; $('qpCount').value = max; err.textContent = 'Maximum ' + max + ' questions for this type. Making ' + max + '.'; }
             }
-            LSX.set('nb_qp_opts', { topic: qpTopic(), book: o.book, cls: o.cls, type: o.type, count: m ? (QP.cnt || 10) : o.count, ans: o.ans, lang: o.lang, level: o.level, subj: o.subj });
+            LSX.set('nb_qp_opts', { topic: qpTopic(), book: o.book, cls: o.cls, type: tv, count: m ? (QP.cnt || 10) : o.count, ans: o.ans, lang: o.lang, level: o.level, subj: o.subj });
             if (typeof window.nbCallAi !== 'function') { err.textContent = 'The AI is still loading. Please try again in a moment.'; return; }
             QP.busy = true; var go = $('qpGo'); go.disabled = true;
             var r = await qpGenerate(o);
@@ -1834,12 +1942,13 @@
     function qpResult(partial) {
         var body = $('nbqpBody'), p = QP.paper;
         if (!$('qpStyle')) { var st = document.createElement('style'); st.id = 'qpStyle'; st.textContent = QP_CSS; document.head.appendChild(st); }
-        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> Your question paper</h3><p class="nbo-sub">' + p.qs.length + ' questions' + (partial ? ' (the AI could not make all ' + p.o.count + ', tap "Make another paper" to try again)' : '') + '</p>' +
+        body.innerHTML = '<button type="button" class="np-back" id="qpRBack"><i class="fa-solid fa-arrow-left"></i> Back</button><h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> Your question paper</h3><p class="nbo-sub">' + p.qs.length + ' questions' + (partial ? ' (the AI could not make all ' + p.o.count + ', tap "Make another paper" to try again)' : '') + '</p>' +
             '<div class="nbqp-prev"><div class="qpw">' + qpBody(p) + '</div></div>' +
             pdfBtns() + '<p class="nbo-sub" style="margin:8px 0 0">Saved in <b>My PDFs</b> on this phone.</p>' +
             '<button type="button" class="nbo-skip" id="qpNew">Make another paper</button>';
         pdfWire('qp');
         $('qpNew').addEventListener('click', qpForm);
+        $('qpRBack').addEventListener('click', function () { if (QP.fromMy) { QP.fromMy = false; NB.close('nbQp'); NB.openMyPdfs(); } else qpForm(); });
     }
 
     /* ---------- Scan a page: camera / photo / PDF -> text (OCR runs on the phone, no AI vision needed) ---------- */
@@ -2343,12 +2452,13 @@
         var body = $('nbntBody'), d = NP.doc;
         if (!$('npStyle')) { var st = document.createElement('style'); st.id = 'npStyle'; st.textContent = NP_CSS; document.head.appendChild(st); }
         var pics = d.notes.some(function (s) { return s.pic; });
-        body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-book-open"></i> Your notes</h3><p class="nbo-sub">' + d.notes.length + ' sections' + (d.missed ? ' (' + d.missed + ' could not be written because the AI was busy. Tap "Make other notes" to try again)' : '') + (pics ? '. Tap ✕ on a picture to remove it if it does not match.' : '') + '</p>' +
+        body.innerHTML = '<button type="button" class="np-back" id="npRBack"><i class="fa-solid fa-arrow-left"></i> Back</button><h3 class="nbo-h"><i class="fa-solid fa-book-open"></i> Your notes</h3><p class="nbo-sub">' + d.notes.length + ' sections' + (d.missed ? ' (' + d.missed + ' could not be written because the AI was busy. Tap "Make other notes" to try again)' : '') + (pics ? '. Tap ✕ on a picture to remove it if it does not match.' : '') + '</p>' +
             '<div class="nbqp-prev np-prev"><div class="npw" id="npDoc">' + npBody(d) + '</div></div>' +
             pdfBtns() + '<p class="nbo-sub" style="margin:8px 0 0">Saved in <b>My PDFs</b> on this phone.</p>' +
             '<div id="npQz"><button type="button" class="np-qb" id="npQzOpen"><i class="fa-solid fa-bullseye"></i> Isi se test do <small>(quiz from these notes)</small></button></div>' +
             '<button type="button" class="nbo-skip" id="npNew">Make other notes</button>';
         pdfWire('np'); $('npQzOpen').addEventListener('click', npQuizOpen); $('npNew').addEventListener('click', npForm);
+        $('npRBack').addEventListener('click', function () { if (NP.fromMy) { NP.fromMy = false; NB.close('nbNt'); NB.openMyPdfs(); } else npForm(); });
         $('npDoc').addEventListener('click', function (e) {
             var b = e.target.closest && e.target.closest('.np-rm'), fg = b && b.parentNode, si;
             if (!fg || !fg.parentNode) return;
@@ -2384,7 +2494,7 @@
         npBoardHint();
     }
     function npForm() {
-        NP.run++; NP.busy = false;
+        NP.run++; NP.busy = false; NP.fromMy = false;
         var body = $('nbntBody'), s = LSX.get('nb_np_opts', null) || {}, pr = NB.profile();
         var cls = s.cls || (pr ? parseInt(String(pr.cls).replace('Class ', ''), 10) : 10) || 10;
         body.innerHTML = '<button type="button" class="np-back" id="npBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button>' +
@@ -2649,7 +2759,7 @@
         }
         if (!QP.paper) return null; o = QP.paper.o;
         return { cls: 'qpw', css: QP_CSS, html: qpBody(QP.paper), title: o.title || o.topic, fallback: qpPrint,
-            name: pdfName(['NotesBazar', 'Class' + o.cls, o.subj !== 'other' ? o.subjN && o.subjN[1] : '', o.type === 'model' ? 'Model-Set' : (o.title || o.topic), 'Question-Paper']) };
+            name: pdfName(['NotesBazar', 'Class' + o.cls, o.subj !== 'other' ? o.subjN && o.subjN[1] : '', o.type === 'model' ? (o.half ? 'Half-Model-Set' : 'Full-Model-Set') : (o.title || o.topic), 'Question-Paper']) };
     }
     function pdfCanShare() {
         try { return !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] })); } catch (e) { return false; }
@@ -2708,11 +2818,11 @@
             o.src = '';
             data = kind === 'notes' ? { id: id, o: o, title: doc.title, notes: doc.notes } : { id: id, o: o, qs: o.type === 'model' ? [] : doc.qs, secs: doc.secs };
             if (JSON.stringify(data).length > 600000) return;
-            rec = { id: id, kind: kind, title: kind === 'notes' ? doc.title : (o.title || o.topic), ts: Date.now(), cls: o.cls, subj: (o.subj && o.subj !== 'other') ? qpSubjName(o) : '', lang: o.lang, type: o.type, data: data };
+            rec = { id: id, kind: kind, title: kind === 'notes' ? doc.title : (o.title || o.topic), ts: Date.now(), cls: o.cls, subj: (o.subj && o.subj !== 'other') ? qpSubjName(o) : '', lang: o.lang, type: o.type, half: !!o.half, data: data };
             a = myAll().filter(function (x) { return x.id !== id; }); a.unshift(rec); myPut(a);
         } catch (e) {}
     }
-    function myKindLabel(r) { return r.kind === 'notes' ? (r.type === 'short' ? 'Short notes' : 'Long notes') : (r.type === 'model' ? 'Model Set' : 'Question paper'); }
+    function myKindLabel(r) { return r.kind === 'notes' ? (r.type === 'short' ? 'Short notes' : 'Long notes') : (r.type === 'model' ? (r.half ? 'Half Model Set' : 'Full Model Set') : 'Question paper'); }
     function myRender() {
         var a = myAll(), body = $('nbmyBody'), E = NB.esc;
         body.innerHTML = '<button type="button" class="np-back" id="myBack"><i class="fa-solid fa-arrow-left"></i> AI PDF Maker</button>' +
@@ -2724,7 +2834,7 @@
                     '<div class="my-btns"><button type="button" class="my-b" data-a="open">Open</button><button type="button" class="my-x" data-a="del" aria-label="Delete"><i class="fa-solid fa-trash"></i></button></div></div>';
             }).join('') : '<p class="nbo-sub" style="text-align:center;margin:22px 0">Nothing saved yet. Make notes or a question paper and it will appear here.</p>') +
             (a.length ? '<button type="button" class="nbo-skip" id="myClear">Delete all (' + a.length + ')</button>' : '');
-        $('myBack').addEventListener('click', function () { NB.close('nbMy'); NB.openPdfMaker(); });
+        $('myBack').addEventListener('click', function () { NB.close('nbMy'); if (NB.parentOf && NB.parentOf('nbMy') === 'nbPm') NB.openPdfMaker(); });
         if ($('myClear')) $('myClear').addEventListener('click', function () {
             var c = this;
             if (c.getAttribute('data-ask')) { LSX.del(MY_KEY); myRender(); NB.toast('All saved PDFs deleted.', 1800); return; }
@@ -2740,10 +2850,10 @@
             if (act === 'no') { myRender(); return; }
             if (act === 'yes') { myPut(myAll().filter(function (x) { return x.id !== id; })); myRender(); NB.toast('Deleted from My PDFs.', 1800); return; }
             NB.close('nbMy');
-            if (rec.kind === 'notes') { NP.doc = rec.data; if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npResult(); }
+            if (rec.kind === 'notes') { NP.doc = rec.data; if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npResult(); NP.fromMy = true; }
             else {
                 QP.paper = rec.data; if (rec.data.o.type === 'model') rec.data.qs = (rec.data.secs || []).reduce(function (s, x) { return s.concat(x.qs || []); }, []);
-                if (!$('nbQp')) buildPaper(); NB.open('nbQp'); qpResult(false);
+                if (!$('nbQp')) buildPaper(); NB.open('nbQp'); qpResult(false); QP.fromMy = true;
             }
         };
     }
@@ -4196,6 +4306,133 @@
         var panel = document.getElementById('adminPanel-appearance'); if (!panel) return;
         new MutationObserver(function () { if (busy) return; clearTimeout(t); t = setTimeout(run, 60); }).observe(panel, { childList: true, subtree: true });
         run();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+/* =====================================================================
+   Navigation helpers: back arrow on every dialog, full screen preview,
+   and "My PDFs" shortcut inside My Downloads
+   ===================================================================== */
+(function () {
+    'use strict';
+    var NB = window.NB = window.NB || {};
+    var $ = function (id) { return document.getElementById(id); };
+    var par = {}, lastClosed = { id: '', t: 0 }, backing = false;
+    var _open = NB.open, _close = NB.close;
+
+    /* ---- remember which dialog was open before (so "back" returns to it) ---- */
+    NB.close = function (id) { var was = NB.isOpen(id); _close.apply(NB, arguments); if (was) lastClosed = { id: id, t: Date.now() }; };
+    NB.open = function (id) {
+        var m = $(id), opens, cand = null;
+        if (m && !backing && !m.classList.contains('open')) {
+            opens = [].slice.call(document.querySelectorAll('.nbo.open')).map(function (e) { return e.id; }).filter(function (x) { return x && x !== id; });
+            if (opens.length) cand = opens[opens.length - 1];
+            else if (lastClosed.id && lastClosed.id !== id && Date.now() - lastClosed.t < 700) cand = lastClosed.id;
+            par[id] = cand;
+        }
+        _open.apply(NB, arguments);
+        if (m) decorate(m);
+    };
+    NB.parentOf = function (id) { return par[id] || null; };
+    function reopen(p) {
+        backing = true;
+        try { if (p === 'nbPm' && NB.openPdfMaker) NB.openPdfMaker(); else if (p === 'nbMy' && NB.openMyPdfs) NB.openMyPdfs(); else NB.open(p); } finally { backing = false; }
+    }
+    function goBack(m) {
+        var id = m.id, card = m.querySelector('.nbo-card') || m, inner = id === 'nbMy' ? null : card.querySelector('.np-back'), x, p;
+        if (inner) { inner.click(); return; }                    // sub-screens have their own "back" (result -> form, form -> AI PDF Maker)
+        x = m.querySelector('.nbo-x'); p = par[id];
+        if (x) x.click(); else NB.close(id);
+        if (p && $(p) && !NB.isOpen(id)) reopen(p);
+    }
+    function decorate(m) {
+        if (!m || m.__bk || !m.classList.contains('nbo')) return;
+        var x = m.querySelector('.nbo-x'), b;
+        if (!x || NB.noClose[m.id] || m.querySelector('.nbo-sm')) return;
+        b = document.createElement('button'); b.type = 'button'; b.className = 'nbo-bk'; b.setAttribute('aria-label', 'Back'); b.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+        b.addEventListener('click', function (e) { e.stopPropagation(); goBack(m); });
+        x.parentNode.insertBefore(b, x); m.__bk = 1;
+    }
+    function decorateAll() { [].forEach.call(document.querySelectorAll('.nbo'), decorate); }
+
+    /* ---- same back arrow for the Tailwind dialogs of index.html ---- */
+    var TW = ['themeModal', 'langModal', 'settingsModal', 'previewModal', 'aiModal', 'wishModal', 'supportModal', 'complainModal', 'savedModal', 'aboutModal', 'downloadsModal', 'safePreviewModal', 'rulesHelpModal'];
+    function twDecorate() {
+        TW.forEach(function (id) {
+            var m = $(id), c, h, b;
+            if (!m || m.__bk) return;
+            c = m.querySelector('[onclick*="closeModal(\'' + id + '\')"],[onclick*="closeSafePreview"]');
+            if (!c) return;
+            h = c.closest('.justify-between'); if (!h || !m.contains(h)) return;
+            b = document.createElement('button'); b.type = 'button'; b.className = 'nb-bk-tw'; b.setAttribute('aria-label', 'Back'); b.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+            b.addEventListener('click', function (e) { e.stopPropagation(); c.click(); });
+            h.insertBefore(b, h.firstChild); m.__bk = 1;
+        });
+    }
+
+    /* ---- full screen viewer (works for PDFs in an iframe and for the made notes / papers) ---- */
+    var fsKey = null, fsOv = null, fsOverflow = '';
+    NB.fullscreen = function (o) {
+        var ov, c, pg;
+        NB.closeFullscreen();
+        ov = document.createElement('div'); ov.className = 'nb-fso'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+        ov.innerHTML = '<div class="nb-fsbar"><button type="button" class="nb-fsb" data-k="x"><i class="fa-solid fa-arrow-left"></i> Back</button><span class="nb-fst"></span><button type="button" class="nb-fsb" data-k="x"><i class="fa-solid fa-down-left-and-up-right-to-center"></i> Close full screen</button></div><div class="nb-fsc"></div>';
+        ov.querySelector('.nb-fst').textContent = o.title || '';
+        c = ov.querySelector('.nb-fsc');
+        if (o.src) { var f = document.createElement('iframe'); f.src = o.src; f.title = o.title || 'Preview'; c.appendChild(f); }
+        else if (o.node) { pg = document.createElement('div'); pg.className = 'nb-fspage'; pg.appendChild(o.node); c.appendChild(pg); }
+        ov.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-k="x"]')) NB.closeFullscreen(); });
+        fsOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden';
+        document.body.appendChild(ov); fsOv = ov;
+    };
+    NB.closeFullscreen = function () { if (!fsOv) return; if (fsOv.parentNode) fsOv.parentNode.removeChild(fsOv); fsOv = null; document.body.style.overflow = fsOverflow; };
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && fsOv) { e.stopImmediatePropagation(); NB.closeFullscreen(); } }, true);
+
+    function prevButtons() {                                      // "Full screen" button above every made notes / paper preview
+        [].forEach.call(document.querySelectorAll('.nbqp-prev:not([data-fs])'), function (pv) {
+            var row = document.createElement('div'), b = document.createElement('button');
+            pv.setAttribute('data-fs', '1'); row.className = 'nbp-fsrow';
+            b.type = 'button'; b.className = 'nbo-mini'; b.innerHTML = '<i class="fa-solid fa-expand"></i> Full screen';
+            b.addEventListener('click', function () {
+                var src = pv.firstElementChild; if (!src) return;
+                var n = src.cloneNode(true), h = pv.parentNode && pv.parentNode.querySelector('.nbo-h');
+                [].forEach.call(n.querySelectorAll('[id]'), function (e) { e.removeAttribute('id'); });
+                NB.fullscreen({ node: n, title: h ? h.textContent.trim() : 'Preview' });
+            });
+            row.appendChild(b); pv.parentNode.insertBefore(row, pv);
+        });
+    }
+    function frameButtons() {                                     // "Full screen" button on the PDF preview of notes / downloaded files
+        ['previewContentContainer', 'safePrevBody'].forEach(function (cid) {
+            var c = $(cid); if (!c) return;
+            [].forEach.call(c.querySelectorAll('iframe:not([data-fs])'), function (f) {
+                var w = f.parentNode, b = document.createElement('button'), t = $(cid === 'safePrevBody' ? 'safePrevTitle' : 'previewTitle');
+                f.setAttribute('data-fs', '1'); w.classList.add('nb-fsw');
+                b.type = 'button'; b.className = 'nb-fsbtn'; b.innerHTML = '<i class="fa-solid fa-expand"></i> Full screen';
+                b.addEventListener('click', function () { NB.fullscreen({ src: f.src, title: t ? t.textContent.trim() : 'Preview' }); });
+                w.appendChild(b);
+            });
+        });
+    }
+
+    /* ---- "My PDFs" inside My Downloads ---- */
+    function myPdfCount() { try { var a = JSON.parse(localStorage.getItem('nb_my_pdfs') || '[]'); return Array.isArray(a) ? a.length : 0; } catch (e) { return 0; } }
+    function updMyN() { var e = $('dlMyPdfN'); if (e) { var n = myPdfCount(); e.textContent = n ? '(' + n + ')' : ''; } }
+    function wrapDownloads() {
+        if (window.openDownloads && !window.openDownloads.__nb) {
+            var o = window.openDownloads;
+            window.openDownloads = function () { updMyN(); return o.apply(this, arguments); };
+            window.openDownloads.__nb = 1; return true;
+        }
+        return !!(window.openDownloads && window.openDownloads.__nb);
+    }
+
+    function tick() { decorateAll(); twDecorate(); prevButtons(); frameButtons(); }
+    function init() {
+        tick(); updMyN();
+        var t = null, n = 0, w = setInterval(function () { if (wrapDownloads() || ++n > 40) clearInterval(w); }, 250);
+        new MutationObserver(function () { clearTimeout(t); t = setTimeout(tick, 70); }).observe(document.body, { childList: true, subtree: true });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
