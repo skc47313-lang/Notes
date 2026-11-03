@@ -44,6 +44,7 @@
         { id: 'uploads', label: 'Manage Notes', icon: 'fa-file-lines' },
         { id: 'categories', label: 'Manage Categories', icon: 'fa-layer-group' },
         { id: 'users', label: 'View Users', icon: 'fa-users' },
+        { id: 'community', label: 'Community', icon: 'fa-comments' },
         { id: 'analytics', label: 'Analytics', icon: 'fa-chart-column' },
         { id: 'settings', label: 'Settings', icon: 'fa-gear' },
         { id: 'appearance', label: 'Appearance', icon: 'fa-palette' },
@@ -55,7 +56,8 @@
     var PAGES = {
         uploads: { t: 'Manage Notes', d: 'Upload, edit, hide or delete notes, books and PYQ.' },
         categories: { t: 'Manage Categories', d: 'See every class and subject, rename subjects and jump to their notes.' },
-        users: { t: 'View Users', d: 'Students who created an account on Notes Bazar.' },
+        users: { t: 'View Users', d: 'Students who created an account on Notes Bazar. Tap a student to see downloads, saved notes and tests.' },
+        community: { t: 'Community', d: 'Live student chat. Turn it ON or OFF, delete messages and block students.' },
         analytics: { t: 'Analytics', d: 'Visits, visitors, uploads and the most popular resources.' },
         settings: { t: 'Settings', d: 'Admin account, backup, data refresh and Firebase rules.' },
         appearance: { t: 'Appearance', d: 'Colours, dark mode and the Home hero slider.' },
@@ -412,7 +414,7 @@
         var rows = shown.map(function (u) {
             var p = u.p, nm = p.name || 'Student', av = /^data:image\/(png|jpe?g|webp|gif);base64,/.test(p.photo || '') && String(p.photo).length < 400000 ? '<img alt="" src="' + esc(p.photo) + '">' : esc(nm.charAt(0).toUpperCase());
             var d = u.d || {}, favs = d.favs ? (Array.isArray(d.favs) ? d.favs.length : Object.keys(d.favs).length) : 0;
-            return '<div class="a-user"><span class="av">' + av + '</span><div class="tx"><b>' + esc(nm) + '</b><span>' + (p.userId ? '@' + esc(p.userId) : 'No User ID') + (p.cls ? ' &middot; ' + esc(p.cls) : '') + '</span></div><div class="meta"><span>' + (d.updatedAt ? 'Active ' + esc(ago(d.updatedAt)) : (u.uid in users.docs ? 'No activity yet' : 'Loading&hellip;')) + '</span><span><i class="fa-solid fa-heart"></i> ' + favs + ' saved</span></div><button type="button" class="a-btn sm" style="margin-left:8px;color:#e11d48" title="Delete account" aria-label="Delete account of ' + esc(nm) + '" onclick="NBLayout.adminDelete(' + q(u.uid) + ',' + q(nm) + ')"><i class="fa-solid fa-trash"></i></button></div>';
+            return '<div class="a-user clk" role="button" tabindex="0" onclick="NBAdmin.openUser(' + q(u.uid) + ')" onkeydown="if(event.key===\'Enter\')NBAdmin.openUser(' + q(u.uid) + ')"><span class="av">' + av + '</span><div class="tx"><b>' + esc(nm) + '</b><span>' + (p.userId ? '@' + esc(p.userId) : 'No User ID') + (p.cls ? ' &middot; ' + esc(p.cls) : '') + '</span></div><div class="meta"><span>' + (d.updatedAt ? 'Active ' + esc(ago(d.updatedAt)) : (u.uid in users.docs ? 'No activity yet' : 'Loading&hellip;')) + '</span><span><i class="fa-solid fa-heart"></i> ' + favs + ' saved</span></div><button type="button" class="a-btn sm" style="margin-left:8px;color:#e11d48" title="Delete account" aria-label="Delete account of ' + esc(nm) + '" onclick="event.stopPropagation();NBLayout.adminDelete(' + q(u.uid) + ',' + q(nm) + ')"><i class="fa-solid fa-trash"></i></button></div>';
         }).join('');
         el.innerHTML = '<div class="a-kpis"><div class="a-kpi"><small>Registered students</small><b>' + fmtN(users.count) + '</b><span>Accounts created on the site</span></div><div class="a-kpi"><small>Visitors today</small><b>' + (daily.state === 'ok' ? fmtN(dayVal(today, 'u')) : '&mdash;') + '</b><span>Unique devices</span></div><div class="a-kpi"><small>Active today (loaded)</small><b>' + activeToday + '</b><span>Of the profiles shown below</span></div></div>' +
             '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-users"></i> Students</h3><div class="a-search" style="flex:1;min-width:180px;max-width:320px"><i class="fa-solid fa-magnifying-glass"></i><input id="aUserQ" type="search" value="' + esc(S.usersQ) + '" placeholder="Search name, User ID or class" oninput="NBAdmin.searchUsers(this.value)" aria-label="Search students"></div></div>' +
@@ -420,6 +422,76 @@
             (users.loading ? '<div class="a-loading"><i class="fa-solid fa-spinner fa-spin"></i>Loading profiles&hellip;</div>' : '') +
             (all.length > shown.length || users.keys.length > S.usersShown ? '<div style="text-align:center;margin-top:12px"><button class="a-btn" onclick="NBAdmin.moreUsers()">Load more</button></div>' : '') + '</section>';
     }
+
+    /* =============================== Student detail window =============================== */
+    var UD = { uid: '', tab: 'dl', d: null };
+    function asList(x) { return Array.isArray(x) ? x.filter(function (v) { return v != null; }) : (x && typeof x === 'object' ? Object.keys(x).map(function (k) { return x[k]; }) : []); }
+    function itemById(id) {
+        var c = (S.ctx || (window.NBA && window.NBA.ctx())) || {}, all = (c.items || []).concat(c.priv || []), i;
+        for (i = 0; i < all.length; i++) if (String(all[i].id) === String(id)) return all[i];
+        return null;
+    }
+    function udRows(tab, d) {
+        var h = '', i;
+        if (tab === 'dl') {
+            var dl = d.dl || {}, rows = Object.keys(dl).map(function (k) { var v = dl[k]; return typeof v === 'object' && v ? { id: k, ts: v.ts || 0, t: v.title, c: v.className, s: v.subject, ty: v.type } : { id: k, ts: Number(v) || 0 }; });
+            rows.sort(function (a, b) { return b.ts - a.ts; });
+            rows.forEach(function (r) { var it = itemById(r.id) || {}, ti = r.t || it.title || 'Item ' + r.id; h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-circle-down"></i></span><div class="tx"><b>' + esc(ti) + '</b><span>' + esc([r.c || it.className, r.s || it.subject, r.ty || it.type].filter(Boolean).join(' · ') || 'Downloaded file') + '</span></div><div class="rt">' + (r.ts ? esc(fdate(r.ts)) + '<br>' + esc(ago(r.ts)) : '') + '</div></div>'; });
+            return h || '<div class="au-empty">This student has not downloaded anything yet.</div>';
+        }
+        if (tab === 'saved') {
+            var fav = asList(d.favs);
+            fav.forEach(function (id) { var it = itemById(id); h += '<div class="au-li"><span class="ic" style="color:#e11d48"><i class="fa-solid fa-heart"></i></span><div class="tx"><b>' + esc(it ? it.title : 'Item ' + id) + '</b><span>' + esc(it ? [it.className, it.subject, it.type].filter(Boolean).join(' · ') : 'No longer available') + '</span></div></div>'; });
+            return h || '<div class="au-empty">No saved notes.</div>';
+        }
+        if (tab === 'tests') {
+            var tt = asList(d.tests), src = 'tests';
+            if (!tt.length) { tt = asList(d.quiz); src = 'quiz'; }
+            tt = tt.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); });
+            tt.forEach(function (r) {
+                var pc = r.total ? Math.round(r.score / r.total * 100) : 0, col = pc >= 80 ? '#16a34a' : pc >= 50 ? '#d97706' : '#dc2626';
+                h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-list-check"></i></span><div class="tx"><b>' + esc(r.title || r.subj || 'Test') + '</b><span>' + esc([r.cls, r.subj && r.title ? r.subj : '', r.mode, r.secs ? Math.floor(r.secs / 60) + 'm ' + (r.secs % 60) + 's' : ''].filter(Boolean).join(' · ')) + ' · ' + esc(fdate(r.t)) + '</span></div><div class="rt"><b style="color:' + col + '">' + (r.score || 0) + '/' + (r.total || 0) + '</b>' + pc + '%</div></div>';
+            });
+            return (h || '<div class="au-empty">No tests taken yet.</div>') + (tt.length && src === 'quiz' ? '<p class="au-empty" style="padding-top:12px">Showing the short score list. Full test history appears after the student opens the updated app once.</p>' : '');
+        }
+        var days = asList(d.days).filter(function (x) { return typeof x === 'string'; }).sort().reverse(), rec = asList(d.recent), todo = asList(d.todo);
+        h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-fire"></i></span><div class="tx"><b>' + days.length + ' study days</b><span>Days the student used the app</span></div></div>';
+        h += '<div class="au-days">' + days.slice(0, 45).map(function (x) { return '<span>' + esc(x.slice(5)) + '</span>'; }).join('') + '</div>';
+        if (rec.length) { h += '<p style="margin:14px 0 4px;font-weight:800;font-size:13px">Recently opened</p>'; rec.slice(0, 8).forEach(function (id) { var it = itemById(id); h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-clock-rotate-left"></i></span><div class="tx"><b>' + esc(it ? it.title : 'Item ' + id) + '</b><span>' + esc(it ? [it.className, it.subject].filter(Boolean).join(' · ') : '') + '</span></div></div>'; }); }
+        if (d.exam && (d.exam.date || d.exam.name)) h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-calendar-check"></i></span><div class="tx"><b>' + esc(d.exam.name || 'Exam') + '</b><span>' + esc(d.exam.date || '') + '</span></div></div>';
+        if (todo.length) h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-clipboard-list"></i></span><div class="tx"><b>' + todo.length + ' to-do items</b><span>Study targets saved by the student</span></div></div>';
+        return h;
+    }
+    function udPaint() {
+        var ov = $('aUserOv'); if (!ov) return;
+        var d = UD.d || {}, p = d.profile || {}, nm = p.name || 'Student';
+        var av = /^data:image\/(png|jpe?g|webp|gif);base64,/.test(p.photo || '') && String(p.photo).length < 400000 ? '<img alt="" src="' + esc(p.photo) + '">' : esc(nm.charAt(0).toUpperCase());
+        var dl = Object.keys(d.dl || {}).length, tests = asList(d.tests).length || asList(d.quiz).length, fav = asList(d.favs).length;
+        var qs = asList(d.tests).length ? asList(d.tests) : asList(d.quiz), avg = qs.length ? Math.round(qs.reduce(function (a, r) { return a + (r.total ? r.score / r.total * 100 : 0); }, 0) / qs.length) : 0;
+        var tabs = [['dl', 'Downloads (' + dl + ')'], ['saved', 'Saved (' + fav + ')'], ['tests', 'Tests (' + tests + ')'], ['act', 'Activity']];
+        var blocked = window.NBCommunity && window.NBCommunity.isBlocked(UD.uid);
+        ov.innerHTML = '<div class="au-box" role="dialog" aria-label="Student details"><div class="au-h"><span class="av">' + av + '</span><div class="tx"><b>' + esc(nm) + '</b><span>' + (p.userId ? '@' + esc(p.userId) : 'No User ID') + (p.cls ? ' · ' + esc(p.cls) : '') + '</span><span>' + (d.updatedAt ? 'Last active ' + esc(ago(d.updatedAt)) : 'No activity yet') + '</span></div><button type="button" class="au-x" onclick="NBAdmin.closeUser()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>' +
+            '<div class="au-kp"><div><b>' + dl + '</b><small>Downloads</small></div><div><b>' + fav + '</b><small>Saved</small></div><div><b>' + tests + '</b><small>Tests</small></div><div><b>' + (qs.length ? avg + '%' : '-') + '</b><small>Avg score</small></div></div>' +
+            '<div class="au-tabs">' + tabs.map(function (t) { return '<button type="button" class="' + (UD.tab === t[0] ? 'on' : '') + '" onclick="NBAdmin.userTab(\'' + t[0] + '\')">' + esc(t[1]) + '</button>'; }).join('') + '</div>' +
+            '<div class="au-body">' + udRows(UD.tab, d) + '</div>' +
+            '<div class="au-act"><button type="button" class="' + (blocked ? '' : 'dng') + '" onclick="NBAdmin.userBlock()"><i class="fa-solid fa-ban"></i> ' + (blocked ? 'Unblock from community' : 'Block from community') + '</button><button type="button" onclick="NBAdmin.openUser(' + q(UD.uid) + ',1)"><i class="fa-solid fa-rotate"></i> Refresh</button></div></div>';
+    }
+    A.openUser = async function (uid, fresh) {
+        UD.uid = uid; if (!fresh) UD.tab = 'dl';
+        var ov = $('aUserOv');
+        if (!ov) { ov = document.createElement('div'); ov.id = 'aUserOv'; ov.className = 'au-ov'; ov.addEventListener('click', function (e) { if (e.target === ov) A.closeUser(); }); document.body.appendChild(ov); }
+        UD.d = users.docs[uid] || null; ov.innerHTML = '<div class="au-box"><div class="au-empty"><i class="fa-solid fa-spinner fa-spin"></i> Loading student...</div></div>';
+        if (window.NBCommunity) window.NBCommunity.watch();
+        try { UD.d = await usersFetch('/notes_bazar_users/' + encodeURIComponent(uid) + '.json') || {}; users.docs[uid] = UD.d; } catch (e) { if (!UD.d) { ov.innerHTML = '<div class="au-box"><div class="au-empty">Could not load this student. ' + esc(e.message) + '</div><div class="au-act"><button type="button" onclick="NBAdmin.closeUser()">Close</button></div></div>'; return; } }
+        if (UD.uid === uid) udPaint();
+    };
+    A.userTab = function (t) { UD.tab = t; udPaint(); };
+    A.closeUser = function () { var ov = $('aUserOv'); if (ov) ov.remove(); };
+    A.userBlock = async function () {
+        var p = (UD.d && UD.d.profile) || {};
+        if (window.NBCommunity && await window.NBCommunity.block(UD.uid, p.name, p.userId) !== undefined) udPaint();
+    };
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('aUserOv')) A.closeUser(); });
 
     /* =============================== Analytics =============================== */
     function pageAnalytics(c) {
@@ -572,6 +644,7 @@
         if (tab === 'overview') overview(c);
         else if (tab === 'categories') pageCategories(c);
         else if (tab === 'users') pageUsers(c);
+        else if (tab === 'community') { if (window.NBCommunity) window.NBCommunity.adminRender($('adminPanel-community')); }
         else if (tab === 'analytics') pageAnalytics(c);
         else if (tab === 'settings') pageSettings(c);
         else if (tab === 'appearance') pageAppearance();

@@ -290,6 +290,10 @@
     function snapshot() {
         var o = { updatedAt: Date.now() };
         Object.keys(SYNC).forEach(function (k) { var v = LSX.get(SYNC[k], null); o[k] = v == null ? null : v; });
+        try {   // compact copy of the saved test history (no questions), so the admin can see every test a student took
+            var th = LSX.get('nb_tests', []);
+            o.tests = Array.isArray(th) ? th.slice(0, 40).map(function (r) { return { t: r.t, title: r.title, subj: r.subj, cls: r.cls, mode: r.mode, src: r.src, score: r.score, total: r.total, secs: r.secs }; }) : null;
+        } catch (er) { o.tests = null; }
         return o;
     }
     NB.pushNow = async function () {
@@ -302,7 +306,7 @@
     (function () {
         var orig = Storage.prototype.setItem, keys = {}, k;
         for (k in SYNC) keys[SYNC[k]] = 1;
-        keys[PKEY] = 1;
+        keys[PKEY] = 1; keys['nb_tests'] = 1;
         Storage.prototype.setItem = function (key) {
             var r = orig.apply(this, arguments);
             try { if (this === window.localStorage && keys[key] && !applying) { if (key === PKEY) NB.scheduleProfilePush(); else NB.schedulePush(); } } catch (e) {}

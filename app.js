@@ -1828,6 +1828,7 @@ function sha256(str) {
             { id: 'uploads', label: 'Manage Notes', icon: 'fa-file-lines' },
             { id: 'categories', label: 'Manage Categories', icon: 'fa-layer-group' },
             { id: 'users', label: 'View Users', icon: 'fa-users' },
+            { id: 'community', label: 'Community', icon: 'fa-comments' },
             { id: 'analytics', label: 'Analytics', icon: 'fa-chart-column' },
             { id: 'settings', label: 'Settings', icon: 'fa-gear' },
             { id: 'appearance', label: 'Appearance', icon: 'fa-palette' },
@@ -2563,7 +2564,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             else {
                 const lw = Object.keys(BZ_LANGS).find(k => new RegExp('(^|[^a-z])' + k + '($|[^a-z])', 'i').test(t));
                 const standing = /(hamesha|hmesha|hameshaa|always|from now|now onwards|ab se|aaj se|har baar|every time|every reply|sirf|only|jab tak|until i say|हमेशा|अब से|आज से|सिर्फ)/i.test(t);
-                const asks = /(answer|reply|jawab|jawaab|bolna|bolo|dena|do|me|mein|में|in|language|bhasha|बोल|जवाब|उत्तर)/i.test(t);
+                const asks = /(answer|reply|respond|speak|talk|jawab|jawaab|bolna|bolo|dena|likho|baat|samjha|language|bhasha|बोल|जवाब|उत्तर|भाषा)/i.test(t);
                 if (lw && standing && asks) { m.lang = BZ_LANGS[lw]; ch = true; }
             }
             if ((x = t.match(/(?:mera naam|my name is|main hu|mai hu|i am called|naam hai)\s+([A-Za-z\u0900-\u097F]{2,20})/i))) { m.name = x[1]; ch = true; }
@@ -2642,9 +2643,6 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         window.bzForget = function() { try { localStorage.removeItem('nb_ai_mem_' + bzUser()); } catch (e) {} bzDrawerRender(); };
         window.bzSearchInput = bzDrawerRender;
         window.bzInit = function() {                                  // called every time the AI window opens: continue the last chat
-            const a = bzAll().slice().sort((x, y) => y.ts - x.ts);
-            if (!bzCur && a.length && Date.now() - a[0].ts < 6 * 36e5) bzCur = a[0].id;
-            const c = bzCur && a.find(x => x.id === bzCur);
             if (!aiBusy && (!window.__bzShown || window.__bzUser !== bzUser())) { bzChats = null; window.__bzUser = bzUser(); bzCur = null; const b = bzAll().slice().sort((x, y) => y.ts - x.ts); if (b.length && Date.now() - b[0].ts < 6 * 36e5) bzCur = b[0].id; bzShowChat(bzCur ? bzAll().find(x => x.id === bzCur) : null); window.__bzShown = true; }
             bzDrawerRender(); bzXpRender(); bzDodRender();
             try { bzThemeSet(localStorage.getItem('nb_bz_theme') || 'violet'); } catch (e) {}
