@@ -382,6 +382,7 @@
                         <div class="nb-marks" data-marks="${esc(item.id)}">${marksHtml(item.id)}</div>
                         ${getChapter(item) ? `<p class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 mb-2"><i class="fa-solid fa-bookmark mr-1.5"></i>${esc(t('Chapter'))}: ${esc(getChapter(item))}</p>` : ''}
                         <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-3 line-clamp-3">${esc(getDesc(item))}</p>
+                        <button type="button" onclick="nbExplain(${jsArg(item.id)})" class="nb-aiask"><i class="fa-solid fa-wand-magic-sparkles"></i> ${esc(t('Is topic ko AI se samjho'))}</button>
                         <div class="flex items-center gap-3 text-[10px] text-slate-400 mb-3 flex-wrap"><span><i class="fa-solid fa-layer-group mr-1"></i>${esc(typeLabel(item))}</span>${item.createdAt ? `<span><i class="fa-regular fa-calendar mr-1"></i>${esc(shortDate(item.createdAt))}</span>` : ''}<span class="nb-stat inline-flex items-center gap-2" data-id="${esc(item.id)}">${statHtml(item.id)}</span><span class="ml-auto inline-flex items-center gap-1.5">${item.private ? '' : `<button type="button" onclick="openReport(${jsArg(item.id)})" class="card-ico report-btn" title="Report broken file" aria-label="Report broken file"><i class="fa-solid fa-flag"></i></button><button type="button" data-fav="${item.id}" onclick="toggleFav(event,${jsArg(item.id)})" class="card-ico fav-btn" aria-pressed="${isFav(item.id)}" title="Save" aria-label="Save"><i class="${isFav(item.id) ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>`}</span></div>
                     </div>
                     <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
@@ -2218,10 +2219,23 @@ function sha256(str) {
         const aiFailUntil = {};   // provider -> timestamp until which we skip it (avoids long waits)
 
         const AI_BASE = `You are "Bazar AI", the built-in assistant of Notes Bazar, a study platform for Indian school students (Class 1-12; subjects Science, Math, Hindi, English, SST, Maithili) with Notes, Reference Books and PYQs.
-Language: reply in the same language/style the user writes in (Hindi, Hinglish, English or Maithili). Keep it simple, friendly and short unless the user asks for detail. Avoid markdown tables; use short numbered or bulleted lists instead. Use short paragraphs and simple lists.
-You can do EVERYTHING a good assistant can: explain doubts step by step, solve maths, summarize chapters, make short notes / MCQs / quizzes, essays, letters, translations, study timetables, exam tips, career guidance, coding, general knowledge and everyday questions.
+PERSONALITY: you are the student's close, caring FRIEND (a smart bade-bhaiya / dost), not a boring teacher or a robot. Talk like a real Gen-Z friend: relaxed, warm, a little funny, light friendly banter and playful jokes (like "arre yaar", "tension mat le", "chill bro"), motivating, never rude, never insulting, never cringe-overdone. Use emojis naturally. Celebrate small wins. If the student is sad or stressed, drop the jokes and be gentle.
+LANGUAGE RULES (very important):
+- Default: reply in the same language the student writes in. English question -> explain in simple Hinglish (Hindi written in English letters, with English study words). Hindi (Devanagari) question -> reply fully in Hindi. Hinglish question -> Hinglish. Maithili -> Maithili/Hindi.
+- If a "STANDING LANGUAGE INSTRUCTION" is given below, obey it in every reply until the student changes it, whatever language they write in.
+WHEN THE STUDENT ASKS A STUDY QUESTION / DOUBT / CONCEPT, answer in this friendly structure (skip parts that do not fit, keep each part short):
+🎯 Short answer in one simple line.
+📖 Easy explanation with a real-life Indian everyday example the student can relate to (cricket, chai, mobile, market, train, roti, etc.).
+🖼️ A tiny diagram made of emojis and arrows, one step per line (use -> or arrows and line breaks; do not rely on spaces for alignment).
+🧠 A memory trick: a mnemonic, rhyme, short-form or story to remember it for the exam.
+✍️ Board definition: ONE or two neat lines worth writing in the exam copy. Write it in English if the question was in English or Hinglish, in Hindi if the question was in Hindi.
+🎬 If a video would help, add ONE last line exactly like [[VIDEO: short YouTube search words, e.g. photosynthesis class 10 explained in hindi]] . Never invent a video link or channel name, only that search line.
+❓ End with one tiny question to check if the student understood (optional).
+For normal chat, small talk or non-study questions just answer like a friend, short and natural, no structure needed.
+Avoid markdown tables; use short lines and simple lists. Use **bold** only for key words.
+You can do EVERYTHING a good assistant can: solve maths step by step, summarize chapters, short notes / MCQs / quizzes, essays, letters, translations, study timetables, exam tips, career guidance, coding, general knowledge and everyday questions.
 Notes Bazar items: if "Matching items" are provided below, recommend them by title and tell the student to tap them. NEVER invent files, links or titles. If nothing matches, say it is not uploaded yet and suggest the "What if you want?" option on the home page.
-Answer ANY question the user asks, even if it is not about studies or school: general knowledge, current affairs (as far as you know), sports, movies, technology, coding, health basics, money basics, relationships, jokes, stories, anything. Never refuse only because it is "off topic" or "out of syllabus". If something may have changed recently or you do not know it, say so instead of guessing, and decline only harmful or illegal requests.
+Answer ANY question the user asks, even if it is not about studies. If something may have changed recently or you do not know it, say so instead of guessing, and decline only harmful requests.
 Be honest: if you are not sure, say so. Never claim to be human.
 Emotional safety: if the student sounds stressed, sad or lonely, listen first, be warm and practical. If they mention self-harm or suicide, respond with care, encourage them to talk to a trusted adult right now, and share the free 24x7 Tele-MANAS helpline in India: 14416 (or local emergency services). Never give methods.`;
         const AI_MODE = {
@@ -2521,10 +2535,239 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             V.say(text, { onend: () => { if (nbSpeakBtn === btn) nbSpeakReset(); } });   // voice + speed come from Menu > Voice & speed
         };
 
-        window.clearAiChat = function() {
+        // ===== Bazar AI: saved chats (history), memory and the slide-in drawer =====
+        const BZ_LANGS = { hindi: 'Hindi (Devanagari script)', 'हिंदी': 'Hindi (Devanagari script)', 'हिन्दी': 'Hindi (Devanagari script)', hinglish: 'Hinglish (Hindi written in English letters)', english: 'English', 'अंग्रेज़ी': 'English', 'अंग्रेजी': 'English', maithili: 'Maithili', 'मैथिली': 'Maithili', bhojpuri: 'Bhojpuri', urdu: 'Urdu', bengali: 'Bengali', bangla: 'Bengali', tamil: 'Tamil', telugu: 'Telugu', marathi: 'Marathi', gujarati: 'Gujarati', punjabi: 'Punjabi', sanskrit: 'Sanskrit' };
+        const bzUser = () => { try { const a = window.NB && NB.account && NB.account(); return a ? String(a.userId || a.uid || a.id || a.email || 'u') : 'guest'; } catch (e) { return 'guest'; } };
+        const bzLoad = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k + '_' + bzUser()) || 'null'); return v == null ? d : v; } catch (e) { return d; } };
+        const bzSaveLS = (k, v) => { try { localStorage.setItem(k + '_' + bzUser(), JSON.stringify(v)); return true; } catch (e) { return false; } };
+        let bzChats = null, bzCur = null;
+        const bzAll = () => { if (!bzChats) { bzChats = bzLoad('nb_ai_chats', []); if (!Array.isArray(bzChats)) bzChats = []; } return bzChats; };
+        const bzPersist = () => { const a = bzAll(); a.sort((x, y) => y.ts - x.ts); while (a.length > 40) a.pop(); while (!bzSaveLS('nb_ai_chats', a) && a.length > 1) a.pop(); };
+        const bzMem = () => { const m = bzLoad('nb_ai_mem', {}); return m && typeof m === 'object' ? m : {}; };
+        function aiSave(role, text) {
+            text = String(text || ''); if (!text) return;
+            const a = bzAll();
+            let c = bzCur && a.find(x => x.id === bzCur);
+            if (!c) { c = { id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: '', ts: Date.now(), msgs: [] }; a.unshift(c); bzCur = c.id; }
+            if (!c.title && role === 'u') c.title = text.replace(/\s+/g, ' ').slice(0, 42);
+            c.msgs.push({ r: role, t: text.slice(0, 6000) }); c.ts = Date.now();
+            if (c.msgs.length > 80) c.msgs = c.msgs.slice(-80);
+            bzPersist(); bzDrawerRender();
+        }
+        // learn small facts the student tells (name, class, standing language) so the AI "remembers" them
+        function aiMemLearn(t) {
+            const m = bzMem(); let ch = false, x;
+            const low = t.toLowerCase();
+            const reset = /(language|bhasha|भाषा).{0,25}(auto|normal|default|reset|jaise|jaisa)|(jis|jisme|jis bhasha).{0,20}(puch|pooch|bol).{0,15}(usi|usi me|usi mein)|(same|usi) language|ab (normal|auto)|reset language|language reset/.test(low);
+            if (reset && m.lang) { delete m.lang; ch = true; }
+            else {
+                const lw = Object.keys(BZ_LANGS).find(k => new RegExp('(^|[^a-z])' + k + '($|[^a-z])', 'i').test(t));
+                const standing = /(hamesha|hmesha|hameshaa|always|from now|now onwards|ab se|aaj se|har baar|every time|every reply|sirf|only|jab tak|until i say|हमेशा|अब से|आज से|सिर्फ)/i.test(t);
+                const asks = /(answer|reply|jawab|jawaab|bolna|bolo|dena|do|me|mein|में|in|language|bhasha|बोल|जवाब|उत्तर)/i.test(t);
+                if (lw && standing && asks) { m.lang = BZ_LANGS[lw]; ch = true; }
+            }
+            if ((x = t.match(/(?:mera naam|my name is|main hu|mai hu|i am called|naam hai)\s+([A-Za-z\u0900-\u097F]{2,20})/i))) { m.name = x[1]; ch = true; }
+            if ((x = t.match(/(?:class|kaksha|कक्षा)\s*(1[0-2]|[1-9])\b/i)) && /(mai|main|i am|i'm|padh|study|student|me hu|mein hu)/i.test(t)) { m.cls = 'Class ' + x[1]; ch = true; }
+            if (ch) { bzSaveLS('nb_ai_mem', m); bzDrawerRender(); }
+        }
+        function aiMemPrompt() {
+            const m = bzMem(); let p = '', pr = null;
+            try { pr = window.NB && NB.profile && NB.profile(); } catch (e) {}
+            const name = m.name || (pr && pr.name), cls = m.cls || (pr && pr.cls);
+            if (name || cls) p += '\n\nSTUDENT MEMORY: ' + (name ? 'name is ' + name + '. ' : '') + (cls ? 'studies in ' + cls + '. ' : '') + 'Use the name naturally now and then, and match the explanation to this class level.';
+            if (m.lang) p += '\n\nSTANDING LANGUAGE INSTRUCTION (highest priority, overrides everything above about language): the student asked you to ALWAYS answer in ' + m.lang + ' until they say otherwise. Do it for every reply, even if they write in another language.';
+            return p;
+        }
+        function aiRender(reply) {                                    // text -> {html, extra}: pulls out the [[VIDEO: ...]] line and turns it into a button
+            let extra = '', txt = String(reply || '');
+            txt = txt.replace(/\[\[\s*VIDEO\s*:\s*([^\]]{3,140})\]\]/i, (m0, q) => {
+                extra = `<a class="bz-video" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=${encodeURIComponent(q.trim())}"><i class="fa-brands fa-youtube"></i><span><b>Watch a video on this</b><small>${esc(q.trim())}</small></span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`;
+                return '';
+            });
+            return { html: aiFmt(txt.trim()), extra };
+        }
+        function bzWelcome(txt) {
+            return `<div class="flex justify-start mb-3"><div class="bz-bot bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">${txt}</div></div>`;
+        }
+        function bzGreeting() {
+            const m = bzMem(); let pr = null; try { pr = window.NB && NB.profile && NB.profile(); } catch (e) {}
+            const nm = m.name || (pr && pr.name) || '';
+            const n = bzAll().length;
+            return `👋 Hey${nm ? ' ' + esc(nm) : ' yaar'}! Main <b>Bazar AI</b> hu, tumhara study dost 😎<br>Doubt, notes, plan, motivation ya bas gappe, kuch bhi pucho.<br><span class="bz-memline">🧠 Memory ON: ${n ? 'main tumhari ' + n + ' purani chat' + (n > 1 ? 's' : '') + ' yaad rakhta hu. ' : ''}Purani chats dekhne ke liye upar ☰ dabao.</span>`;
+        }
+        function bzShowChat(c) {
+            const chat = document.getElementById('aiChatHistory'); if (!chat) return;
             nbStopSpeak();
+            chat.innerHTML = bzWelcome(bzGreeting());
             aiHistory = [];
-            document.getElementById('aiChatHistory').innerHTML = `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[85%] shadow-sm leading-relaxed">👋 New chat started! What would you like to ask?</div></div>`;
+            if (c) {
+                c.msgs.forEach(m => {
+                    if (m.r === 'u') { chat.insertAdjacentHTML('beforeend', `<div class="flex justify-end mb-3"><div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${esc(m.t)}</div></div>`); aiHistory.push({ role: 'user', content: m.t }); }
+                    else { const r = aiRender(m.t); chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bz-bot bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed"><div class="nb-say">${r.html}</div>${r.extra}<button type="button" class="nb-listen" onclick="nbSpeak(this)" aria-label="Listen to this answer"><i class="fa-solid fa-volume-high"></i><span>Listen</span></button>${bzActions()}</div></div>`); aiHistory.push({ role: 'assistant', content: m.t }); }
+                });
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+        function bzDay(ts) {
+            const d = new Date(ts), n = new Date(); const ds = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+            const diff = Math.round((ds(n) - ds(d)) / 864e5);
+            return diff <= 0 ? 'Today' : diff === 1 ? 'Yesterday' : diff < 8 ? 'Last 7 days' : 'Older';
+        }
+        function bzDrawerRender() {
+            const list = document.getElementById('bzList'); if (!list) return;
+            const q = ((document.getElementById('bzSearch') || {}).value || '').trim().toLowerCase();
+            const a = bzAll().slice().sort((x, y) => y.ts - x.ts).filter(c => !q || (c.title || '').toLowerCase().includes(q) || c.msgs.some(m => m.t.toLowerCase().includes(q)));
+            let h = '', last = '';
+            a.forEach(c => {
+                const g = bzDay(c.ts); if (g !== last) { h += `<div class="bz-grp">${g}</div>`; last = g; }
+                h += `<div class="bz-item${c.id === bzCur ? ' on' : ''}" onclick="bzOpen('${c.id}')"><i class="fa-regular fa-message"></i><span>${esc(c.title || 'New chat')}</span><button type="button" aria-label="Delete chat" onclick="event.stopPropagation();bzDel('${c.id}')"><i class="fa-solid fa-trash-can"></i></button></div>`;
+            });
+            list.innerHTML = h || `<div class="bz-empty">${q ? 'No chat found for "' + esc(q) + '"' : 'No chats yet. Ask your first question 👀'}</div>`;
+            const m = bzMem(), mem = document.getElementById('bzMem'); if (!mem) return;
+            const bits = [];
+            if (m.name) bits.push('👤 ' + esc(m.name)); if (m.cls) bits.push('🎓 ' + esc(m.cls));
+            if (m.lang) bits.push('🗣️ Always ' + esc(m.lang.split(' (')[0]));
+            mem.innerHTML = `<b>🧠 What I remember</b><div>${bits.length ? bits.join(' &nbsp;•&nbsp; ') : 'Nothing special yet. Tell me your name, class or the language you like.'}</div><small>${a.length ? bzAll().length : 0} chats saved on this device${bzUser() === 'guest' ? '' : ' for your account'}.</small>${bits.length ? '<button type="button" onclick="bzForget()">Forget this</button>' : ''}`;
+        }
+        window.bzToggle = function(force) {
+            const d = document.getElementById('bzDrawer'); if (!d) return;
+            const on = typeof force === 'boolean' ? force : !d.classList.contains('open');
+            d.classList.toggle('open', on); document.getElementById('bzScrim').classList.toggle('open', on);
+            if (on) bzDrawerRender();
+        };
+        window.bzNew = function() { bzCur = null; bzShowChat(null); bzToggle(false); const i = document.getElementById('aiInput'); if (i) i.focus(); };
+        window.bzOpen = function(id) { const c = bzAll().find(x => x.id === id); if (!c) return; bzCur = id; bzShowChat(c); bzToggle(false); };
+        window.bzDel = function(id) { bzChats = bzAll().filter(x => x.id !== id); if (bzCur === id) { bzCur = null; bzShowChat(null); } bzPersist(); bzDrawerRender(); };
+        window.bzClearAll = function() { if (!bzAll().length) return; if (!confirm('Delete all saved Bazar AI chats on this device?')) return; bzChats = []; bzCur = null; bzPersist(); bzShowChat(null); bzDrawerRender(); };
+        window.bzForget = function() { try { localStorage.removeItem('nb_ai_mem_' + bzUser()); } catch (e) {} bzDrawerRender(); };
+        window.bzSearchInput = bzDrawerRender;
+        window.bzInit = function() {                                  // called every time the AI window opens: continue the last chat
+            const a = bzAll().slice().sort((x, y) => y.ts - x.ts);
+            if (!bzCur && a.length && Date.now() - a[0].ts < 6 * 36e5) bzCur = a[0].id;
+            const c = bzCur && a.find(x => x.id === bzCur);
+            if (!aiBusy && (!window.__bzShown || window.__bzUser !== bzUser())) { bzChats = null; window.__bzUser = bzUser(); bzCur = null; const b = bzAll().slice().sort((x, y) => y.ts - x.ts); if (b.length && Date.now() - b[0].ts < 6 * 36e5) bzCur = b[0].id; bzShowChat(bzCur ? bzAll().find(x => x.id === bzCur) : null); window.__bzShown = true; }
+            bzDrawerRender(); bzXpRender(); bzDodRender();
+            try { bzThemeSet(localStorage.getItem('nb_bz_theme') || 'violet'); } catch (e) {}
+        };
+
+        // ===== Bazar AI extras: XP + streak, feedback, photo doubts, mic, chat themes, doubt of the day =====
+        const bzDay0 = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+        const bzXpGet = () => { const x = bzLoad('nb_ai_xp', {}); return x && typeof x === 'object' ? x : {}; };
+        function bzXpRender() {
+            const el = document.getElementById('bzXp'); if (!el) return;
+            const x = bzXpGet(), xp = x.xp || 0, lv = Math.floor(xp / 100) + 1, into = xp % 100;
+            let st = 0; try { st = window.NB && NB.streak ? NB.streak() : 0; } catch (e) {}
+            el.innerHTML = `<span class="bz-pill">🔥 ${st ? st + ' din ki streak' : 'Streak shuru karo'}</span><span class="bz-pill">⭐ Lv ${lv}</span><span class="bz-xpbar" title="${into}/100 XP to next level"><i style="width:${into}%"></i></span><span class="bz-xpn">${xp} XP</span>`;
+        }
+        function bzAward(n) {
+            const x = bzXpGet(), today = bzDay0(), oldLv = Math.floor((x.xp || 0) / 100);
+            if (x.first !== today) { x.first = today; n += 10; }               // first question of the day bonus
+            x.xp = (x.xp || 0) + n; bzSaveLS('nb_ai_xp', x); bzXpRender();
+            if (Math.floor(x.xp / 100) > oldLv && window.nbToast) nbToast('🎉 Level up! Ab tum Lv ' + (Math.floor(x.xp / 100) + 1) + ' ho yaar 🔥', 3200);
+        }
+        window.bzActions = () => `<div class="bz-act"><button type="button" onclick="bzFb(this,'up')" aria-label="Good answer">👍</button><button type="button" onclick="bzFb(this,'down')" aria-label="Bad answer">👎</button><button type="button" class="bz-simple" onclick="bzSimple()">🪄 Aur simple samjhao</button></div>`;
+        window.bzFb = function(btn, kind) {
+            const row = btn.parentNode; if (row.getAttribute('data-done')) return;
+            row.setAttribute('data-done', '1'); btn.classList.add('on');
+            if (kind === 'up') { bzAward(5); if (window.nbToast) nbToast('Thanks yaar 😎 +5 XP', 1800); }
+            else { if (window.nbToast) nbToast('Sorry yaar 🙏 chal ab aur simple batata hu', 2200); sendAiMessage('Ye jawab mujhe theek se samajh nahi aaya. Bilkul alag aur bahut aasan tarike se, ek naye example ke saath samjhao.'); }
+        };
+        window.bzSimple = function() { sendAiMessage('Isse aur simple samjhao, jaise 5th class ke bachche ko samjhate hain, ek naya chhota example dekar.'); };
+
+        // photo doubt
+        let bzImg = null;
+        function bzImgClear() { bzImg = null; const b = document.getElementById('bzPic'); if (b) { b.classList.remove('on'); b.innerHTML = ''; } }
+        window.bzPickPhoto = function(inp) {
+            const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+            if (!/^image\//.test(f.type)) { alert('Please choose a photo.'); return; }
+            const fr = new FileReader();
+            fr.onload = () => {
+                const im = new Image();
+                im.onload = () => {
+                    const M = 1100, k = Math.min(1, M / Math.max(im.width, im.height)), c = document.createElement('canvas');
+                    c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+                    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                    bzImg = c.toDataURL('image/jpeg', 0.72);
+                    const b = document.getElementById('bzPic'); b.classList.add('on');
+                    b.innerHTML = `<img src="${bzImg}" alt=""><span>Photo ready. Send dabao ya sawal likho 📷</span><button type="button" onclick="bzPicX()" aria-label="Remove photo"><i class="fa-solid fa-xmark"></i></button>`;
+                    document.getElementById('aiInput').focus();
+                };
+                im.onerror = () => alert('This photo could not be opened.');
+                im.src = fr.result;
+            };
+            fr.readAsDataURL(f);
+        };
+        window.bzPicX = bzImgClear;
+
+        // voice question (mic)
+        let bzRec = null, bzMicLang = 'hi-IN';
+        window.bzMicLangTgl = function() { bzMicLang = bzMicLang === 'hi-IN' ? 'en-IN' : 'hi-IN'; const l = document.getElementById('bzMicL'); if (l) l.textContent = bzMicLang === 'hi-IN' ? 'हि' : 'EN'; };
+        window.bzMic = function() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition, btn = document.getElementById('bzMicBtn'), inp = document.getElementById('aiInput');
+            if (!SR) { alert('Your browser cannot listen to voice. Please use Chrome.'); return; }
+            if (bzRec) { try { bzRec.stop(); } catch (e) {} return; }
+            if (window.nbStopSpeak) nbStopSpeak();
+            const r = new SR(); bzRec = r; r.lang = bzMicLang; r.interimResults = true; r.maxAlternatives = 1;
+            btn.classList.add('on'); inp.placeholder = 'Sun raha hu... bolo 🎙️';
+            r.onresult = e => { let t = ''; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; inp.value = t; };
+            r.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') alert('Please allow the microphone to ask by voice.'); };
+            r.onend = () => { bzRec = null; btn.classList.remove('on'); inp.placeholder = 'Kuch bhi pucho yaar...'; if (inp.value.trim()) sendAiMessage(); };
+            try { r.start(); } catch (e) { bzRec = null; btn.classList.remove('on'); }
+        };
+
+        // chat colour themes (+ neon glass in dark mode)
+        const BZ_THEMES = ['violet', 'ocean', 'sunset', 'mint'];
+        function bzThemeSet(t) {
+            if (!BZ_THEMES.includes(t)) t = 'violet';
+            const w = document.querySelector('.bz-wrap'); if (w) w.setAttribute('data-bz', t);
+            document.querySelectorAll('#bzThemes button').forEach(b => b.classList.toggle('on', b.getAttribute('data-t') === t));
+            try { localStorage.setItem('nb_bz_theme', t); } catch (e) {}
+        }
+        window.bzTheme = function(t) { bzThemeSet(t); const m = document.getElementById('bzThemes'); if (m) m.classList.remove('open'); };
+        window.bzThemeTgl = function() { const m = document.getElementById('bzThemes'); if (m) m.classList.toggle('open'); };
+
+        // doubt of the day
+        const BZ_DOD = {
+            lo: ['Aasmaan neela kyun dikhta hai?', 'Plants khana kaise banate hain?', 'Barish kaise hoti hai?', 'Chaand roz shape kyun badalta hai?', 'Hum saans kyun lete hain?', 'Din aur raat kaise hote hain?', 'Magnet kaise kaam karta hai?', 'Indradhanush (rainbow) kaise banta hai?', 'Bijli kaise banti hai?', 'Paani 100 degree par kyun ubalta hai?'],
+            mid: ['Photosynthesis ki equation likho aur samjhao.', 'Newton ke teeno laws ek-ek example se samjhao.', 'Acid aur base me kya fark hai? Daily life example do.', 'Pythagoras theorem kaise prove karte hain?', 'Fundamental rights kya hote hain?', 'Ohm ka law kya hai? Numerical ke saath.', 'Mitosis aur meiosis me difference batao.', 'Industrial Revolution kyun hua?', 'Chemical reaction ke types samjhao.', 'Light ka reflection aur refraction kya hota hai?'],
+            hi: ['Electric field aur potential me kya difference hai?', 'Derivative ka real meaning kya hai?', 'Le Chatelier principle samjhao.', 'DNA replication step by step batao.', 'Integration ka use kahan hota hai?', 'Organic chemistry me resonance kya hai?', 'Demand aur supply ka law samjhao.', 'Wave-particle duality kya hai?', 'Matrix multiplication kaise hota hai?', 'Cold War kya tha aur kyun hua?']
+        };
+        function bzDodQ() {
+            let c = 8; try { const pr = window.NB && NB.profile && NB.profile(); const m = pr && String(pr.cls).match(/\d+/); if (m) c = +m[0]; } catch (e) {}
+            const tier = c <= 5 ? 'lo' : c <= 10 ? 'mid' : 'hi', arr = BZ_DOD[tier], d = new Date();
+            return arr[Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5) % arr.length];
+        }
+        function bzDodRender() {
+            const el = document.getElementById('bzDod'); if (!el) return;
+            const done = bzXpGet().dod === bzDay0();
+            el.innerHTML = `<button type="button" onclick="bzDodAsk()"><span>🎯</span><span class="bz-dodt"><b>Aaj ka doubt${done ? ' ✅' : ' (+25 XP)'}</b><small>${esc(bzDodQ())}</small></span><i class="fa-solid fa-chevron-right"></i></button>`;
+        }
+        window.bzDodAsk = function() {
+            const x = bzXpGet(); if (x.dod !== bzDay0()) { x.dod = bzDay0(); bzSaveLS('nb_ai_xp', x); bzAward(25); bzDodRender(); }
+            sendAiMessage(bzDodQ());
+        };
+        function bzDodNotify() {                                   // once a day (after 7 am) while the site / installed app is open
+            try {
+                if (!window.nbNotify || !('Notification' in window) || Notification.permission !== 'granted') return;
+                if (new Date().getHours() < 7) return;
+                const k = 'nb_dod_note'; if (localStorage.getItem(k) === bzDay0()) return;
+                localStorage.setItem(k, bzDay0());
+                nbNotify('🎯 Aaj ka doubt, ' + (bzMem().name || 'dost') + '!', bzDodQ() + ' Bazar AI se samjho aur +25 XP lo 🔥', './?ai=dod');
+            } catch (e) {}
+        }
+        setTimeout(bzDodNotify, 6000); setInterval(bzDodNotify, 20 * 60 * 1000);
+        if (/[?&]ai=dod/.test(location.search)) setTimeout(() => { try { openModal('aiModal'); } catch (e) {} }, 2500);
+
+        // "explain this with AI" button on every notes / PYQ / book card
+        window.nbExplain = function(id) {
+            const it = (window.allItems || []).find(i => String(i.id) === String(id)); if (!it) return;
+            const ch = (typeof getChapter === 'function' && getChapter(it)) ? ', chapter: ' + getChapter(it) : '';
+            openModal('aiModal');
+            setTimeout(() => sendAiMessage('Mujhe "' + it.title + '" (' + (it.className || '') + ' ' + (it.subject || '') + ch + ') ka topic aasan tarike se samjhao.'), 250);
+        };
+
+        window.clearAiChat = function() {
+            nbStopSpeak(); bzCur = null; bzShowChat(null);
         };
 
         window.sendAiMessage = async function(preset) {
@@ -2532,23 +2775,27 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             const chat = document.getElementById('aiChatHistory');
             const mode = document.getElementById('aiCategory').value;
             const fab = document.getElementById('aiFab');
-            const userText = (typeof preset === 'string' ? preset : input.value).trim();
+            const img = typeof preset === 'string' ? null : bzImg;
+            let userText = (typeof preset === 'string' ? preset : input.value).trim();
+            if (!userText && img) userText = 'Is photo me jo question ya doubt hai, usse step by step samjhao.';
             if (!userText || aiBusy) return;
+            if (img) bzImgClear();
             aiBusy = true;
             document.getElementById('aiSendBtn').disabled = true;
             input.value = '';
+            aiMemLearn(userText); aiSave('u', (img ? '📷 ' : '') + userText); bzAward(img ? 15 : 10);
 
-            const botBubble = (html, extra) => chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed"><div class="nb-say">${html}</div>${extra || ''}<button type="button" class="nb-listen" onclick="nbSpeak(this)" aria-label="Listen to this answer"><i class="fa-solid fa-volume-high"></i><span>Listen</span></button></div></div>`);
-            chat.insertAdjacentHTML('beforeend', `<div class="flex justify-end mb-3"><div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${esc(userText)}</div></div>`);
+            const botBubble = (html, extra, noact) => chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bz-bot bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed"><div class="nb-say">${html}</div>${extra || ''}<button type="button" class="nb-listen" onclick="nbSpeak(this)" aria-label="Listen to this answer"><i class="fa-solid fa-volume-high"></i><span>Listen</span></button>${noact ? '' : bzActions()}</div></div>`);
+            chat.insertAdjacentHTML('beforeend', `<div class="flex justify-end mb-3"><div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${img ? `<img src="${img}" class="bz-pic-sent" alt="">` : ''}${esc(userText)}</div></div>`);
             chat.scrollTop = chat.scrollHeight;
 
             const finish = () => { aiBusy = false; document.getElementById('aiSendBtn').disabled = false; if (fab) fab.classList.remove('thinking'); chat.scrollTop = chat.scrollHeight; input.focus(); };
 
             // 1) safety first: never depends on the network
-            if (aiIsCrisis(userText)) { botBubble(aiFmt(AI_CRISIS_MSG)); finish(); return; }
+            if (aiIsCrisis(userText)) { botBubble(aiFmt(AI_CRISIS_MSG), '', true); aiSave('b', AI_CRISIS_MSG); finish(); return; }
             // 2) instant local answers (greetings, thanks, calculator)
             const quick = aiQuickLocal(userText);
-            if (quick) { botBubble(aiFmt(quick)); finish(); return; }
+            if (quick) { botBubble(aiFmt(quick), '', true); aiSave('b', quick); finish(); return; }
 
             const typing = document.createElement('div');
             typing.className = 'flex justify-start mb-3';
@@ -2565,24 +2812,30 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                 if (curLang === 'hi') sys += '\nThe user chose Hindi in the app: reply in Hindi (Devanagari) unless they write in another language.';
                 if (curLang === 'mai') sys += '\nThe user chose Maithili in the app: reply in Maithili (Devanagari) where you can, otherwise simple Hindi.';
                 if (!['en', 'hi', 'mai'].includes(curLang)) sys += '\nThe user chose ' + LANG_EN[curLang] + ' in the app: reply in ' + LANG_EN[curLang] + ' (native script) where you can, otherwise simple Hindi.';
+                sys += aiMemPrompt();   // after the app-language hints, so a standing language instruction wins
                 if (window.NB_LIVE) sys += '\nThis is a LIVE VOICE conversation: answer like a friendly teacher speaking, in 1-3 short sentences, plain words, no lists, no markdown, no emojis.';
                 if (related.intent) {
                     sys += related.list.length
                         ? '\n\nMatching items on Notes Bazar for this request:\n' + related.list.map((i, n) => `${n + 1}. ${i.title} (${i.type || 'note'}, ${i.className || ''}, ${i.subject || ''})`).join('\n')
                         : '\n\nNo matching item is uploaded on Notes Bazar for this request right now.';
                 }
-                reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), { role: 'user', content: userText }]);
+                reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), img ? { role: 'user', content: [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: img } }] } : { role: 'user', content: userText }]);
                 aiHistory.push({ role: 'user', content: userText }, { role: 'assistant', content: reply });
             } catch (err) {
                 console.error(err);
+                if (img) { reply = '📷 Yaar, abhi photo padh nahi paya (AI server abhi photo support nahi kar raha ya net slow hai). Question type karke bhej do, ya thodi der baad photo dobara try karo 🙏'; }
+                else {
                 offline = true;
                 if (!related.intent) wiki = await aiWikiAnswer(userText);
                 reply = wiki ? '' : aiLocalReply(userText, related);
+                }
             }
             typing.remove();
             const note = offline ? `<div class="mt-2 text-[10px] text-amber-600">⚠️ Live AI is not reachable (${esc(aiWhy(aiLastErr))}), so ${wiki ? 'this answer is from Wikipedia' : 'this was answered in offline mode'}. <button type="button" onclick="nbAiRetry()" class="underline font-bold">Try the live AI again</button></div>` : '';
             const wikiHtml = wiki ? `<strong>${esc(wiki.title)}</strong><br>${esc(wiki.text).replace(/\n/g, '<br>')}` + (wiki.url ? `<br><a href="${wiki.url}" target="_blank" rel="noopener noreferrer" class="underline font-semibold">Read more on Wikipedia</a>` : '') : '';
-            botBubble((wiki ? wikiHtml : aiFmt(reply)), note + aiRelatedHtml(related.list));
+            const rd = wiki ? { html: wikiHtml, extra: '' } : aiRender(reply);
+            botBubble(rd.html, rd.extra + note + aiRelatedHtml(related.list));
+            aiSave('b', wiki ? (wiki.title + ': ' + wiki.text) : reply);
             finish();
         };
 
@@ -2602,7 +2855,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             if (ldEl && ldEl.textContent.includes('YOUR-SITE-URL')) ldEl.textContent = fix(ldEl.textContent);
         }
 
-        window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
+        window.openModal = function(id) { document.getElementById(id).classList.remove('hidden'); if (id === 'aiModal' && window.bzInit) { try { window.bzInit(); } catch (e) { console.warn(e); } } };
         window.closeModal = function(id) { if (id === 'aiModal') { if (window.nbStopSpeak) nbStopSpeak(); if (window.NB && NB.live) NB.live.stop(); } document.getElementById(id).classList.add('hidden'); };
         window.closeAllModals = function() {
             document.querySelectorAll('.fixed[id$="Modal"]').forEach(el => el.classList.add('hidden'));

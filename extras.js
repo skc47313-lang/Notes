@@ -1513,6 +1513,7 @@
         '.qpw .qp-cov{border:1.5px solid #111;padding:7px 10px;margin:8px 0 10px;font-size:12px}.qpw .qp-cov-t{text-align:center;font-weight:800;font-size:13px;margin-bottom:6px}.qpw .qp-cov-r{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;justify-content:space-between;margin:4px 0}.qpw .qp-cov-f b{margin-right:6px}' +
         '.qpw .qp-bxs{display:inline-flex;gap:2px;vertical-align:middle}.qpw .qp-bx{display:inline-block;width:15px;height:19px;border:1px solid #111}.qpw .qp-code{display:inline-block;min-width:54px;padding:2px 8px;border:1.5px solid #111;text-align:center;font-weight:800;letter-spacing:2px}' +
         '.qpw .qp-en{margin:1px 0 0 17px;color:#222}.qpw .qp-hi{margin:2px 0 0}' +
+        '.qpw .qp-att{margin:0 0 10px;padding:7px 10px;border:2px solid #111;font-size:13px;line-height:1.6;display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center}.qpw .qp-att>b{flex:none}.qpw .qp-att u{font-weight:800}' +
         '.qpw .qp-ins{margin:0 0 12px;padding:6px 10px;border:1px solid #999;font-size:12px;line-height:1.5}.qpw .qp-ins b{display:block;margin-bottom:2px}.qpw .qp-ins ol{margin:0;padding-left:20px}.qpw .qp-ins li{margin:0 0 3px}.qpw .qp-ins li i{display:block;font-style:normal;color:#333}' +
         '.qpw .qp-o{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 16px;margin:4px 0 0 22px}' +
         '.qpw .qp-a{margin:6px 0 0 22px;padding:5px 9px;background:#eef2ff;border-left:3px solid #6366f1;font-size:12.5px}.qpw .qp-a.qp-k{margin-left:0}' +
@@ -1553,7 +1554,8 @@
             return o.half ? { mcq: a.mcq, short: a.short, long: a.long, att: null } : { mcq: f.mcq, short: f.short, long: f.long, att: a };
         }
         l = QP_LAYOUT[sci ? 'sci' : 'other'][o.half ? 'half' : 'full'];
-        return { mcq: l.mcq, short: l.short, long: l.long, att: null };
+        var h = QP_LAYOUT[sci ? 'sci' : 'other'].half;
+        return { mcq: l.mcq, short: l.short, long: l.long, att: o.half ? null : { mcq: h.mcq, short: h.short, long: h.long } };   // Full set: e.g. objective 80 -> attempt any 40, short 25 -> any 15, long 8 -> any 4
     }
     function qpPlan(o) {                                          // [{k, part, n}] in paper order
         var lay = qpLay(o), parts = qpParts(o), plan = [];
@@ -1605,16 +1607,13 @@
         o.types = {}; Object.keys(e.types).forEach(function (k) { o.types[k] = j(e.types[k], h.types[k]); });
         o.secs = e.secs.map(function (x, i) { return j(x, h.secs[i]); });
         o.ins = h.ins.map(function (x, i) { return [x, e.ins[i]]; });
-        o.insA = h.insA.map(function (x, i) { return [x, e.insA[i]]; });
+        o.insA = h.insA.map(function (x, i) { return x === e.insA[i] ? x : [x, e.insA[i]]; });
         o.anyN = h.anyN + ' / ' + e.anyN;
         QP_L.Both = o; return o;
     }
     QP_L.English.insA = ['Section A has {m} objective questions (1 mark each): answer any {am} of them on the OMR sheet. Section B has {s} short-answer questions (2 marks each): answer any {as}; and {l} long-answer questions (5 marks each): answer any {al}.',
         'If more than {am} objective questions are answered, only the first {am} answers are evaluated.'];
-    QP_L.Hindi.insA = ['खंड-अ में {m} वस्तुनिष्ठ प्रश्न (प्रत्येक 1 अंक) हैं, किन्हीं {am} प्रश्नों के उत्तर OMR शीट पर दें। खंड-ब में {s} लघु उत्तरीय प्रश्न (प्रत्येक 2 अंक) हैं, किन्हीं {as} के उत्तर दें; तथा {l} दीर्घ उत्तरीय प्रश्न (प्रत्येक 5 अंक) हैं, किन्हीं {al} के उत्तर दें।',
-        'यदि {am} से अधिक वस्तुनिष्ठ प्रश्नों के उत्तर दिए जाएँगे, तो केवल प्रथम {am} उत्तरों का मूल्यांकन होगा।'];
-    QP_L.Hinglish.insA = ['Khand A me {m} vastunishth prashn (har ek 1 ank) hain, kisi bhi {am} ke uttar OMR sheet par dijiye. Khand B me {s} laghu uttariya prashn (har ek 2 ank) hain, kisi bhi {as} ke uttar dijiye; aur {l} dirgh uttariya prashn (har ek 5 ank) hain, kisi bhi {al} ke uttar dijiye.',
-        'Agar {am} se zyada vastunishth prashnon ke uttar diye gaye, to sirf pehle {am} uttaron ka mulyankan hoga.'];
+QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   // attempt instructions always use simple English words
     var QP_LANGSUBJ = { hindi: 1, english: 1, maithili: 1, sanskrit: 1, nonhindi: 1 };   // language subjects never get the "Both" option
     function qpLim(o, n) { return o.lang === 'Both' ? Math.max(2, Math.ceil(n / 2)) : n; }   // a bilingual question is twice as long, so fewer per AI call
     var QP_OTHER = ['other', 'Other / any topic', 'अन्य विषय', 'Anya vishay'];
@@ -1813,6 +1812,11 @@
         if (att && L.insA) { lines[0] = L.insA[0]; lines.splice(1, 0, L.insA[1]); }
         return '<div class="qp-ins"><b>' + NB.esc(L.insH) + '</b><ol>' + lines.map(function (x) { return '<li>' + (Array.isArray(x) ? f(x[0]) + '<i>' + f(x[1]) + '</i>' : f(x)) + '</li>'; }).join('') + '</ol></div>';
     }
+    function qpAttHtml(cnt, att) {                                // big "attempt any" strip printed above the instructions
+        if (!att) return '';
+        var row = function (n, t, a, m) { return '<span><b>' + n + '</b> ' + t + ': out of ' + a + ', attempt any <u>' + m + '</u></span>'; };
+        return '<div class="qp-att"><b>IMPORTANT:</b>' + row('A', 'Objective', cnt.mcq, att.mcq) + row('B', 'Short answer', cnt.short, att.short) + row('C', 'Long answer', cnt.long, att.long) + '</div>';
+    }
     function qpBodyModel(p) {
         var o = p.o, L = qpLab(o.lang), E = NB.esc, h = '', n = 0, total = 0, starts = [], cnt = { mcq: 0, short: 0, long: 0 }, lastK = '', kinds = ['mcq', 'short', 'long'];
         p.secs.forEach(function (s) { total += s.qs.length * QP_MARKS[s.k]; cnt[s.k] += s.qs.length; });
@@ -1820,7 +1824,7 @@
         if (att) total = att.mcq + att.short * 2 + att.long * 5;
         var anyT = function (k) { return att ? ' (' + (L.anyN || '').replace(/\{n\}/g, att[k]) + ')' : ''; };
         var setName = o.half ? L.half : L.set;
-        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(setName) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + (qpBoardName(o.subj) ? ' · ' + qpBoardName(o.subj) : '') + ' · ' + E(setName) + '</div>' + qpCover(L, o, total, o.half ? L.hrsH : L.hrs) + qpMeta(L, total, o.half ? L.hrsH : L.hrs).replace(/<span>[^<]*(?:Time|समय|Samay)[^<]*<\/span>/, '') + qpInsHtml(L, cnt, att);
+        h += '<h1>' + E(qpSubjName(o)) + ' · ' + E(setName) + '</h1><div class="qp-sub">Notes Bazar · ' + L.cls + ' ' + o.cls + (qpBoardName(o.subj) ? ' · ' + qpBoardName(o.subj) : '') + ' · ' + E(setName) + '</div>' + qpCover(L, o, total, o.half ? L.hrsH : L.hrs) + qpMeta(L, total, o.half ? L.hrsH : L.hrs).replace(/<span>[^<]*(?:Time|समय|Samay)[^<]*<\/span>/, '') + qpAttHtml(cnt, att) + qpInsHtml(L, cnt, att);
         p.secs.forEach(function (s) {
             starts.push(n);
             if (s.k !== lastK) { h += '<h2>' + E(L.secs[kinds.indexOf(s.k)] + anyT(s.k)) + '</h2>'; lastK = s.k; }
@@ -1857,7 +1861,7 @@
     function qpModelTotal(o) { var c = qpPlanCount(o); return c.mcq + c.short + c.long; }
     function qpModelText(o) {
         var c = qpPlanCount(o), parts = qpParts(o), at = qpLay(o).att, marks = at ? at.mcq + at.short * 2 + at.long * 5 : c.mcq + c.short * 2 + c.long * 5;
-        return '<p class="nbo-sub" style="margin:6px 0 0">' + (o.half ? 'Half Model Set' : 'Full Model Set') + ': one PDF with ' + c.mcq + ' objective (1 mark)' + (at ? ', attempt any ' + at.mcq : '') + ' + ' + c.short + ' short answer (2 marks)' + (at ? ', attempt any ' + at.short : '') + ' + ' + c.long + ' long answer (5 marks)' + (at ? ', attempt any ' + at.long : '') + ' questions = ' + marks + ' marks' + (at ? ' (BSEB Class 12 pattern)' : '') + ', from the whole book' +
+        return '<p class="nbo-sub" style="margin:6px 0 0">' + (o.half ? 'Half Model Set' : 'Full Model Set') + ': one PDF with ' + c.mcq + ' objective (1 mark)' + (at ? ', attempt any ' + at.mcq : '') + ' + ' + c.short + ' short answer (2 marks)' + (at ? ', attempt any ' + at.short : '') + ' + ' + c.long + ' long answer (5 marks)' + (at ? ', attempt any ' + at.long : '') + ' questions = ' + marks + ' marks' + (at ? ' (attempt-any pattern)' : '') + ', from the whole book' +
             (parts ? ', shared equally between ' + parts.map(function (p) { return p.en; }).join(', ') : '') + '. BSEB style instructions are printed on top. A fresh set every time.</p>';
     }
     function qpSync() {                                           // Model Set: topic + question count are not needed
@@ -2936,8 +2940,7 @@
                     else notif.maybeAsk(3600);
                 });
             } else if (adminMode) { /* admin is opening the dashboard: no student sign-up prompt */ }
-            else if (Date.now() - (+LSX.raw('nb_auth_skip') || 0) > DAY) ui.openAuth('login');
-            else notif.maybeAsk(1200);
+            else ui.openAuth('signup');   // no account yet: the sign-up / login page is shown every time (see the gate below)
         });
     }
     NB.openProfile = ui.openProfile;
@@ -4350,11 +4353,18 @@
         if (!m || m.__bk || !m.classList.contains('nbo')) return;
         var x = m.querySelector('.nbo-x'), b;
         if (!x || NB.noClose[m.id] || m.querySelector('.nbo-sm')) return;
+        if (m.querySelector('.np-back')) return;                 // this screen already has its own back arrow: keep only that one
         b = document.createElement('button'); b.type = 'button'; b.className = 'nbo-bk'; b.setAttribute('aria-label', 'Back'); b.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
         b.addEventListener('click', function (e) { e.stopPropagation(); goBack(m); });
         x.parentNode.insertBefore(b, x); m.__bk = 1;
     }
-    function decorateAll() { [].forEach.call(document.querySelectorAll('.nbo'), decorate); }
+    function decorateAll() {
+        [].forEach.call(document.querySelectorAll('.nbo'), function (m) {
+            var bk = m.querySelector('.nbo-bk');
+            if (m.querySelector('.np-back')) { if (bk) bk.parentNode.removeChild(bk); m.__bk = 0; return; }   // inner screen came in: drop the extra arrow
+            decorate(m);
+        });
+    }
 
     /* ---- same back arrow for the Tailwind dialogs of index.html ---- */
     var TW = ['themeModal', 'langModal', 'settingsModal', 'previewModal', 'aiModal', 'wishModal', 'supportModal', 'complainModal', 'savedModal', 'aboutModal', 'downloadsModal', 'safePreviewModal', 'rulesHelpModal'];
@@ -4374,19 +4384,28 @@
     /* ---- full screen viewer (works for PDFs in an iframe and for the made notes / papers) ---- */
     var fsKey = null, fsOv = null, fsOverflow = '';
     NB.fullscreen = function (o) {
-        var ov, c, pg;
+        var ov, c, pg, req;
         NB.closeFullscreen();
         ov = document.createElement('div'); ov.className = 'nb-fso'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
-        ov.innerHTML = '<div class="nb-fsbar"><button type="button" class="nb-fsb" data-k="x"><i class="fa-solid fa-arrow-left"></i> Back</button><span class="nb-fst"></span><button type="button" class="nb-fsb" data-k="x"><i class="fa-solid fa-down-left-and-up-right-to-center"></i> Close full screen</button></div><div class="nb-fsc"></div>';
+        ov.innerHTML = '<div class="nb-fsbar"><span class="nb-fst"></span><button type="button" class="nb-fsb" data-k="x" aria-label="Close full screen"><i class="fa-solid fa-down-left-and-up-right-to-center"></i> Close full screen</button></div><div class="nb-fsc"></div>';
         ov.querySelector('.nb-fst').textContent = o.title || '';
         c = ov.querySelector('.nb-fsc');
-        if (o.src) { var f = document.createElement('iframe'); f.src = o.src; f.title = o.title || 'Preview'; c.appendChild(f); }
+        if (o.src) { var f = document.createElement('iframe'); f.src = o.src; f.title = o.title || 'Preview'; f.setAttribute('allowfullscreen', ''); c.appendChild(f); }
         else if (o.node) { pg = document.createElement('div'); pg.className = 'nb-fspage'; pg.appendChild(o.node); c.appendChild(pg); }
         ov.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-k="x"]')) NB.closeFullscreen(); });
         fsOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden';
         document.body.appendChild(ov); fsOv = ov;
+        try { req = ov.requestFullscreen || ov.webkitRequestFullscreen; if (req) { var pr = req.call(ov); if (pr && pr.catch) pr.catch(function () {}); } } catch (e) {}   // real full screen where the browser allows it; the overlay already fills the page otherwise
     };
-    NB.closeFullscreen = function () { if (!fsOv) return; if (fsOv.parentNode) fsOv.parentNode.removeChild(fsOv); fsOv = null; document.body.style.overflow = fsOverflow; };
+    NB.closeFullscreen = function () {
+        var ov = fsOv; if (!ov) return;
+        fsOv = null;
+        try { var fe = document.fullscreenElement || document.webkitFullscreenElement; if (fe) { var ex = document.exitFullscreen || document.webkitExitFullscreen; if (ex) { var pr = ex.call(document); if (pr && pr.catch) pr.catch(function () {}); } } } catch (e) {}
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+        document.body.style.overflow = fsOverflow;
+    };
+    document.addEventListener('fullscreenchange', function () { if (fsOv && !document.fullscreenElement) NB.closeFullscreen(); });   // user pressed Esc / system back in real full screen
+    document.addEventListener('webkitfullscreenchange', function () { if (fsOv && !document.webkitFullscreenElement) NB.closeFullscreen(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && fsOv) { e.stopImmediatePropagation(); NB.closeFullscreen(); } }, true);
 
     function prevButtons() {                                      // "Full screen" button above every made notes / paper preview
@@ -4435,4 +4454,38 @@
         new MutationObserver(function () { clearTimeout(t); t = setTimeout(tick, 70); }).observe(document.body, { childList: true, subtree: true });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+
+/* =====================================================================
+   Account gate: until the student has an account, every tap / search /
+   download shows the sign-up (or log in) page again. Skipping or closing
+   the page only hides it; the next tap brings it back.
+   ===================================================================== */
+(function () {
+    'use strict';
+    var NB = window.NB = window.NB || {}, last = 0;
+    var FREE = '#nbAuth,#splash,#nbToast,#adminLoginModal,#adminDashboardModal,#uploadModal,#editItemModal,#adminReplyModal,#rulesHelpModal,#pwaBar,#offlinePill';
+    function isAdmin() { return /admin/i.test(location.hash || ''); }
+    function blocked(t) {
+        if (!t || !t.closest) return false;
+        if (NB.loggedIn && NB.loggedIn()) return false;
+        if (!window.__nbReady && !document.getElementById('nbAuth')) return false;   // page is still starting
+        if (isAdmin()) return false;
+        if (t.closest(FREE)) return false;
+        return !!t.closest('a,button,input,select,textarea,label,summary,[onclick],[role="button"],[tabindex],.card,[data-id],#aiFab,[data-nav],nav,header,main,section');
+    }
+    function ask(e) {
+        e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        try { document.activeElement && document.activeElement.blur && document.activeElement.blur(); } catch (x) {}
+        if (NB.isOpen && NB.isOpen('nbAuth')) return;
+        if (Date.now() - last < 350) return; last = Date.now();
+        if (NB.ui && NB.ui.openAuth) { NB.ui.openAuth('signup'); if (NB.toast) NB.toast('Create your free account to use Notes Bazar 🔐', 2600); }
+    }
+    ['click', 'pointerdown', 'submit', 'focusin', 'keydown'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+            if (ev === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+            if (blocked(e.target)) ask(e);
+        }, true);
+    });
 })();
