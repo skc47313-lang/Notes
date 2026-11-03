@@ -381,7 +381,7 @@
         } catch (e) { users.state = (e.status === 401 || e.status === 403) ? 'denied' : 'err'; users.err = e.message; rerender(); }
     }
     async function loadMoreUsers() {
-        var need = users.keys.slice(0, S.usersShown).filter(function (k) { return !(k in users.docs); });
+        var need = users.keys.slice(0, 400).filter(function (k) { return !(k in users.docs); });   // all profiles are needed to sort by streak
         if (!need.length || users.loading) return;
         users.loading = true; rerender();
         for (var i = 0; i < need.length; i += 6) {
@@ -394,10 +394,23 @@
     A.reloadUsers = function () { loadUsers(true); };
     A.moreUsers = function () { S.usersShown += 24; loadMoreUsers(); rerender(); };
     A.searchUsers = function (v) { S.usersQ = v; var pos = v.length; rerender(); var i = $('aUserQ'); if (i) { i.focus(); i.setSelectionRange(pos, pos); } };
+    function dayK(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    function calcStreak(d) {                                  // current streak from the student's study days (same rule as the student app)
+        var set = {}, n = 0, t = new Date(); asList(d && d.days).forEach(function (x) { if (typeof x === 'string') set[x] = 1; });
+        if (!set[dayK(t)]) t = new Date(t.getTime() - 864e5);
+        while (set[dayK(t)]) { n++; t = new Date(t.getTime() - 864e5); }
+        return n;
+    }
+    function bestStreak(d) {
+        var a = asList(d && d.days).filter(function (x) { return /^\d{4}-\d{2}-\d{2}$/.test(x); }).sort(), best = 0, run = 0, prev = null;
+        a.forEach(function (k) { var p = k.split('-'), t = new Date(+p[0], +p[1] - 1, +p[2], 12).getTime(); run = prev !== null && Math.round((t - prev) / 864e5) === 1 ? run + 1 : 1; prev = t; if (run > best) best = run; });
+        return Math.max(best, calcStreak(d));
+    }
     function userRows() {
         var term = S.usersQ.toLowerCase().trim();
         var list = users.keys.map(function (k) { var d = users.docs[k]; return { uid: k, d: d, p: (d && d.profile) || {} }; });
-        list.sort(function (a, b) { return ((b.d && b.d.updatedAt) || 0) - ((a.d && a.d.updatedAt) || 0); });
+        list.forEach(function (u) { u.st = calcStreak(u.d); });
+        list.sort(function (a, b) { return (b.st - a.st) || (((b.d && b.d.updatedAt) || 0) - ((a.d && a.d.updatedAt) || 0)); });   // highest streak first
         if (term) list = list.filter(function (u) { return [u.p.name, u.p.userId, u.p.cls].join(' ').toLowerCase().indexOf(term) >= 0; });
         return list;
     }
@@ -411,10 +424,10 @@
         }
         var all = userRows(), shown = all.slice(0, S.usersShown), today = dkey(new Date());
         var activeToday = Object.keys(users.docs).filter(function (k) { var d = users.docs[k]; return d && Array.isArray(d.days) ? d.days.indexOf(today) >= 0 : false; }).length;
-        var rows = shown.map(function (u) {
+        var rows = shown.map(function (u, ix) {
             var p = u.p, nm = p.name || 'Student', av = /^data:image\/(png|jpe?g|webp|gif);base64,/.test(p.photo || '') && String(p.photo).length < 400000 ? '<img alt="" src="' + esc(p.photo) + '">' : esc(nm.charAt(0).toUpperCase());
             var d = u.d || {}, favs = d.favs ? (Array.isArray(d.favs) ? d.favs.length : Object.keys(d.favs).length) : 0;
-            return '<div class="a-user clk" role="button" tabindex="0" onclick="NBAdmin.openUser(' + q(u.uid) + ')" onkeydown="if(event.key===\'Enter\')NBAdmin.openUser(' + q(u.uid) + ')"><span class="av">' + av + '</span><div class="tx"><b>' + esc(nm) + '</b><span>' + (p.userId ? '@' + esc(p.userId) : 'No User ID') + (p.cls ? ' &middot; ' + esc(p.cls) : '') + '</span></div><div class="meta"><span>' + (d.updatedAt ? 'Active ' + esc(ago(d.updatedAt)) : (u.uid in users.docs ? 'No activity yet' : 'Loading&hellip;')) + '</span><span><i class="fa-solid fa-heart"></i> ' + favs + ' saved</span></div><button type="button" class="a-btn sm" style="margin-left:8px;color:#e11d48" title="Delete account" aria-label="Delete account of ' + esc(nm) + '" onclick="event.stopPropagation();NBLayout.adminDelete(' + q(u.uid) + ',' + q(nm) + ')"><i class="fa-solid fa-trash"></i></button></div>';
+            return '<div class="a-user clk" role="button" tabindex="0" onclick="NBAdmin.openUser(' + q(u.uid) + ')" onkeydown="if(event.key===\'Enter\')NBAdmin.openUser(' + q(u.uid) + ')"><span class="av">' + av + '</span><div class="tx"><b>' + esc(nm) + '</b><span>' + (p.userId ? '@' + esc(p.userId) : 'No User ID') + (p.cls ? ' &middot; ' + esc(p.cls) : '') + '</span></div><div class="meta"><span class="a-stk" title="Current study streak">&#128293; ' + u.st + (S.usersQ ? '' : ' &middot; #' + (ix + 1)) + '</span><span>' + (d.updatedAt ? 'Active ' + esc(ago(d.updatedAt)) : (u.uid in users.docs ? 'No activity yet' : 'Loading&hellip;')) + '</span><span><i class="fa-solid fa-heart"></i> ' + favs + ' saved</span></div><button type="button" class="a-btn sm" style="margin-left:8px;color:#e11d48" title="Delete account" aria-label="Delete account of ' + esc(nm) + '" onclick="event.stopPropagation();NBLayout.adminDelete(' + q(u.uid) + ',' + q(nm) + ')"><i class="fa-solid fa-trash"></i></button></div>';
         }).join('');
         el.innerHTML = '<div class="a-kpis"><div class="a-kpi"><small>Registered students</small><b>' + fmtN(users.count) + '</b><span>Accounts created on the site</span></div><div class="a-kpi"><small>Visitors today</small><b>' + (daily.state === 'ok' ? fmtN(dayVal(today, 'u')) : '&mdash;') + '</b><span>Unique devices</span></div><div class="a-kpi"><small>Active today (loaded)</small><b>' + activeToday + '</b><span>Of the profiles shown below</span></div></div>' +
             '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-users"></i> Students</h3><div class="a-search" style="flex:1;min-width:180px;max-width:320px"><i class="fa-solid fa-magnifying-glass"></i><input id="aUserQ" type="search" value="' + esc(S.usersQ) + '" placeholder="Search name, User ID or class" oninput="NBAdmin.searchUsers(this.value)" aria-label="Search students"></div></div>' +
@@ -454,7 +467,10 @@
             });
             return (h || '<div class="au-empty">No tests taken yet.</div>') + (tt.length && src === 'quiz' ? '<p class="au-empty" style="padding-top:12px">Showing the short score list. Full test history appears after the student opens the updated app once.</p>' : '');
         }
-        var days = asList(d.days).filter(function (x) { return typeof x === 'string'; }).sort().reverse(), rec = asList(d.recent), todo = asList(d.todo);
+        var days = asList(d.days).filter(function (x) { return typeof x === 'string'; }).sort().reverse(), rec = asList(d.recent), todo = asList(d.todo), act = d.act && typeof d.act === 'object' ? d.act : {};
+        var KL = { visit: '👋 Opened the app', chat: '🤖 Asked Bazar AI', test: '📝 Took a test', aitest: '✨ AI test', notes: '📒 Made AI notes', paper: '📄 Made a paper', pdf: '📥 Downloaded a PDF', dl: '⬇️ Downloaded a note' };
+        h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-fire"></i></span><div class="tx"><b>' + calcStreak(d) + ' day streak · best ' + bestStreak(d) + '</b><span>Streak history (what the student did each day)</span></div></div>';
+        Object.keys(act).sort().reverse().slice(0, 40).forEach(function (k) { var a = act[k] || {}; h += '<div class="au-li"><div class="tx"><b>' + esc(k) + '</b><span>' + esc(Object.keys(a).map(function (q) { return (KL[q] || q) + (a[q] > 1 ? ' x' + a[q] : ''); }).join(' · ')) + '</span></div></div>'; });
         h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-fire"></i></span><div class="tx"><b>' + days.length + ' study days</b><span>Days the student used the app</span></div></div>';
         h += '<div class="au-days">' + days.slice(0, 45).map(function (x) { return '<span>' + esc(x.slice(5)) + '</span>'; }).join('') + '</div>';
         if (rec.length) { h += '<p style="margin:14px 0 4px;font-weight:800;font-size:13px">Recently opened</p>'; rec.slice(0, 8).forEach(function (id) { var it = itemById(id); h += '<div class="au-li"><span class="ic"><i class="fa-solid fa-clock-rotate-left"></i></span><div class="tx"><b>' + esc(it ? it.title : 'Item ' + id) + '</b><span>' + esc(it ? [it.className, it.subject].filter(Boolean).join(' · ') : '') + '</span></div></div>'; }); }
@@ -471,7 +487,7 @@
         var tabs = [['dl', 'Downloads (' + dl + ')'], ['saved', 'Saved (' + fav + ')'], ['tests', 'Tests (' + tests + ')'], ['act', 'Activity']];
         var blocked = window.NBCommunity && window.NBCommunity.isBlocked(UD.uid);
         ov.innerHTML = '<div class="au-box" role="dialog" aria-label="Student details"><div class="au-h"><span class="av">' + av + '</span><div class="tx"><b>' + esc(nm) + '</b><span>' + (p.userId ? '@' + esc(p.userId) : 'No User ID') + (p.cls ? ' · ' + esc(p.cls) : '') + '</span><span>' + (d.updatedAt ? 'Last active ' + esc(ago(d.updatedAt)) : 'No activity yet') + '</span></div><button type="button" class="au-x" onclick="NBAdmin.closeUser()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>' +
-            '<div class="au-kp"><div><b>' + dl + '</b><small>Downloads</small></div><div><b>' + fav + '</b><small>Saved</small></div><div><b>' + tests + '</b><small>Tests</small></div><div><b>' + (qs.length ? avg + '%' : '-') + '</b><small>Avg score</small></div></div>' +
+            '<div class="au-kp"><div><b>' + dl + '</b><small>Downloads</small></div><div><b>&#128293; ' + calcStreak(d) + '</b><small>Streak (best ' + bestStreak(d) + ')</small></div><div><b>' + tests + '</b><small>Tests</small></div><div><b>' + (qs.length ? avg + '%' : '-') + '</b><small>Avg score</small></div></div>' +
             '<div class="au-tabs">' + tabs.map(function (t) { return '<button type="button" class="' + (UD.tab === t[0] ? 'on' : '') + '" onclick="NBAdmin.userTab(\'' + t[0] + '\')">' + esc(t[1]) + '</button>'; }).join('') + '</div>' +
             '<div class="au-body">' + udRows(UD.tab, d) + '</div>' +
             '<div class="au-act"><button type="button" class="' + (blocked ? '' : 'dng') + '" onclick="NBAdmin.userBlock()"><i class="fa-solid fa-ban"></i> ' + (blocked ? 'Unblock from community' : 'Block from community') + '</button><button type="button" onclick="NBAdmin.openUser(' + q(UD.uid) + ',1)"><i class="fa-solid fa-rotate"></i> Refresh</button></div></div>';

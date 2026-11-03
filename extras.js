@@ -294,6 +294,7 @@
             var th = LSX.get('nb_tests', []);
             o.tests = Array.isArray(th) ? th.slice(0, 40).map(function (r) { return { t: r.t, title: r.title, subj: r.subj, cls: r.cls, mode: r.mode, src: r.src, score: r.score, total: r.total, secs: r.secs }; }) : null;
         } catch (er) { o.tests = null; }
+        try { var ac = JSON.parse(localStorage.getItem('nb_act') || 'null'); o.act = ac && typeof ac === 'object' ? ac : null; o.streak = NB.streak(); o.best = NB.bestStreak ? NB.bestStreak() : 0; } catch (er2) {}
         return o;
     }
     NB.pushNow = async function () {
@@ -306,13 +307,73 @@
     (function () {
         var orig = Storage.prototype.setItem, keys = {}, k;
         for (k in SYNC) keys[SYNC[k]] = 1;
-        keys[PKEY] = 1; keys['nb_tests'] = 1;
+        keys[PKEY] = 1; keys['nb_tests'] = 1; keys['nb_act'] = 1;
         Storage.prototype.setItem = function (key) {
             var r = orig.apply(this, arguments);
-            try { if (this === window.localStorage && keys[key] && !applying) { if (key === PKEY) NB.scheduleProfilePush(); else NB.schedulePush(); } } catch (e) {}
+            try { if (this === window.localStorage && !applying) { if (aiIsKey(key)) NB.scheduleAiPush(); else if (keys[key]) { if (key === PKEY) NB.scheduleProfilePush(); else NB.schedulePush(); } } } catch (e) {}
             return r;
         };
     })();
+    /* ---------- Bazar AI chats / memory / XP: synced to the account at /ai ----------
+       Local keys are  nb_ai_chats_<userId>, nb_ai_mem_<userId>, nb_ai_xp_<userId>  (same naming as app.js bzUser()). */
+    var AI_BASES = ['nb_ai_chats', 'nb_ai_mem', 'nb_ai_xp'], aiPushT = 0, AI_TS = 'nb_ai_sync_ts';
+    function aiUid() { var a = NB.account(); return a ? String(a.userId || a.uid || a.id || a.email || 'u') : null; }
+    function aiKey(b) { var u = aiUid(); return u ? b + '_' + u : null; }
+    function aiIsKey(key) { var u = aiUid(); if (!u || typeof key !== 'string') return false; for (var i = 0; i < AI_BASES.length; i++) if (key === AI_BASES[i] + '_' + u) return true; return false; }
+    function aiChatsLocal() { var c = LSX.get(aiKey('nb_ai_chats'), []); return Array.isArray(c) ? c : []; }
+    NB.aiPush = async function () {
+        if (!NB.loggedIn()) return;
+        var ONLY = 'nb_ai_localonly';   // chats that could not fit in the cloud: they stay on this device only
+        try {
+            var all = aiChatsLocal().filter(function (c) { return c && c.id && Array.isArray(c.msgs); }).sort(function (a, b) { return b.ts - a.ts; });
+            var mem = LSX.get(aiKey('nb_ai_mem'), {}) || {}, xp = LSX.get(aiKey('nb_ai_xp'), {}) || {};
+            var keep = all.length, done = false, lastErr = null;
+            while (keep > 0 && !done) {
+                var chats = all.slice(0, keep), body = { updatedAt: Date.now(), chats: chats, mem: mem, xp: xp };
+                if (JSON.stringify(body).length > 3000000) { keep = Math.max(1, Math.floor(keep / 2)); if (keep === 1 && JSON.stringify({ chats: all.slice(0, 1) }).length > 3000000) break; continue; }
+                try { await cloud('PUT', '/ai', body); done = true; }
+                catch (e) { lastErr = e; if (e.status === 413 && keep > 1) keep = Math.floor(keep / 2); else break; }   // cloud says "too big": upload fewer chats
+            }
+            if (!done) {
+                if (lastErr && (lastErr.status === 401 || lastErr.status === 403)) NB.cloudOk = false;
+                if (lastErr) console.warn('AI chat push failed, chats stay on this device', lastErr);
+                return;   // nothing changed in the cloud; everything is still safe in this device's storage
+            }
+            var left = all.slice(keep).map(function (c) { return c.id; });
+            if (left.length) { LSX.set(ONLY, left); if (!NB.aiFullWarned) { NB.aiFullWarned = true; NB.toast('Cloud storage is full. Your older AI chats are saved on this device only.', 5200); } }
+            else LSX.del(ONLY);
+            LSX.set(AI_TS, Date.now()); NB.cloudOk = true;
+        } catch (e) { console.warn('AI chat push failed', e); if (e.status === 401 || e.status === 403) NB.cloudOk = false; }
+    };
+    NB.scheduleAiPush = function () { if (!NB.loggedIn() || applying) return; clearTimeout(aiPushT); aiPushT = setTimeout(NB.aiPush, 2500); };
+    /* mode 'union' = keep everything from both sides (login); 'cloud' = the account is the truth, but chats changed here since the last sync are kept */
+    NB.aiPull = async function (mode) {
+        if (!NB.loggedIn()) return;
+        try {
+            var c = await cloud('GET', '/ai');
+            NB.cloudOk = true;
+            var lastSync = LSX.get(AI_TS, 0) || 0, local = aiChatsLocal();
+            if (!c || !c.chats) { if (local.length) await NB.aiPush(); return; }   // first time: upload what this device already has
+            if (mode !== 'union' && (c.updatedAt || 0) <= lastSync) return;          // nothing newer in the cloud
+            var cc = asArr(c.chats).filter(function (x) { return x && x.id && Array.isArray(x.msgs || (x.msgs = [])); }), byId = {}, out = [], changedLocal = false;
+            local.forEach(function (x) { if (x && x.id) byId[x.id] = x; });
+            cc.forEach(function (x) { var l = byId[x.id]; out.push(l && (l.ts || 0) > (x.ts || 0) ? l : x); if (l) delete byId[x.id]; });
+            var only = LSX.get('nb_ai_localonly', []) || [];
+            Object.keys(byId).forEach(function (id) { var l = byId[id]; if (mode === 'union' || (l.ts || 0) > lastSync || only.indexOf(id) >= 0) { out.push(l); changedLocal = true; } });   // unsynced local chats survive
+            out.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); }); out = out.slice(0, 40);
+            applying = true;
+            try {
+                LSX.set(aiKey('nb_ai_chats'), out);
+                var lm = LSX.get(aiKey('nb_ai_mem'), {}) || {}, cm = c.mem && typeof c.mem === 'object' ? c.mem : {};
+                LSX.set(aiKey('nb_ai_mem'), mode === 'union' ? Object.assign({}, cm, lm) : (Object.keys(lm).length && !(c.updatedAt > lastSync) ? lm : cm));
+                var lx = LSX.get(aiKey('nb_ai_xp'), {}) || {}, cx = c.xp && typeof c.xp === 'object' ? c.xp : {};
+                LSX.set(aiKey('nb_ai_xp'), (+cx.xp || 0) > (+lx.xp || 0) ? cx : lx);
+            } finally { applying = false; }
+            LSX.set(AI_TS, Date.now());
+            if (typeof window.nbApplyAiRemote === 'function') { try { window.nbApplyAiRemote(); } catch (e) { console.warn(e); } }
+            if (changedLocal) NB.scheduleAiPush();
+        } catch (e) { console.warn('AI chat pull failed', e); if (e.status === 401 || e.status === 403) NB.cloudOk = false; }
+    };
     var profT = 0;
     NB.scheduleProfilePush = function () {
         if (!NB.loggedIn() || applying) return;
@@ -333,6 +394,7 @@
             LSX.set('nb_seen', mode === 'cloud' ? (c.seen || {}) : mergeObj(LSX.get('nb_seen', {}), c.seen));
             LSX.set('nb_dlhist', mode === 'cloud' ? (c.dl || {}) : mergeObj(LSX.get('nb_dlhist', {}), c.dl));
             var days = mode === 'cloud' ? asArr(c.days) : unionArr(NB.days(), c.days); days.sort(); LSX.set('nb_days', days.slice(-400));
+            try { if (c.act && typeof c.act === 'object') { var la = JSON.parse(localStorage.getItem('nb_act') || '{}') || {}; Object.keys(c.act).forEach(function (dk) { var cd = c.act[dk] || {}, ld = la[dk] || (la[dk] = {}); Object.keys(cd).forEach(function (kk) { ld[kk] = Math.max(+ld[kk] || 0, +cd[kk] || 0); }); }); localStorage.setItem('nb_act', JSON.stringify(la)); } } catch (e) {}
             if (c.todo && Array.isArray(c.todo.items) || c.todo && c.todo.w) {
                 var lt = LSX.get('nb_todo', null), ct = { w: c.todo.w, items: asArr(c.todo.items) };
                 if (mode === 'cloud' || !lt || !lt.w || lt.w < ct.w) LSX.set('nb_todo', ct);
@@ -384,13 +446,18 @@
         else if (!NB.profile()) NB.setProfile({ name: userId, cls: 'Class 10', photo: '', userId: userId });
         NB.markDay();
         await NB.pushNow();
+        LSX.del(AI_TS);
+        await NB.aiPull('union');   // bring this account's AI chat history onto this device
         return cred.user;
     };
-    var PERSONAL = ['nb_profile', 'nb_acct', 'nb_favs', 'nb_recent', 'nb_seen', 'nb_dlhist', 'nb_days', 'nb_exam', 'nb_quiz', 'nb_todo', 'nb_ai_test', 'nb_sync_ts', 'nb_filters_v1', 'nb_recent_q', 'nb_reported'];
+    var PERSONAL = ['nb_profile', 'nb_acct', 'nb_favs', 'nb_recent', 'nb_seen', 'nb_dlhist', 'nb_days', 'nb_exam', 'nb_quiz', 'nb_todo', 'nb_ai_test', 'nb_act', 'nb_ai_seen', 'nb_sync_ts', 'nb_filters_v1', 'nb_recent_q', 'nb_reported'];
     NB.logout = async function () {
         try { await NB.pushNow(); } catch (e) {}
+        try { clearTimeout(aiPushT); await NB.aiPush(); } catch (e) {}
+        var aiLocal = AI_BASES.map(aiKey).filter(Boolean);   // remember this user's local AI keys before the account is cleared
         try { var s = await authSdk(); await s.au.signOut(s.auth); } catch (e) {}
-        applying = true; PERSONAL.forEach(function (k) { LSX.del(k); }); applying = false;
+        applying = true; PERSONAL.concat(aiLocal, [AI_TS, 'nb_ai_localonly']).forEach(function (k) { LSX.del(k); }); applying = false;
+        if (typeof window.nbApplyAiRemote === 'function') { try { window.nbApplyAiRemote(); } catch (e) {} }
         if (typeof window.nbApplyRemote === 'function') { try { window.nbApplyRemote(); } catch (e) {} }
         if (NB.ui && NB.ui.refreshAll) NB.ui.refreshAll();
     };
@@ -402,10 +469,11 @@
             var u = await new Promise(function (res) { var un = s.au.onAuthStateChanged(s.auth, function (x) { un(); res(x); }); });
             if (!u) { LSX.del(AKEY); return null; }
             await NB.pull('cloud');
+            await NB.aiPull('cloud');
             return u;
         } catch (e) { console.warn('restore failed', e); return 'offline'; }
     };
-    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && NB.loggedIn()) NB.pull('cloud'); });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && NB.loggedIn()) { NB.pull('cloud'); NB.aiPull('cloud'); } });
     window.addEventListener('online', function () { if (NB.loggedIn()) NB.pushNow(); });
 
     /* =====================================================================
@@ -853,7 +921,7 @@
             var r = o.apply(this, arguments);
             var pg = PAGES.filter(function (x) { return x.view === v; })[0];
             if (pg) setTimeout(function () { classes.apply(false); filterPage(pg); }, 0);
-            if (v === 'home') NB.markDay();
+            if (v === 'home') NB.markDay('visit');
             return r;
         };
         w.__nb = true; window.switchView = w;
@@ -1214,7 +1282,7 @@
         var score = 0; QZ.list.forEach(function (q, i) { if (QZ.ans[i] === q.a) score++; });
         var total = QZ.list.length, pct = Math.round(score / total * 100), secs = Math.round((Date.now() - QZ.t0) / 1000);
         var hist = asArr(LSX.get('nb_quiz', [])); hist.unshift({ t: Date.now(), score: score, total: total, mode: QZ.mode, subj: QZ.src === 'ai' ? 'AI · ' + String(QZ.aiTitle || 'test').slice(0, 24) : QZ.subj, cls: QZ.cls });
-        LSX.set('nb_quiz', hist.slice(0, 30)); thSave(secs); NB.markDay(); ui.refreshAll();
+        LSX.set('nb_quiz', hist.slice(0, 30)); thSave(secs); NB.markDay(QZ.src === 'ai' ? 'aitest' : 'test'); ui.refreshAll();
         var msg = pct >= 80 ? 'Excellent work!' : pct >= 50 ? 'Good effort. Keep practising!' : 'Keep going. Review the answers below and try again.';
         var h = '<div class="nbq-score"><b>' + score + ' / ' + total + '</b><span>' + pct + '% · ' + msg + '<br>Time taken: ' + fmtT(secs) + '</span></div>';
         $('nbqBody').innerHTML = h + '<div id="nbqRev"></div><div class="nbq-nav"><button type="button" id="nbqAgain">Try again</button><button type="button" class="pri" id="nbqNew">New test</button></div><button type="button" class="nbo-skip" id="nbqHistR">📊 My test history &amp; progress</button>';
@@ -1236,7 +1304,7 @@
        with the same practice / mock engine as the built-in question bank.
        ===================================================================== */
     var AIT = { hist: [], busy: false, qs: null, title: '', subj: '', last: 0, lang: 'auto' };
-    function aiSystem(cls, n, lang) {
+    function aiSystem(cls, n, lang, diff, avoid) {
         var both = lang === 'Both';
         return 'You are the AI Test Maker inside Notes Bazar, a study app for Indian school students. The student is in Class ' + cls + '. ' +
             'Make exactly ' + n + ' multiple-choice questions (unless the student asks for another number, maximum 25) on ANY topic the student asks for. The topic does NOT have to be in the school syllabus: general knowledge, current affairs, sports, technology, coding, history, movies, careers, competitive exams, hobbies and everything else are allowed. ' +
@@ -1245,6 +1313,9 @@
                 : lang === 'English' ? 'LANGUAGE RULE (very important): write EVERYTHING in English only, even if the student writes in Hindi. '
                 : lang === 'Hindi' ? 'LANGUAGE RULE (very important): write EVERYTHING in Hindi using Devanagari script only, even if the student writes in English. '
                 : 'Write the questions in the same language the student writes in (English, Hindi or Hinglish). ') +
+            ({ easy: 'DIFFICULTY: EASY. Direct recall and very simple understanding questions that a weak student can solve. ', medium: 'DIFFICULTY: MEDIUM. Questions that test understanding and simple application, like a normal school exam. ', hard: 'DIFFICULTY: HARD. Tricky, multi-step, application and higher-order thinking questions with close distractor options, like for a topper or a competitive exam. ' }[diff] || 'DIFFICULTY: MIXED. About 40% easy, 40% medium and 20% hard questions. ') +
+            'UNIQUE QUESTIONS (very important): every request must give NEW and DIFFERENT questions. Cover different sub-topics, use different examples and numbers, never copy a standard textbook line, and never repeat a question you made before. Variation code: ' + Math.random().toString(36).slice(2, 8) + '. ' +
+            (avoid && avoid.length ? 'Do NOT repeat or rephrase any of these earlier questions: ' + avoid.join(' | ') + '. ' : '') +
             'WHEN THE TOPIC IS CLEAR reply with ONLY a JSON object and nothing else (no markdown fences, no extra words): ' +
             (both ? '{"title":"short title","subject":"subject name","questions":[{"q":"English question","qh":"same question in Hindi","o":["English option A","English option B","English option C","English option D"],"oh":["Hindi option A","Hindi option B","Hindi option C","Hindi option D"],"a":0,"e":"one short English line explaining the answer","eh":"the same line in Hindi"}]} '
                 : '{"title":"short title","subject":"subject name","questions":[{"q":"question text","o":["option A","option B","option C","option D"],"a":0,"e":"one short line explaining the answer"}]} ') +
@@ -1321,15 +1392,17 @@
         if (typeof window.nbCallAi !== 'function') { aiBubble('bot', 'The AI is still loading. Please try again in a moment.'); return; }
         AIT.busy = true; aiBubble('me', text);
         var wait = aiBubble('bot', 'Thinking…'); wait.classList.add('wait');
-        var n = parseInt(($('nbaiN') || {}).value, 10) || 10, go = $('nbaiGo'), lg = ($('nbaiL') || {}).value || AIT.lang || 'auto'; AIT.lang = lg; if (go) go.disabled = true;
+        var n = aiN(), diff = ($('nbaiD') || {}).value || 'mixed', go = $('nbaiGo'), lg = ($('nbaiL') || {}).value || AIT.lang || 'auto'; AIT.lang = lg; if (go) go.disabled = true;
         AIT.hist.push({ role: 'user', content: text }); AIT.hist = AIT.hist.slice(-8);
         try {
             if (lg === 'Both' && n > 15) n = 15;                  // a bilingual test is twice as long, so keep it shorter
-            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n, lg) }].concat(AIT.hist), { timeout: lg === 'Both' ? 90000 : 60000 });
+            var seen0 = LSX.get('nb_ai_seen', []); if (!Array.isArray(seen0)) seen0 = [];
+            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n, lg, diff, seen0.slice(-30)) }].concat(AIT.hist), { timeout: lg === 'Both' ? 90000 : 60000, temperature: 0.95 });
             var t = aiParseTest(out, lg === 'Both');
             if (wait.parentNode) wait.remove();
             if (t) {
                 AIT.qs = t.qs; AIT.title = t.title; AIT.subj = t.subject;
+                try { var sn2 = LSX.get('nb_ai_seen', []); if (!Array.isArray(sn2)) sn2 = []; t.qs.forEach(function (q) { sn2.push(String(q.q).slice(0, 70)); }); LSX.set('nb_ai_seen', sn2.slice(-60)); } catch (e) {}
                 try { LSX.set('nb_ai_test', { title: t.title, subject: t.subject, qs: t.qs, t: Date.now() }); } catch (e) {}
                 AIT.hist.push({ role: 'assistant', content: '[Made a ' + t.qs.length + '-question test: ' + t.title + ']' });
                 aiReady();
@@ -1344,18 +1417,41 @@
             aiBubble('bot', 'Sorry, the AI could not be reached right now. Check your internet and try again, or use the built-in practice questions.');
         } finally { AIT.busy = false; if (go) go.disabled = false; }
     }
+    function aiN() { var sel = $('nbaiN'), v = sel ? sel.value : '10'; v = v === 'custom' ? parseInt(($('nbaiNC') || {}).value, 10) : parseInt(v, 10); if (!(v >= 1)) v = 10; return Math.min(25, v); }
+    function aiFillSubj() {
+        var cs = $('nbaiTCls'), sb = $('nbaiTSubj'); if (!cs || !sb) return;
+        var cur = sb.value, l = qpSubjList(parseInt(cs.value, 10)).filter(function (x) { return x[0] !== 'other'; });
+        sb.innerHTML = '<option value="">Any topic (I will type it)</option>' + l.map(function (x) { return '<option value="' + x[0] + '">' + NB.esc(x[1]) + '</option>'; }).join('');
+        if (cur && l.some(function (x) { return x[0] === cur; })) sb.value = cur;
+        chRender('nbaiT');
+    }
+    function aiMakeText() {
+        var sb = $('nbaiTSubj'), sn = sb && sb.value ? sb.options[sb.selectedIndex].text : '', tp = (($('nbaiTTopic') || {}).value || '').trim();
+        if (!sn && !tp) return '';
+        return (sn || '') + (sn && tp ? ': ' : '') + tp + ' (Class ' + QZ.cls + ')';
+    }
     function aiScreen() {
         stopTimer(); QZ.src = 'bank';
         var body = $('nbqBody'), last = LSX.get('nb_ai_test', null);
         body.innerHTML = '<h3 class="nbo-h"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Test Maker</h3><p class="nbo-sub">Any topic, even outside your syllabus. Bazar AI makes the test in seconds.</p>' +
-            '<div class="nbai-set"><label>Questions<select id="nbaiN" class="nbo-in"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>' +
-            '<label>Class<select id="nbaiC" class="nbo-in">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return '<option value="' + n + '"' + (n === QZ.cls ? ' selected' : '') + '>Class ' + n + '</option>'; }).join('') + '</select></label>' +
+            '<div class="nbai-set"><label>Class<select id="nbaiTCls" class="nbo-in">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (n) { return '<option value="' + n + '"' + (n === QZ.cls ? ' selected' : '') + '>Class ' + n + '</option>'; }).join('') + '</select></label>' +
+            '<label>Subject<select id="nbaiTSubj" class="nbo-in"></select></label>' +
+            '<label>Difficulty<select id="nbaiD" class="nbo-in"><option value="mixed">Mixed</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>' +
+            '<label>Questions<select id="nbaiN" class="nbo-in"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option><option value="custom">Custom number</option></select><input id="nbaiNC" class="nbo-in nbai-nc" type="number" inputmode="numeric" min="1" max="25" placeholder="1 to 25" hidden aria-label="Custom number of questions"></label>' +
+
             '<label>Language<select id="nbaiL" class="nbo-in">' + [['auto', 'Same as I write'], ['English', 'English'], ['Hindi', 'हिंदी (Hindi)'], ['Both', 'English + हिंदी (Both)']].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === (AIT.lang || 'auto') ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label></div>' +
+            '<div id="nbaiTChWrap" style="margin-bottom:6px"></div>' +
+            '<input id="nbaiTTopic" class="nbo-in" maxlength="200" placeholder="Topic or chapter (optional, you can type)" aria-label="Topic or chapter" style="margin-bottom:8px">' +
+            '<button type="button" class="nbai-make" id="nbaiMake"><i class="fa-solid fa-wand-magic-sparkles"></i> Make test</button>' +
             '<div class="nbai-chat" id="nbaiChat" aria-live="polite"></div>' +
             '<div class="nbai-chips" id="nbaiChips"></div>' +
             '<form class="nbai-form" id="nbaiForm" autocomplete="off"><input id="nbaiIn" class="nbo-in" maxlength="400" placeholder="Topic, e.g. Photosynthesis, Class 10" aria-label="Topic for your test"><button type="submit" id="nbaiGo" class="nbai-send" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button></form>' +
             '<button type="button" class="nbo-skip" id="nbaiBack">Back to tests</button>';
-        $('nbaiC').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); });
+        $('nbaiTCls').addEventListener('change', function () { QZ.cls = parseInt(this.value, 10); aiFillSubj(); });
+        $('nbaiTSubj').addEventListener('change', function () { chRender('nbaiT'); });
+        $('nbaiN').addEventListener('change', function () { var c = $('nbaiNC'); c.hidden = this.value !== 'custom'; if (!c.hidden) c.focus(); });
+        $('nbaiMake').addEventListener('click', function () { var t = aiMakeText(); if (!t) { aiBubble('bot', 'Please choose a subject, or type a topic first.'); return; } aiSend(t); });
+        aiFillSubj();
         $('nbaiL').addEventListener('change', function () { AIT.lang = this.value; });
         AIT.hist = []; AIT.qs = null;
         aiBubble('bot', 'Hi! Which topic do you want to be tested on? It can be any chapter or subject, or anything outside your syllabus too (GK, current affairs, sports, coding, history…). You can also tell me the level (easy / hard).');
@@ -2030,6 +2126,12 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         if (doc.numPages > n) qpScanSt('Only the first ' + n + ' pages were read.');
         return out.join('\n\n');
     }
+    NB.readDoc = async function (file) {                          // used by Bazar AI: text of a PDF (scanned pages are OCR-ed) or of a photo
+        QS.p = '__none';
+        if (/pdf$/i.test(file.type) || /\.pdf$/i.test(file.name)) return qpReadPdf(file);
+        if (/^image\//.test(file.type)) return qpOcrCanvas(await qpImgToCanvas(file));
+        return file.text();
+    };
     async function qpScanFiles(files, pfx) {
         if (QS.busy || !files || !files.length) return;
         QS.p = pfx || 'qp';
@@ -2129,6 +2231,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         return '<!doctype html><html><head><meta charset="utf-8"><title>' + NB.esc('Question Paper - ' + p.o.topic) + '</title><style>@page{size:A4;margin:14mm}body{margin:0}' + QP_CSS + '</style></head><body><div class="qpw">' + qpBody(p) + '</div></body></html>';
     }
     function qpPrint() {
+        NB.markDay('pdf');
         if (!QP.paper) return;
         var html = qpDoc(QP.paper), f = document.createElement('iframe');
         f.setAttribute('aria-hidden', 'true'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
@@ -2475,6 +2578,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         });
     }
     function npPrint() {
+        NB.markDay('pdf');
         var doc = $('npDoc'); if (!doc || !NP.doc) return;
         var clone = doc.cloneNode(true); Array.prototype.forEach.call(clone.querySelectorAll('.np-rm'), function (x) { x.parentNode.removeChild(x); });
         var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + NB.esc('Notes - ' + NP.doc.o.topic) + '</title><style>@page{size:A4;margin:12mm}body{margin:0}' + NP_CSS + '</style></head><body><div class="npw">' + clone.innerHTML + '</div></body></html>';
@@ -2594,7 +2698,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
     function chRender(p) {
         var w = $(p + 'ChWrap'), cs = $(p + 'Cls'), sb = $(p + 'Subj'); if (!w || !cs || !sb) return;
         var cls = parseInt(cs.value, 10), subj = sb.value, r, items, html, last;
-        if (subj === 'other') { w.innerHTML = ''; return; }
+        if (subj === 'other' || !subj) { w.innerHTML = ''; return; }
         r = chGet(cls, subj);
         if (r) {
             items = chItems(r); last = null;
@@ -2777,7 +2881,8 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
             '<button type="button" class="pdf-share" id="pdfSh" style="display:none"><i class="fa-solid fa-share-nodes"></i> Share (WhatsApp etc.)</button>' +
             '<div class="nbo-sub pdf-st" id="pdfSt" aria-live="polite"></div>';
     }
-    async function pdfGet(kind) {                                    // the PDF blob for what is on screen (kept so a second tap is instant)
+    async function pdfGet(kind) {
+        NB.markDay('pdf');                                    // the PDF blob for what is on screen (kept so a second tap is instant)
         var cfg = pdfCfg(kind); if (!cfg) return null;
         var key = kind + '|' + cfg.title + '|' + cfg.html.length;
         if (PDF.cache && PDF.cache.key === key) return { blob: PDF.cache.blob, cfg: cfg };
@@ -2828,6 +2933,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
             if (JSON.stringify(data).length > 600000) return;
             rec = { id: id, kind: kind, title: kind === 'notes' ? doc.title : (o.title || o.topic), ts: Date.now(), cls: o.cls, subj: (o.subj && o.subj !== 'other') ? qpSubjName(o) : '', lang: o.lang, type: o.type, half: !!o.half, data: data };
             a = myAll().filter(function (x) { return x.id !== id; }); a.unshift(rec); myPut(a);
+            NB.markDay(kind === 'notes' ? 'notes' : 'paper');
         } catch (e) {}
     }
     function myKindLabel(r) { return r.kind === 'notes' ? (r.type === 'short' ? 'Short notes' : 'Long notes') : (r.type === 'model' ? (r.half ? 'Half Model Set' : 'Full Model Set') : 'Question paper'); }
@@ -4098,7 +4204,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
     if (ok()) { loadVoices(); try { window.speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (e) { window.speechSynthesis.onvoiceschanged = loadVoices; } }
     function cfg() {
         var s = {}; try { s = JSON.parse(localStorage.getItem(VKEY) || '{}') || {}; } catch (e) {}
-        var id = PROFILES.some(function (p) { return p.id === s.id; }) ? s.id : 'f1';
+        var id = (PROFILES.some(function (p) { return p.id === s.id; }) || /^v:/.test(String(s.id || ''))) ? s.id : 'f1';
         var sp = typeof s.speed === 'number' ? Math.max(.5, Math.min(1.6, s.speed)) : .95;
         return { id: id, speed: sp };
     }
@@ -4115,6 +4221,17 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         var idx = (+p.id.slice(1) - 1) % list.length;                 // different profiles use different system voices when the device has several
         return list[idx] || list[0];
     }
+    /* real Hindi voices installed on this phone / PC (best first): up to 3 girl + 2 boy voices, then any others, max 5 */
+    function genderOf(v) { return MAL.test(v.name) && !FEM.test(v.name) ? 'm' : (FEM.test(v.name) ? 'f' : ''); }
+    function hiVoices() {
+        var pool = VOICES.filter(function (v) { return v.lang && /^hi([-_]|$)/i.test(v.lang); }), out = [], seen = {};
+        pool.sort(function (a, b) { return quality(b) - quality(a); });
+        function take(g, n) { pool.forEach(function (v) { if (n > 0 && !seen[v.name] && genderOf(v) === g) { seen[v.name] = 1; out.push(v); n--; } }); }
+        take('f', 3); take('m', 2);
+        pool.forEach(function (v) { if (out.length < 5 && !seen[v.name]) { seen[v.name] = 1; out.push(v); } });
+        return out;
+    }
+    function realVoice(id) { var n = String(id).slice(2), l = VOICES.filter(function (v) { return v.name === n; }); return l[0] || null; }
     function clean(el) {
         var c = el.cloneNode(true);
         c.querySelectorAll('button,a,script,style').forEach(function (n) { n.remove(); });
@@ -4126,8 +4243,8 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
     function say(text, o) {
         o = o || {}; if (!ok() || !text) { if (o.onend) o.onend(); return; }
         stop(); var my = token;
-        var c = cfg(), p = prof(o.id || c.id), hi = /[ऀ-ॿ]/.test(text), lang = hi ? 'hi-IN' : 'en-IN';
-        var voice = pickVoice(p, lang);
+        var c = cfg(), cid = o.id || c.id, real = /^v:/.test(cid) ? realVoice(cid) : null, p = real ? { id: 'f1', g: genderOf(real) || 'f', p: 1, r: 1, v: 1 } : prof(cid), hi = /[ऀ-ॿ]/.test(text), lang = hi ? 'hi-IN' : 'en-IN';
+        var voice = real || pickVoice(p, lang);
         var parts = text.match(/[^.!?।]+[.!?।]?/g) || [text], chunks = [], cur = '';
         parts.forEach(function (s) { if ((cur + s).length > 160 && cur) { chunks.push(cur); cur = s; } else cur += s; });
         if (cur.trim()) chunks.push(cur);
@@ -4151,16 +4268,30 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
             return '<button type="button" role="radio" class="nbsn-r nbv-r" data-v="' + p.id + '" aria-checked="' + (p.id === cur) + '"><i class="fa-solid ' + ic + '"></i><span>' + p.n + ' <small>' + p.st + '</small></span><i class="fa-solid fa-check nbsn-ok"></i></button>';
         }).join('');
     }
+    function hiRows() {
+        var cur = cfg().id, list = hiVoices();
+        $('nbVHn').textContent = list.length ? 'These are real Hindi voices installed on your device. Natural / Online voices sound the best.' : 'No Hindi voice found on this device yet. Android: Settings > Language > Text-to-speech > install Hindi voice. Windows: Settings > Time & language > Speech > add Hindi. In Microsoft Edge the free Hindi voices Swara (girl) and Madhur (boy) are built in.';
+        return list.map(function (v) {
+            var g = genderOf(v), id = 'v:' + v.name, nm = v.name.replace(/^(Microsoft|Google)\s+/i, '').replace(/\s*-\s*.*$/, '').replace(/\s*\((Natural|Online)[^)]*\)/ig, '').trim() || v.name;
+            return '<button type="button" role="radio" class="nbsn-r nbv-r" data-v="' + NB.esc(id) + '" aria-checked="' + (id === cur) + '"><i class="fa-solid ' + (g === 'm' ? 'fa-person' : (g === 'f' ? 'fa-person-dress' : 'fa-user')) + '"></i><span>' + NB.esc(nm) + ' <small>' + (g === 'm' ? 'Boy' : (g === 'f' ? 'Girl' : 'Voice')) + (quality(v) ? ' · Natural' : '') + '</small></span><i class="fa-solid fa-check nbsn-ok"></i></button>';
+        }).join('');
+    }
     function paint() {
+        $('nbVH').innerHTML = hiRows();
         $('nbVF').innerHTML = rows('f'); $('nbVM').innerHTML = rows('m');
         var s = cfg().speed; $('nbVSp').value = Math.round(s * 100); $('nbVSo').textContent = s.toFixed(2).replace(/0$/, '') + '×';
     }
-    function sample() { var p = prof(cfg().id); say(p.g === 'm' ? SAMPLE_M : SAMPLE); }
+    function sample() {
+        var id = cfg().id, rv = /^v:/.test(id) ? realVoice(id) : null, g = rv ? genderOf(rv) : prof(id).g;
+        if (rv && /^hi/i.test(rv.lang || '')) say(g === 'm' ? '\u0928\u092e\u0938\u094d\u0924\u0947! \u092e\u0948\u0902 \u092c\u091c\u093c\u093e\u0930 AI \u0939\u0942\u0901\u0964 \u092e\u0948\u0902 \u0906\u092a\u0915\u0940 \u092a\u0922\u093c\u093e\u0908 \u092e\u0947\u0902 \u092e\u0926\u0926 \u0915\u0930\u0942\u0901\u0917\u093e\u0964' : '\u0928\u092e\u0938\u094d\u0924\u0947! \u092e\u0948\u0902 \u092c\u091c\u093c\u093e\u0930 AI \u0939\u0942\u0901\u0964 \u092e\u0948\u0902 \u0906\u092a\u0915\u0940 \u092a\u0922\u093c\u093e\u0908 \u092e\u0947\u0902 \u092e\u0926\u0926 \u0915\u0930\u0942\u0901\u0917\u0940\u0964');
+        else say(g === 'm' ? SAMPLE_M : SAMPLE);
+    }
     function ensure() {
         if ($('nbVoice')) return;
         var m = NB.mk('<div class="nbo" id="nbVoice" aria-hidden="true"><div class="nbo-card nbsn-card" role="dialog" aria-modal="true" aria-labelledby="nbVT">' +
             '<button type="button" class="nbo-x" id="nbVX" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>' +
             '<h3 class="nbo-h" id="nbVT">Voice &amp; speed</h3><p class="nbo-sub">Choose the voice Bazar AI uses when it reads answers aloud and talks in Live mode.</p>' +
+            '<div class="nbsn-h"><i class="fa-solid fa-language"></i> Best Hindi voices on this device</div><div class="nbsn-list" id="nbVH" role="radiogroup" aria-label="Hindi voices"></div><p class="nbo-note" id="nbVHn" style="margin-top:4px"></p>' +
             '<div class="nbsn-h"><i class="fa-solid fa-person-dress"></i> Girl voices</div><div class="nbsn-list" id="nbVF" role="radiogroup" aria-label="Girl voices"></div>' +
             '<div class="nbsn-h"><i class="fa-solid fa-person"></i> Boy voices</div><div class="nbsn-list" id="nbVM" role="radiogroup" aria-label="Boy voices"></div>' +
             '<div class="nbsn-h"><i class="fa-solid fa-gauge-high"></i> Speaking speed <output id="nbVSo" class="nbv-so"></output></div>' +
@@ -4492,4 +4623,93 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
             if (blocked(e.target)) ask(e);
         }, true);
     });
+})();
+
+
+/* =====================================================================
+   One streak for everything: opening the app, Bazar AI questions, tests, AI notes / papers,
+   PDF downloads and note downloads. Header fire icon -> streak page with the full history.
+   ===================================================================== */
+(function () {
+    'use strict';
+    var NB = window.NB = window.NB || {};
+    var $ = function (id) { return document.getElementById(id); };
+    var KIND = { visit: ['👋', 'Opened Notes Bazar'], chat: ['🤖', 'Asked Bazar AI'], test: ['📝', 'Took a test'], aitest: ['✨', 'Took an AI test'], notes: ['📒', 'Made AI notes'], paper: ['📄', 'Made a question paper'], pdf: ['📥', 'Downloaded a PDF'], dl: ['⬇️', 'Downloaded a note'] };
+    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    function readAct() { try { var a = JSON.parse(localStorage.getItem('nb_act') || '{}'); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; } catch (e) { return {}; } }
+    function logAct(kind) {
+        var k = NB.dayKey(), a = readAct(), d = a[k] || (a[k] = {}), ks;
+        d[kind] = kind === 'visit' ? 1 : (d[kind] || 0) + 1;
+        ks = Object.keys(a).sort(); while (ks.length > 120) delete a[ks.shift()];
+        try { localStorage.setItem('nb_act', JSON.stringify(a)); } catch (e) {}
+    }
+    var base = NB.markDay;
+    NB.markDay = function (kind) { base.call(NB); logAct(kind || 'visit'); NB.paintStreakCard(); };
+    function parse(k) { var p = String(k).split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+    NB.bestStreak = function () {
+        var d = NB.days().filter(function (x) { return /^\d{4}-\d{2}-\d{2}$/.test(x); }).sort(), best = 0, run = 0, prev = null;
+        d.forEach(function (k) { var t = parse(k).getTime(); run = prev !== null && Math.round((t - prev) / 864e5) === 1 ? run + 1 : 1; prev = t; if (run > best) best = run; });
+        return Math.max(best, NB.streak());
+    };
+    function totals() {
+        var a = readAct(), t = {}, n = 0;
+        Object.keys(a).forEach(function (d) { Object.keys(a[d]).forEach(function (k) { t[k] = (t[k] || 0) + (+a[d][k] || 0); }); });
+        var dl = 0, qz = 0, my = 0;
+        try { dl = Object.keys(JSON.parse(localStorage.getItem('nb_dlhist') || '{}')).length; } catch (e) {}
+        try { qz = (JSON.parse(localStorage.getItem('nb_quiz') || '[]') || []).length; } catch (e) {}
+        try { my = (JSON.parse(localStorage.getItem('nb_my_pdfs') || '[]') || []).length; } catch (e) {}
+        return { act: t, dl: dl, tests: qz, made: my, days: NB.days().length };
+    }
+    function level(c) { return c === 0 ? '' : c < 2 ? 'l1' : c < 4 ? 'l2' : c < 7 ? 'l3' : 'l4'; }
+    function dayLabel(k) { var d = parse(k), t = NB.dayKey(), y = NB.dayKey(new Date(Date.now() - 864e5)); return k === t ? 'Today' : k === y ? 'Yesterday' : DOW[d.getDay()] + ', ' + d.getDate() + ' ' + MON[d.getMonth()]; }
+    function msg(n) { return n === 0 ? 'Do one thing today to start your streak!' : n < 3 ? 'Nice start! Come back tomorrow 💪' : n < 7 ? 'You are on fire! Keep going 🔥' : n < 15 ? 'One week done, legend! 🏆' : 'Unstoppable! You are a topper in the making 🚀'; }
+
+    /* ---- home card ---- */
+    NB.paintStreakCard = function () {
+        var home = $('homeView'), plan = $('nbPlan'); if (!home || !plan) return;
+        var c = $('nbStreakCard');
+        if (!c) {
+            c = document.createElement('section'); c.id = 'nbStreakCard'; c.className = 'nbs nbst-home'; c.setAttribute('aria-label', 'Your streak');
+            c.innerHTML = '<div class="nbs-in"><button type="button" class="nbst-card" id="nbStreakGo"></button></div>';
+            plan.parentNode.insertBefore(c, plan);
+            $('nbStreakGo').addEventListener('click', function () { NB.openStreak(); });
+        }
+        var n = NB.streak(), t = totals();
+        $('nbStreakGo').innerHTML = '<span class="nbst-fire' + (n > 0 ? ' on' : '') + '">🔥</span><span class="nbst-tx"><b>' + n + (n === 1 ? ' day streak' : ' day streak') + '</b><small>Best ' + NB.bestStreak() + ' · ' + t.days + ' active days · ' + (t.dl + t.tests + t.made) + ' downloads, tests &amp; PDFs</small></span><span class="nbst-go">History <i class="fa-solid fa-chevron-right"></i></span>';
+    };
+    var hw = 0; hw = setInterval(function () { if ($('nbPlan')) { NB.paintStreakCard(); clearInterval(hw); } }, 700); setTimeout(function () { clearInterval(hw); }, 15000);
+    var op = NB.paintStreak; NB.paintStreak = function () { op.call(NB); try { NB.paintStreakCard(); } catch (e) {} };
+
+    /* ---- streak page ---- */
+    var scr = null;
+    NB.openStreak = function () {
+        if (scr) return;
+        var n = NB.streak(), best = NB.bestStreak(), t = totals(), act = readAct(), set = {}, i, d, h = '';
+        NB.days().forEach(function (k) { set[k] = 1; });
+        var now = new Date(), wd = (now.getDay() + 6) % 7, week = '';          // week starts on Monday
+        for (i = 0; i < 7; i++) { d = new Date(now.getTime() + (i - wd) * 864e5); var k = NB.dayKey(d), on = !!set[k], fut = i > wd; week += '<div class="nbst-wd' + (on ? ' on' : '') + (i === wd ? ' now' : '') + (fut ? ' fut' : '') + '"><span>' + ['M', 'T', 'W', 'T', 'F', 'S', 'S'][i] + '</span><i>' + (on ? '🔥' : (fut ? '' : '·')) + '</i></div>'; }
+        var cal = '';
+        for (i = 69; i >= 0; i--) { d = new Date(now.getTime() - i * 864e5); var kk = NB.dayKey(d), a = act[kk] || {}, c = Object.keys(a).reduce(function (s2, q) { return s2 + (+a[q] || 0); }, 0) || (set[kk] ? 1 : 0); cal += '<i class="nbst-sq ' + level(c) + '" title="' + dayLabel(kk) + (c ? ': ' + c + ' activities' : '') + '"></i>'; }
+        var keys = {}; Object.keys(act).forEach(function (x) { keys[x] = 1; }); Object.keys(set).forEach(function (x) { keys[x] = 1; });
+        var list = Object.keys(keys).filter(function (x) { return /^\d{4}-\d{2}-\d{2}$/.test(x); }).sort().reverse().slice(0, 60);
+        var hist = list.map(function (k) {
+            var a = act[k] || {}, ch = Object.keys(a).filter(function (q) { return KIND[q]; }).map(function (q) { return '<span>' + KIND[q][0] + ' ' + NB.esc(KIND[q][1]) + (a[q] > 1 ? ' ×' + a[q] : '') + '</span>'; }).join('');
+            return '<div class="nbst-h"><b>' + NB.esc(dayLabel(k)) + '</b><div>' + (ch || '<span>👋 Opened Notes Bazar</span>') + '</div></div>';
+        }).join('') || '<p class="nbst-none">No activity yet. Open a note, ask Bazar AI or take a test to start your streak!</p>';
+        var A = t.act, tile = function (ic, v, l) { return '<div><i>' + ic + '</i><b>' + v + '</b><small>' + l + '</small></div>'; };
+        scr = document.createElement('div'); scr.className = 'nbst-screen'; scr.setAttribute('role', 'dialog'); scr.setAttribute('aria-label', 'Streak history');
+        scr.innerHTML = '<div class="nbst-top"><button type="button" class="nbst-back" data-a="x" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button><b>Your streak</b><span></span></div>' +
+            '<div class="nbst-body"><div class="nbst-hero"><div class="nbst-big">🔥</div><div class="nbst-num">' + n + '</div><div class="nbst-lbl">day streak</div><p>' + msg(n) + '</p></div>' +
+            '<div class="nbst-stats"><div><b>' + best + '</b><small>Best streak</small></div><div><b>' + t.days + '</b><small>Active days</small></div><div><b>' + (n > 0 ? 'Yes' : 'No') + '</b><small>Done today</small></div></div>' +
+            '<h4>This week</h4><div class="nbst-week">' + week + '</div>' +
+            '<h4>Last 10 weeks</h4><div class="nbst-cal">' + cal + '</div>' +
+            '<h4>Overall</h4><div class="nbst-tiles">' + tile('🤖', A.chat || 0, 'AI questions') + tile('📝', (t.tests || 0), 'Tests taken') + tile('✨', A.aitest || 0, 'AI tests') + tile('📒', (A.notes || 0) + (A.paper || 0), 'AI notes &amp; papers') + tile('📥', A.pdf || 0, 'PDF downloads') + tile('⬇️', t.dl, 'Notes downloaded') + '</div>' +
+            '<h4>History</h4><div class="nbst-hist">' + hist + '</div>' +
+            '<div class="nbst-how"><b>How to keep the streak</b><span>Do any one of these every day: open Notes Bazar, ask Bazar AI, take a test, make AI notes or a paper, download a PDF or a note.</span></div></div>';
+        document.body.appendChild(scr); scr.__ov = document.body.style.overflow; document.body.style.overflow = 'hidden';
+        scr.addEventListener('click', function (e) { if (e.target.closest('[data-a="x"]')) NB.closeStreak(); });
+    };
+    NB.closeStreak = function () { if (!scr) return; document.body.style.overflow = scr.__ov || ''; scr.remove(); scr = null; };
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && scr) NB.closeStreak(); });
+    NB.paintStreak();
 })();

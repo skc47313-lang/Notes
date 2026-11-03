@@ -632,6 +632,7 @@
             const m = dlHist();
             m[item.id] = { ts: Date.now(), title: item.title || 'Document', className: item.className || '', subject: item.subject || '', type: item.type || 'note' };
             LS.set('nb_dlhist', m); paintMarks();
+            try { if (window.NB && NB.markDay) NB.markDay('dl'); } catch (e) {}
             if (typeof renderDlModal === 'function') { try { renderDlModal(); } catch (e) {} }
         }
         window.nbMarkDl = function(id) { const it = findAnyItem(id); if (it) markDownloaded(it); };
@@ -2331,7 +2332,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                 try {
                     const headers = { 'Content-Type': 'application/json' };
                     if (p.apiKey) headers['Authorization'] = 'Bearer ' + p.apiKey;
-                    const r = await fetch(p.endpoint, { method: 'POST', headers, signal: ctrl.signal, body: JSON.stringify({ model: p.model, messages, temperature: 0.7 }) });
+                    const r = await fetch(p.endpoint, { method: 'POST', headers, signal: ctrl.signal, body: JSON.stringify({ model: p.model, messages, temperature: (opt && opt.temperature) || 0.7 }) });
                     if (!r.ok) throw new Error(p.name + ' HTTP ' + r.status);
                     const j = await r.json();
                     const out = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
@@ -2464,6 +2465,9 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
 
         // the AI robot can be dragged anywhere (its position is remembered)
         function initFabDrag() {
+            try { localStorage.removeItem('nb_fab_pos'); } catch (e) {}   // the robot stays fixed at the bottom right (phone and desktop)
+            const f0 = document.getElementById('aiFab'); if (f0) { f0.style.left = f0.style.top = f0.style.right = f0.style.bottom = ''; f0.classList.remove('fab-left', 'fab-top', 'dragging'); }
+            return;
             const fab = document.getElementById('aiFab'), btn = document.getElementById('aiFabBtn');
             if (!fab || !btn) return;
             const KEY = 'nb_fab_pos', M = 6;
@@ -2642,6 +2646,16 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         window.bzClearAll = function() { if (!bzAll().length) return; if (!confirm('Delete all saved Bazar AI chats on this device?')) return; bzChats = []; bzCur = null; bzPersist(); bzShowChat(null); bzDrawerRender(); };
         window.bzForget = function() { try { localStorage.removeItem('nb_ai_mem_' + bzUser()); } catch (e) {} bzDrawerRender(); };
         window.bzSearchInput = bzDrawerRender;
+        // called by extras.js after AI chats were loaded from (or cleared for) the account
+        window.nbApplyAiRemote = function() {
+            if (aiBusy) return;                                       // never swap the chat while an answer is being written
+            bzChats = null; window.__bzUser = bzUser();
+            const open = bzCur ? bzAll().find(x => x.id === bzCur) : null;
+            if (!open) bzCur = null;
+            const chat = document.getElementById('aiChatHistory');
+            if (chat && chat.offsetParent !== null) bzShowChat(open || null);   // AI window is open: redraw it
+            bzDrawerRender(); bzXpRender();
+        };
         window.bzInit = function() {                                  // called every time the AI window opens: continue the last chat
             if (!aiBusy && (!window.__bzShown || window.__bzUser !== bzUser())) { bzChats = null; window.__bzUser = bzUser(); bzCur = null; const b = bzAll().slice().sort((x, y) => y.ts - x.ts); if (b.length && Date.now() - b[0].ts < 6 * 36e5) bzCur = b[0].id; bzShowChat(bzCur ? bzAll().find(x => x.id === bzCur) : null); window.__bzShown = true; }
             bzDrawerRender(); bzXpRender(); bzDodRender();
@@ -2655,7 +2669,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             const el = document.getElementById('bzXp'); if (!el) return;
             const x = bzXpGet(), xp = x.xp || 0, lv = Math.floor(xp / 100) + 1, into = xp % 100;
             let st = 0; try { st = window.NB && NB.streak ? NB.streak() : 0; } catch (e) {}
-            el.innerHTML = `<span class="bz-pill">🔥 ${st ? st + ' din ki streak' : 'Streak shuru karo'}</span><span class="bz-pill">⭐ Lv ${lv}</span><span class="bz-xpbar" title="${into}/100 XP to next level"><i style="width:${into}%"></i></span><span class="bz-xpn">${xp} XP</span>`;
+            el.innerHTML = `<span class="bz-pill">⭐ Lv ${lv}</span><span class="bz-xpbar" title="${into}/100 XP to next level"><i style="width:${into}%"></i></span><span class="bz-xpn">${xp} XP</span>`;
         }
         function bzAward(n) {
             const x = bzXpGet(), today = bzDay0(), oldLv = Math.floor((x.xp || 0) / 100);
@@ -2674,7 +2688,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
 
         // photo doubt
         let bzImg = null;
-        function bzImgClear() { bzImg = null; const b = document.getElementById('bzPic'); if (b) { b.classList.remove('on'); b.innerHTML = ''; } }
+        function bzImgClear() { bzImg = null; const b = document.getElementById('bzPic'); if (b && !(typeof bzFile !== 'undefined' && bzFile)) { b.classList.remove('on'); b.innerHTML = ''; } }
         window.bzPickPhoto = function(inp) {
             const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
             if (!/^image\//.test(f.type)) { alert('Please choose a photo.'); return; }
@@ -2696,6 +2710,38 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             fr.readAsDataURL(f);
         };
         window.bzPicX = bzImgClear;
+        // "+" menu: take photo / add photo / attach file
+        let bzFile = null;
+        function bzFileClear() { bzFile = null; const b = document.getElementById('bzPic'); if (b && !bzImg) { b.classList.remove('on'); b.innerHTML = ''; } }
+        window.bzPlusTgl = function(e) {
+            if (e) e.stopPropagation();
+            const m = document.getElementById('bzPlusMenu'), b = document.getElementById('bzPlusBtn'); if (!m) return;
+            m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.classList.toggle('on', !m.hidden);
+        };
+        document.addEventListener('click', e => { const m = document.getElementById('bzPlusMenu'); if (m && !m.hidden && !e.target.closest('.bz-plus')) { m.hidden = true; const b = document.getElementById('bzPlusBtn'); if (b) { b.classList.remove('on'); b.setAttribute('aria-expanded', 'false'); } } });
+        window.bzPick = function(kind) {
+            const m = document.getElementById('bzPlusMenu'); if (m) m.hidden = true;
+            const b = document.getElementById('bzPlusBtn'); if (b) { b.classList.remove('on'); b.setAttribute('aria-expanded', 'false'); }
+            const el = document.getElementById(kind === 'cam' ? 'bzFCam' : kind === 'gal' ? 'bzFGal' : 'bzFFile'); if (el) el.click();
+        };
+        window.bzPickFile = async function(inp) {
+            const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+            if (/^image\//.test(f.type)) { bzPickPhoto({ files: [f], value: '' }); return; }
+            const isPdf = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name), isTxt = /^text\//.test(f.type) || /\.(txt|md|csv|json)$/i.test(f.name);
+            if (!isPdf && !isTxt) { alert('Please attach a PDF, a text file or a photo.'); return; }
+            if (f.size > 15 * 1024 * 1024) { alert('This file is too big (max 15 MB).'); return; }
+            const box = document.getElementById('bzPic'); box.classList.add('on');
+            box.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${esc(f.name)}: reading the file...</span>`;
+            try {
+                let txt = isTxt ? await f.text() : await NB.readDoc(f);
+                txt = String(txt || '').replace(/\s+\n/g, '\n').trim();
+                if (txt.length < 10) throw new Error('empty');
+                bzFile = { name: f.name.slice(0, 60), text: txt.slice(0, 9000) };
+                box.innerHTML = `<i class="fa-solid fa-file-lines" style="font-size:22px;color:#6366f1"></i><span>${esc(bzFile.name)} is ready. Ask a question about it, or just press send for a summary 📎</span><button type="button" onclick="bzFileX()" aria-label="Remove file"><i class="fa-solid fa-xmark"></i></button>`;
+                document.getElementById('aiInput').focus();
+            } catch (e) { bzFile = null; box.classList.remove('on'); box.innerHTML = ''; alert('Could not read this file. Please try a text-based PDF or a .txt file (you need internet for PDFs).'); }
+        };
+        window.bzFileX = bzFileClear;
 
         // voice question (mic)
         let bzRec = null, bzMicLang = 'hi-IN';
@@ -2775,13 +2821,16 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             const fab = document.getElementById('aiFab');
             const img = typeof preset === 'string' ? null : bzImg;
             let userText = (typeof preset === 'string' ? preset : input.value).trim();
+            const fl = typeof preset === 'string' ? null : bzFile;
             if (!userText && img) userText = 'Is photo me jo question ya doubt hai, usse step by step samjhao.';
+            if (!userText && fl) userText = 'Is file ko padho aur iske short notes / summary banao, important points ke saath.';
             if (!userText || aiBusy) return;
             if (img) bzImgClear();
+            if (fl) { bzFile = null; bzImgClear(); const pb = document.getElementById('bzPic'); if (pb && !bzImg) { pb.classList.remove('on'); pb.innerHTML = ''; } }
             aiBusy = true;
             document.getElementById('aiSendBtn').disabled = true;
             input.value = '';
-            aiMemLearn(userText); aiSave('u', (img ? '📷 ' : '') + userText); bzAward(img ? 15 : 10);
+            aiMemLearn(userText); aiSave('u', (img ? '📷 ' : '') + (fl ? '📎 ' + fl.name + ': ' : '') + userText); try { NB.markDay('chat'); } catch (e) {} bzAward(img ? 15 : 10);
 
             const botBubble = (html, extra, noact) => chat.insertAdjacentHTML('beforeend', `<div class="flex justify-start mb-3"><div class="bz-bot bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-xs max-w-[90%] shadow-sm leading-relaxed"><div class="nb-say">${html}</div>${extra || ''}<button type="button" class="nb-listen" onclick="nbSpeak(this)" aria-label="Listen to this answer"><i class="fa-solid fa-volume-high"></i><span>Listen</span></button>${noact ? '' : bzActions()}</div></div>`);
             chat.insertAdjacentHTML('beforeend', `<div class="flex justify-end mb-3"><div class="dynamic-bg text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-xs max-w-[85%] shadow-sm leading-relaxed">${img ? `<img src="${img}" class="bz-pic-sent" alt="">` : ''}${esc(userText)}</div></div>`);
@@ -2817,8 +2866,18 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                         ? '\n\nMatching items on Notes Bazar for this request:\n' + related.list.map((i, n) => `${n + 1}. ${i.title} (${i.type || 'note'}, ${i.className || ''}, ${i.subject || ''})`).join('\n')
                         : '\n\nNo matching item is uploaded on Notes Bazar for this request right now.';
                 }
-                reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), img ? { role: 'user', content: [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: img } }] } : { role: 'user', content: userText }]);
-                aiHistory.push({ role: 'user', content: userText }, { role: 'assistant', content: reply });
+                const bodyTxt = fl ? userText + '\n\n[Attached file: ' + fl.name + ']\n' + fl.text : userText;
+                try {
+                    reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), img ? { role: 'user', content: [{ type: 'text', text: bodyTxt }, { type: 'image_url', image_url: { url: img } }] } : { role: 'user', content: bodyTxt }]);
+                } catch (e1) {
+                    if (!img) throw e1;
+                    // the AI server cannot see pictures: read the text from the photo on this device (OCR) and ask with that text
+                    const blob = await (await fetch(img)).blob();
+                    const ocr = await NB.readDoc(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
+                    if (!ocr || ocr.replace(/\s/g, '').length < 12) throw e1;
+                    reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), { role: 'user', content: userText + '\n\n[Text read from the student photo, may contain small reading mistakes]\n' + ocr.slice(0, 6000) }]);
+                }
+                aiHistory.push({ role: 'user', content: userText + (fl ? ' (attached file: ' + fl.name + ')' : '') }, { role: 'assistant', content: reply });
             } catch (err) {
                 console.error(err);
                 if (img) { reply = '📷 Yaar, abhi photo padh nahi paya (AI server abhi photo support nahi kar raha ya net slow hai). Question type karke bhej do, ya thodi der baad photo dobara try karo 🙏'; }
