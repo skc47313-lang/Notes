@@ -4666,6 +4666,8 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
 
     /* ---- home card ---- */
     NB.paintStreakCard = function () {
+        var old = $('nbStreakCard'); if (old) old.remove();   // the streak now lives in the header chip only; History opens from there
+        return;
         var home = $('homeView'), plan = $('nbPlan'); if (!home || !plan) return;
         var c = $('nbStreakCard');
         if (!c) {
