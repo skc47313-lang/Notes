@@ -552,9 +552,6 @@
                 ['support', 'fa-headset', 'Support', '#3b82f6'], ['complain', 'fa-circle-exclamation', 'Complain', '#f43f5e'], ['wish', 'fa-lightbulb', 'What if you want?', '#14b8a6'], ['insta', 'fa-address-book', 'Contact Us', '#ec4899']
             ]);
         nav.appendChild(ex);
-        var rx = document.createElement('span'); rx.id = 'nbpProRight'; rx.className = 'nbp-extra nbp-extra-r';
-        rx.innerHTML = btn('nbh-ib nbp-ib', 'search', 'fa-magnifying-glass', 'Search') + btn('nbh-ib nbp-ib', 'dark', 'fa-moon', 'Dark mode') + btn('nbh-ib nbp-ib', 'settings', 'fa-gear', 'Settings');
-        right.insertBefore(rx, right.firstChild);
     }
     function closeDd(except) {
         var l = document.querySelectorAll('.nbp-dd.open'), i;

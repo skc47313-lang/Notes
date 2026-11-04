@@ -217,7 +217,7 @@ html.dark .nbp-wk-c h5 { color: #c4b5fd; }
    full menu. (Phones keep the normal mobile layout.)
    ===================================================================== */
 #nbpTop, #nbpScrim, #nbpSbClose { display: none !important; }
-.nbp-extra { display: contents; }
+.nbp-extra { display: none !important; }
 .nbp-dd { position: relative; display: inline-flex; }
 .nbp-dd-p, .nbp-car { display: none; }
 @media (min-width: 1024px) {
@@ -274,8 +274,7 @@ html.dark .nbp-wk-c h5 { color: #c4b5fd; }
     html[data-layout="nbpro"] #nbHeader .nbh-badge { position: absolute; top: -4px; right: -4px; }
 
     /* injected items */
-    html[data-layout="nbpro"] #nbHeader .nbp-extra { display: contents; }
-    html[data-layout="nbpro"] #nbHeader .nbp-extra-r { display: contents; }
+    html[data-layout="nbpro"] #nbHeader .nbp-extra { display: contents !important; }
     html[data-layout="nbpro"] #nbHeader .nbp-car { display: inline-block; font-size: .6rem; opacity: .7; margin-left: -2px; }
     html[data-layout="nbpro"] #nbHeader .nbp-dd.open .nbp-car { transform: rotate(180deg); }
     html[data-layout="nbpro"] #nbHeader .nbp-dd-p {
@@ -304,7 +303,7 @@ html.dark .nbp-wk-c h5 { color: #c4b5fd; }
     html[data-layout="nbpro"] #nbHeader #nbhNotif.hidden, html[data-layout="nbpro"] #nbHeader #nbhProfileMenu.hidden { display: none !important; }
 }
 /* medium desktops: icons only so everything still fits in one row */
-@media (min-width: 1024px) and (max-width: 1339px) {
+@media (min-width: 1024px) and (max-width: 1499px) {
     html[data-layout="nbpro"] #nbHeader .nbh-tab:not(.nbp-dd-b) > span, html[data-layout="nbpro"] #nbHeader .nbp-dd-b > span { display: none; }
     html[data-layout="nbpro"] #nbHeader .nbh-tab { padding: 0 10px !important; }
     html[data-layout="nbpro"] #nbHeader .nbh-bn { display: none !important; }
