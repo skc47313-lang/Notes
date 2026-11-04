@@ -242,7 +242,7 @@
         $('nbpPmM').textContent = (PM.mode === 'focus' ? 'Focus time' : PM.mode === 'short' ? 'Short break' : 'Long break') + (PM.subj && PM.mode === 'focus' ? ' - ' + PM.subj : '');
         $('nbpPmGo').innerHTML = PM.run ? '<i class="fa-solid fa-pause"></i> Pause' : '<i class="fa-solid fa-play"></i> Start';
         if (c) c.style.strokeDashoffset = (326.7 * (1 - PM.left / tot)).toFixed(1);
-        var ch = document.querySelectorAll('#nbp [data-a="pmode"]'), i; for (i = 0; i < ch.length; i++) ch[i].classList.toggle('on', ch[i].dataset.m === PM.mode);
+        var ch = document.querySelectorAll('#nbPlanner [data-a="pmode"]'), i; for (i = 0; i < ch.length; i++) ch[i].classList.toggle('on', ch[i].dataset.m === PM.mode);
         var n = $('nbpPmN'); if (n) { n.textContent = pomoToday(); $('nbpPmMin').textContent = pminToday(); $('nbpPmCy').textContent = (PM.cycle % 4) + '/4'; }
         document.title = PM.run ? pmFmt(PM.left) + ' - ' + (PM.mode === 'focus' ? 'Focus' : 'Break') : baseTitle;
     }
@@ -283,8 +283,8 @@
     /* =================== SHELL =================== */
     var baseTitle = document.title, built = false, cdTimer = null;
     function build() {
-        if (built) return; built = true;
-        var o = document.createElement('div'); o.id = 'nbp'; o.className = 'nbp'; o.setAttribute('aria-hidden', 'true');
+        if (built && $('nbPlanner')) return; built = true;
+        var o = document.createElement('div'); o.id = 'nbPlanner'; o.className = 'nbp'; o.setAttribute('aria-hidden', 'true');
         o.innerHTML = '<div class="nbp-sheet" role="dialog" aria-modal="true" aria-label="Study Planner"><div class="nbp-head"><div class="nbp-head-r1"><h3><i class="fa-solid fa-calendar-check"></i> Study Planner</h3><button type="button" class="nbp-x" data-a="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div><div class="nbp-sum" id="nbpSum"></div></div><div class="nbp-tabs" id="nbpTabs" role="tablist"></div><div class="nbp-body" id="nbpBody"></div></div>';
         document.body.appendChild(o);
         o.addEventListener('click', onClick);
@@ -314,18 +314,18 @@
     function open(tab) {
         build(); if (tab && RENDER[tab]) S.tab = tab;
         try { if (typeof window.closeModal === 'function') window.closeModal('mobileMenuModal'); } catch (e) {}
-        $('nbp').classList.add('open'); $('nbp').setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+        $('nbPlanner').classList.add('open'); $('nbPlanner').setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
         paint(false);
     }
     function close() {
-        var o = $('nbp'); if (!o) return; o.classList.remove('open'); o.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
+        var o = $('nbPlanner'); if (!o) return; o.classList.remove('open'); o.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
         clearInterval(cdTimer); refreshHome();
     }
 
     /* =================== EVENTS =================== */
     function save(k, v) { jset(k, v); }
     function onClick(e) {
-        if (e.target === $('nbp')) return close();
+        if (e.target === $('nbPlanner')) return close();
         var el = e.target.closest('[data-a]'); if (!el) return;
         var a = el.dataset.a, id = el.dataset.id, i;
         switch (a) {
@@ -466,43 +466,111 @@
         if (typeof oSw === 'function' && !oSw.__nbp) { var w = function () { var r = oSw.apply(this, arguments); setTimeout(refreshHome, 80); return r; }; w.__nbp = true; window.switchView = w; }
     }
     window.NBPlanner = { open: open, close: close, refresh: refreshHome };
+    window.openStudyPlanner = function (t) { try { open(t || 'daily'); } catch (e) { console.warn('Planner', e); } };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 1100); });
     else setTimeout(boot, 1100);
 })();
 
+
 /* =====================================================================
-   Student Super App (Pro): sidebar menu inside a three-line (hamburger) button
+   Header menu module
+   1) Three-line (hamburger) button: opens the full menu on DESKTOP too
+      (all layouts), not only on phones.
+   2) Student Super App (Pro) layout: every option lives in the top header
+      (Planner, Tools, Help, search, theme, settings, ...), no side drawer.
    ===================================================================== */
 (function () {
     'use strict';
-    var root = document.documentElement, OPEN = 'nbp-sb-open';
-    function $(id) { return document.getElementById(id); }
-    function isOpen() { return root.classList.contains(OPEN); }
-    function setOpen(v) {
-        root.classList.toggle(OPEN, !!v);
-        var b = $('nbpBurger'); if (b) b.setAttribute('aria-expanded', v ? 'true' : 'false');
+    var $ = function (id) { return document.getElementById(id); };
+    var root = document.documentElement;
+
+    function fn(path) {                       /* call window.a.b safely */
+        var parts = path.split('.'), o = window, i;
+        for (i = 0; i < parts.length - 1; i++) { o = o && o[parts[i]]; }
+        var f = o && o[parts[parts.length - 1]];
+        return typeof f === 'function' ? function () { return f.apply(o, arguments); } : null;
     }
-    function build() {
-        if ($('nbpTop')) return;
-        var top = document.createElement('div'); top.id = 'nbpTop';
-        top.innerHTML = '<button type="button" id="nbpBurger" aria-label="Open menu" aria-expanded="false" aria-controls="nbHeader"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>' +
-            '<button type="button" id="nbpTopBrand" aria-label="Notes Bazar home"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><use href="#nbLogo"/></svg><span>Notes Bazar</span></button>';
-        document.body.appendChild(top);
-        var scrim = document.createElement('div'); scrim.id = 'nbpScrim'; scrim.setAttribute('aria-hidden', 'true'); document.body.appendChild(scrim);
-        var hd = $('nbHeader');
-        if (hd) { var x = document.createElement('button'); x.type = 'button'; x.id = 'nbpSbClose'; x.setAttribute('aria-label', 'Close menu'); x.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>'; hd.appendChild(x); }
-        top.addEventListener('click', function (e) {
-            if (e.target.closest('#nbpBurger')) setOpen(!isOpen());
-            else if (e.target.closest('#nbpTopBrand')) { if (window.switchView) window.switchView('home'); }
-        });
-        scrim.addEventListener('click', function () { setOpen(false); });
-        if (hd) hd.addEventListener('click', function (e) {
-            if (e.target.closest('#nbpSbClose, .nbh-tab, .nbh-brand, .nbh-mi')) setOpen(false);
-        });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) setOpen(false); });
-        window.addEventListener('resize', function () { if (window.innerWidth < 1024) setOpen(false); });
-        /* close the drawer if the layout changes away from Pro */
-        try { new MutationObserver(function () { if (root.getAttribute('data-layout') !== 'nbpro') setOpen(false); }).observe(root, { attributes: true, attributeFilter: ['data-layout'] }); } catch (e) {}
+    function modal(id) { var f = fn('openModal'); if (f) f(id); }
+    function plan(t) { if (window.NBPlanner) window.NBPlanner.open(t); }
+    var ACT = {
+        planner: function () { plan('daily'); }, todo: function () { plan('todo'); }, exam: function () { plan('exam'); },
+        pomo: function () { plan('pomo'); }, habit: function () { plan('habit'); }, goals: function () { plan('goals'); },
+        calc: function () { (fn('NB.openCalc') || function () {})(); }, quiz: function () { (fn('NB.openQuiz') || function () {})(); },
+        pdf: function () { (fn('NB.openPdfMaker') || function () {})(); }, hist: function () { (fn('NB.openTestHistory') || function () {})(); },
+        sounds: function () { (fn('NB.openSounds') || function () {})(); }, voice: function () { (fn('NB.openVoice') || function () {})(); },
+        ai: function () { modal('aiModal'); }, support: function () { modal('supportModal'); }, complain: function () { modal('complainModal'); },
+        wish: function () { modal('wishModal'); }, insta: function () { window.open('https://www.instagram.com/_shailesh_136/', '_blank', 'noopener'); },
+        search: function () { (fn('nbhSearch') || function () {})(); },
+        dark: function () { var f = fn('nbhDo'); if (f) f('dark'); else root.classList.toggle('dark'); },
+        settings: function () { (fn('openSettings') || function () {})(); }, theme: function () { modal('themeModal'); },
+        profile: function () { (fn('NB.openProfile') || function () {})(); }
+    };
+
+    /* ---------- 1. hamburger -> full menu (desktop + mobile) ---------- */
+    function menuEl() { return $('mobileMenuModal'); }
+    function force(m) { m.style.setProperty('display', 'flex', 'important'); m.style.setProperty('z-index', '2147483000', 'important'); }
+    function unforce(m) { m.style.removeProperty('display'); m.style.removeProperty('z-index'); }
+    function openMenu() {
+        var m = menuEl(); if (!m) return;
+        try { var f = fn('openModal'); if (f) f('mobileMenuModal'); } catch (e) {}
+        m.classList.remove('hidden'); force(m);
+        try { var a = m.querySelector('.nbm-x'); if (a) a.focus({ preventScroll: true }); } catch (e) {}
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
+    function closeMenu() { var m = menuEl(); if (!m) return; try { var f = fn('closeModal'); if (f) f('mobileMenuModal'); } catch (e) {} m.classList.add('hidden'); unforce(m); }
+    function watchMenu() {
+        var m = menuEl(); if (!m || m.__nbw) return; m.__nbw = 1;
+        try { new MutationObserver(function () { if (m.classList.contains('hidden')) unforce(m); }).observe(m, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
+    }
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('#nbHeader .nbh-left > .nbh-ib, #nbHeader [aria-label="Open menu"]');
+        if (!b) return;
+        e.preventDefault(); e.stopPropagation(); watchMenu(); openMenu();
+    }, true);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = menuEl(); if (m && !m.classList.contains('hidden')) closeMenu(); } });
+
+    /* ---------- 2. Pro layout header: all the options ---------- */
+    function btn(cls, act, icon, label, color) {
+        return '<button type="button" class="' + cls + '" data-nbpdo="' + act + '"' + (color ? ' style="--nbp-ic:' + color + '"' : '') + ' title="' + label + '"><i class="fa-solid ' + icon + '" aria-hidden="true"></i><span>' + label + '</span></button>';
+    }
+    function dd(id, icon, label, items) {
+        return '<div class="nbp-dd" id="' + id + '"><button type="button" class="nbh-tab nbp-dd-b" data-nbpdd="' + id + '" aria-haspopup="true" aria-expanded="false"><i class="fa-solid ' + icon + '" aria-hidden="true"></i><span>' + label + '</span><i class="fa-solid fa-chevron-down nbp-car" aria-hidden="true"></i></button>' +
+            '<div class="nbp-dd-p" role="menu">' + items.map(function (x) { return btn('nbp-dd-i', x[0], x[1], x[2], x[3]); }).join('') + '</div></div>';
+    }
+    function buildPro() {
+        var nav = document.querySelector('#nbHeader .nbh-nav'), right = document.querySelector('#nbHeader .nbh-right');
+        if (!nav || !right || $('nbpProExtra')) return;
+        var ex = document.createElement('span'); ex.id = 'nbpProExtra'; ex.className = 'nbp-extra';
+        ex.innerHTML = btn('nbh-tab', 'planner', 'fa-calendar-check', 'Planner', '#8b5cf6') +
+            dd('nbpDdTools', 'fa-screwdriver-wrench', 'Tools', [
+                ['todo', 'fa-clipboard-check', 'To-Do List', '#d946ef'], ['exam', 'fa-hourglass-half', 'Exam Countdown', '#8b5cf6'], ['pomo', 'fa-stopwatch', 'Pomodoro Timer', '#ef4444'],
+                ['habit', 'fa-seedling', 'Habit Tracker', '#10b981'], ['goals', 'fa-bullseye', 'Subject Goals', '#f59e0b'],
+                ['calc', 'fa-calculator', 'Calculator', '#0ea5e9'], ['quiz', 'fa-list-check', 'Tests & Quiz', '#f59e0b'], ['pdf', 'fa-file-pdf', 'AI PDF Maker', '#0ea5e9'],
+                ['hist', 'fa-chart-line', 'Test History', '#6366f1'], ['sounds', 'fa-music', 'Reminder tones', '#0ea5e9'], ['voice', 'fa-microphone-lines', 'Voice & speed', '#8b5cf6']
+            ]) +
+            btn('nbh-tab', 'ai', 'fa-robot', 'Bazar AI', '#a855f7') +
+            dd('nbpDdHelp', 'fa-life-ring', 'Help', [
+                ['support', 'fa-headset', 'Support', '#3b82f6'], ['complain', 'fa-circle-exclamation', 'Complain', '#f43f5e'], ['wish', 'fa-lightbulb', 'What if you want?', '#14b8a6'], ['insta', 'fa-address-book', 'Contact Us', '#ec4899']
+            ]);
+        nav.appendChild(ex);
+        var rx = document.createElement('span'); rx.id = 'nbpProRight'; rx.className = 'nbp-extra nbp-extra-r';
+        rx.innerHTML = btn('nbh-ib nbp-ib', 'search', 'fa-magnifying-glass', 'Search') + btn('nbh-ib nbp-ib', 'dark', 'fa-moon', 'Dark mode') + btn('nbh-ib nbp-ib', 'settings', 'fa-gear', 'Settings');
+        right.insertBefore(rx, right.firstChild);
+    }
+    function closeDd(except) {
+        var l = document.querySelectorAll('.nbp-dd.open'), i;
+        for (i = 0; i < l.length; i++) if (l[i] !== except) { l[i].classList.remove('open'); l[i].firstChild.setAttribute('aria-expanded', 'false'); }
+    }
+    document.addEventListener('click', function (e) {
+        var t = e.target.closest ? e.target : null; if (!t) return;
+        var d = t.closest('[data-nbpdd]');
+        if (d) { var w = $(d.dataset.nbpdd), on = !w.classList.contains('open'); closeDd(w); w.classList.toggle('open', on); d.setAttribute('aria-expanded', on ? 'true' : 'false'); return; }
+        var a = t.closest('[data-nbpdo]');
+        if (a) { closeDd(); var f = ACT[a.dataset.nbpdo]; if (f) { try { f(); } catch (er) { console.warn(er); } } return; }
+        closeDd();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDd(); });
+    function init() { buildPro(); watchMenu(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    /* header may be re-rendered by other scripts: re-check for a few seconds */
+    var n = 0, iv = setInterval(function () { init(); if (++n > 20) clearInterval(iv); }, 700);
 })();

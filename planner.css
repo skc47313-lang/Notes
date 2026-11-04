@@ -190,47 +190,133 @@ html.dark .nbp-wk-c h5 { color: #c4b5fd; }
 @media (prefers-reduced-motion: reduce) { .nbp-bar span, .nbp-ring .fg { transition: none; } }
 
 /* =====================================================================
-   Student Super App (Pro) layout: left sidebar hidden behind a hamburger
-   (desktop only, >= 1024px). Mobile / other layouts are not touched.
+   Planner overlay: always above headers, drawers and other modals
    ===================================================================== */
-#nbpTop, #nbpScrim, #nbpSbClose { display: none; }
+.nbp { z-index: 100000 !important; }
+.nbp.open { display: flex !important; }
+
+/* =====================================================================
+   Hamburger (three-line) menu: works on desktop as well as mobile.
+   (The menu was named "mobile" menu and could stay hidden on desktop.)
+   ===================================================================== */
 @media (min-width: 1024px) {
-    html[data-layout="nbpro"] { --nb-header-h: 56px !important; --lx-sw: 0px !important; }
-    html[data-layout="nbpro"] body { padding-left: 0 !important; padding-top: 56px !important; }
-
-    /* slim top bar with the three-line button */
-    html[data-layout="nbpro"] #nbpTop {
-        display: flex; align-items: center; gap: 12px; position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 44;
-        padding: 0 16px; background: #ffffff; border-bottom: 1px solid #E5E7F0;
+    #mobileMenuModal:not(.hidden) { display: flex !important; z-index: 2147483000 !important; align-items: stretch !important; justify-content: flex-start !important; }
+    #mobileMenuModal:not(.hidden) .nbm {
+        display: flex !important; flex-direction: column; visibility: visible !important; opacity: 1 !important; transform: none !important;
+        width: min(360px, 92vw) !important; max-width: 360px !important; height: 100vh !important; height: 100dvh !important; max-height: 100dvh !important;
+        border-radius: 0 22px 22px 0;
     }
-    html.dark[data-layout="nbpro"] #nbpTop { background: #0f172a; border-bottom-color: #1e293b; }
-    #nbpBurger {
-        width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E5E7F0; background: #f5f3ff; color: #635BFF;
-        font-size: 1.05rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-    }
-    html.dark #nbpBurger { background: #1e293b; border-color: #334155; color: #c4b5fd; }
-    #nbpBurger:hover { filter: brightness(.96); }
-    #nbpTopBrand { display: inline-flex; align-items: center; gap: 9px; background: none; border: 0; cursor: pointer; font: 800 1.05rem Inter, system-ui, sans-serif; color: #0F172A; padding: 0; }
-    html.dark #nbpTopBrand { color: #f1f5f9; }
-
-    /* the old fixed sidebar becomes a slide-in drawer */
-    html[data-layout="nbpro"] body .nbh {
-        transform: translateX(-105%) !important; transition: transform .26s ease, box-shadow .26s ease; z-index: 96 !important; visibility: hidden;
-    }
-    html[data-layout="nbpro"].nbp-sb-open body .nbh {
-        transform: none !important; visibility: visible; box-shadow: 0 0 60px rgba(15, 23, 42, .35) !important;
-    }
-    html[data-layout="nbpro"] #nbpScrim {
-        display: block; position: fixed; inset: 0; z-index: 95; background: rgba(15, 23, 42, .45); opacity: 0; pointer-events: none; transition: opacity .26s ease;
-    }
-    html[data-layout="nbpro"].nbp-sb-open #nbpScrim { opacity: 1; pointer-events: auto; }
-    html[data-layout="nbpro"] #nbpSbClose {
-        display: inline-flex; position: absolute; top: 14px; right: 12px; z-index: 2; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E5E7F0;
-        background: #f5f3ff; color: #635BFF; cursor: pointer; align-items: center; justify-content: center;
-    }
-    html.dark[data-layout="nbpro"] #nbpSbClose { background: #1e293b; border-color: #334155; color: #c4b5fd; }
+    #mobileMenuModal:not(.hidden) .nbm .nbm-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 }
-@media (prefers-reduced-motion: reduce) { html[data-layout="nbpro"] body .nbh, #nbpScrim { transition: none !important; } }
+
+/* =====================================================================
+   Student Super App (Pro) layout, desktop: EVERYTHING in the top header.
+   Home / Notes / Books / PYQ / Planner / Tools / Bazar AI / Help on the
+   left, search / dark mode / settings / streak / saved / downloads /
+   notifications / profile on the right. The three-line button opens the
+   full menu. (Phones keep the normal mobile layout.)
+   ===================================================================== */
+#nbpTop, #nbpScrim, #nbpSbClose { display: none !important; }
+.nbp-extra { display: contents; }
+.nbp-dd { position: relative; display: inline-flex; }
+.nbp-dd-p, .nbp-car { display: none; }
+@media (min-width: 1024px) {
+    html[data-layout="nbpro"] { --nb-header-h: 60px !important; --lx-sw: 0px !important; }
+    html[data-layout="nbpro"] body { padding-left: 0 !important; padding-top: 60px !important; }
+
+    html[data-layout="nbpro"] body #nbHeader.nbh {
+        position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: auto !important;
+        width: 100% !important; max-width: none !important; height: 60px !important; min-height: 0 !important;
+        transform: none !important; visibility: visible !important; display: block !important; overflow: visible !important;
+        z-index: 60 !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important;
+        background: #ffffff !important; border: 0 !important; border-bottom: 1px solid #E5E7F0 !important;
+        box-shadow: 0 2px 14px -8px rgba(15, 23, 42, .25) !important; backdrop-filter: none !important;
+    }
+    html.dark[data-layout="nbpro"] body #nbHeader.nbh { background: #0f172a !important; border-bottom-color: #1e293b !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-in {
+        display: flex !important; flex-direction: row !important; align-items: center !important; flex-wrap: nowrap !important;
+        width: 100% !important; max-width: none !important; height: 60px !important; margin: 0 !important; padding: 0 14px !important; gap: 8px !important;
+        position: static !important; overflow: visible !important;
+    }
+    html[data-layout="nbpro"] #nbHeader .nbh-left { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 8px !important; flex: 0 0 auto !important; width: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-brand { display: inline-flex !important; flex-direction: row !important; align-items: center !important; gap: 9px !important; width: auto !important; padding: 0 !important; background: none !important; border: 0 !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-bn { display: flex !important; flex-direction: column; text-align: left; line-height: 1.1; }
+    html[data-layout="nbpro"] #nbHeader .nbh-bn small { display: none !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-nav {
+        display: flex !important; flex-direction: row !important; align-items: center !important; flex: 1 1 auto !important; min-width: 0 !important; width: auto !important;
+        gap: 2px !important; margin: 0 0 0 6px !important; padding: 0 !important; position: static !important; overflow: visible !important; border: 0 !important; background: none !important;
+    }
+    html[data-layout="nbpro"] #nbHeader .nbh-tab {
+        display: inline-flex !important; flex-direction: row !important; align-items: center !important; gap: 7px !important; width: auto !important; height: 40px !important;
+        padding: 0 11px !important; margin: 0 !important; border-radius: 10px !important; border: 0 !important; background: transparent !important;
+        color: #475569 !important; font: 600 .84rem Inter, system-ui, sans-serif !important; white-space: nowrap; cursor: pointer;
+    }
+    html.dark[data-layout="nbpro"] #nbHeader .nbh-tab { color: #cbd5e1 !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-tab i { font-size: .95rem; color: var(--nbp-ic, currentColor); }
+    html[data-layout="nbpro"] #nbHeader .nbh-tab:hover { background: #f1f0ff !important; color: #4338ca !important; }
+    html.dark[data-layout="nbpro"] #nbHeader .nbh-tab:hover { background: #1e293b !important; color: #c4b5fd !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-tab.nav-btn-active { background: #ede9fe !important; color: #5b21b6 !important; }
+    html.dark[data-layout="nbpro"] #nbHeader .nbh-tab.nav-btn-active { background: #312e81 !important; color: #e0e7ff !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-right { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 6px !important; flex: 0 0 auto !important; width: auto !important; margin: 0 0 0 auto !important; padding: 0 !important; border: 0 !important; position: static !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-ib {
+        display: inline-flex !important; align-items: center; justify-content: center; gap: 5px; position: relative; min-width: 40px; height: 40px; padding: 0 8px; border-radius: 12px;
+        border: 1px solid #E5E7F0; background: #f8fafc; color: #475569; font-size: 1rem; cursor: pointer; width: auto !important;
+    }
+    html.dark[data-layout="nbpro"] #nbHeader .nbh-ib { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+    html[data-layout="nbpro"] #nbHeader .nbh-ib:hover { filter: brightness(.96); }
+    html[data-layout="nbpro"] #nbHeader .nbh-left > .nbh-ib { background: #f5f3ff; color: #635BFF; }
+    html.dark[data-layout="nbpro"] #nbHeader .nbh-left > .nbh-ib { background: #1e293b; color: #c4b5fd; }
+    html[data-layout="nbpro"] #nbHeader .nbh-ib.nbh-m, html[data-layout="nbpro"] #nbHeader .nbh-ib.nbh-d { display: inline-flex !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-ib span:not(.nbh-badge):not(.nb-av):not(.nbh-stl) { display: none; }
+    html[data-layout="nbpro"] #nbHeader .nbh-prof { padding: 0 !important; min-width: 40px; border-radius: 50%; }
+    html[data-layout="nbpro"] #nbHeader .nbh-st b { font-size: .82rem; }
+    html[data-layout="nbpro"] #nbHeader .nbh-stl { display: none; }
+    html[data-layout="nbpro"] #nbHeader .nbh-badge { position: absolute; top: -4px; right: -4px; }
+
+    /* injected items */
+    html[data-layout="nbpro"] #nbHeader .nbp-extra { display: contents; }
+    html[data-layout="nbpro"] #nbHeader .nbp-extra-r { display: contents; }
+    html[data-layout="nbpro"] #nbHeader .nbp-car { display: inline-block; font-size: .6rem; opacity: .7; margin-left: -2px; }
+    html[data-layout="nbpro"] #nbHeader .nbp-dd.open .nbp-car { transform: rotate(180deg); }
+    html[data-layout="nbpro"] #nbHeader .nbp-dd-p {
+        position: absolute; top: calc(100% + 8px); left: 0; z-index: 120; min-width: 250px; padding: 8px; border-radius: 16px;
+        background: #fff; border: 1px solid #E5E7F0; box-shadow: 0 22px 50px -18px rgba(15, 23, 42, .45); max-height: calc(100vh - 90px); overflow-y: auto;
+    }
+    html.dark[data-layout="nbpro"] #nbHeader .nbp-dd-p { background: #0f172a; border-color: #1e293b; }
+    html[data-layout="nbpro"] #nbHeader .nbp-dd.open .nbp-dd-p { display: block; }
+    html[data-layout="nbpro"] #nbHeader .nbp-dd-i {
+        display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: transparent; cursor: pointer; text-align: left;
+        font: 600 .84rem Inter, system-ui, sans-serif; color: #1e293b;
+    }
+    html.dark[data-layout="nbpro"] #nbHeader .nbp-dd-i { color: #e2e8f0; }
+    html[data-layout="nbpro"] #nbHeader .nbp-dd-i i { width: 20px; text-align: center; color: var(--nbp-ic, #635BFF); }
+    html[data-layout="nbpro"] #nbHeader .nbp-dd-i:hover { background: #f5f3ff; }
+    html.dark[data-layout="nbpro"] #nbHeader .nbp-dd-i:hover { background: #1e293b; }
+
+    /* notifications + profile pop-overs drop down from the header */
+    html[data-layout="nbpro"] #nbHeader .nbh-pop { position: relative !important; }
+    html[data-layout="nbpro"] #nbHeader #nbhNotif, html[data-layout="nbpro"] #nbHeader #nbhProfileMenu {
+        position: absolute !important; top: calc(100% + 8px) !important; right: 0 !important; left: auto !important; bottom: auto !important; transform: none !important;
+        max-height: calc(100vh - 84px); overflow-y: auto; z-index: 130 !important;
+    }
+    html[data-layout="nbpro"] #nbHeader #nbhNotif { width: 360px; }
+    html[data-layout="nbpro"] #nbHeader #nbhProfileMenu { width: 300px; }
+    html[data-layout="nbpro"] #nbHeader #nbhNotif.hidden, html[data-layout="nbpro"] #nbHeader #nbhProfileMenu.hidden { display: none !important; }
+}
+/* medium desktops: icons only so everything still fits in one row */
+@media (min-width: 1024px) and (max-width: 1339px) {
+    html[data-layout="nbpro"] #nbHeader .nbh-tab:not(.nbp-dd-b) > span, html[data-layout="nbpro"] #nbHeader .nbp-dd-b > span { display: none; }
+    html[data-layout="nbpro"] #nbHeader .nbh-tab { padding: 0 10px !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-bn { display: none !important; }
+}
+@media (min-width: 1024px) and (max-width: 1179px) {
+    html[data-layout="nbpro"] #nbHeader .nbh-in { padding: 0 8px !important; gap: 4px !important; }
+    html[data-layout="nbpro"] #nbHeader .nbh-ib { min-width: 36px; }
+}
+@media (min-width: 1340px) {
+    html[data-layout="nbpro"] #nbHeader .nbh-stl { display: inline; }
+}
+@media (prefers-reduced-motion: reduce) { html[data-layout="nbpro"] #nbHeader * { transition: none !important; } }
 
 /* =====================================================================
    Student Super App (Pro): Bazar AI "Your chats" panel hidden behind the

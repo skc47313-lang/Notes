@@ -69,7 +69,7 @@
     </script>
     <script>
         /* apply the layout the admin published (cached from last visit) BEFORE first paint */
-        (function () { try { var l = localStorage.getItem('nb_layout'); if (/^(glass|dark|grad|min|eleg)$/.test(l)) { var e = document.documentElement; e.setAttribute('data-layout', l); if (l === 'dark') e.classList.add('dark'); else e.classList.remove('dark'); } } catch (e) {} })();
+        (function () { try { var l = localStorage.getItem('nb_layout'); if (/^(glass|dark|grad|min|eleg|nbpro)$/.test(l)) { var e = document.documentElement; e.setAttribute('data-layout', l); if (l === 'dark') e.classList.add('dark'); else e.classList.remove('dark'); } } catch (e) {} })();
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
@@ -84,7 +84,7 @@
     <script src="layouts.js?v=20261104a" defer></script>
     <script src="community.js?v=20261103d" defer></script>
     <script src="dash2.js?v=20261104b" defer></script>
-    <script src="planner.js?v=20261104c" defer></script>
+    <script src="planner.js?v=20261104d" defer></script>
     <style>html,body{max-width:100%;overflow-x:hidden}img,video,iframe,table{max-width:100%}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -95,7 +95,7 @@
     <link rel="stylesheet" href="layouts.css?v=20261101a">
     <link rel="stylesheet" href="community.css?v=20261103d">
     <link rel="stylesheet" href="dash2.css?v=20261104b">
-    <link rel="stylesheet" href="planner.css?v=20261104c">
+    <link rel="stylesheet" href="planner.css?v=20261104d">
 </head>
 <body class="max-w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden">
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="nbLogo" viewBox="0 0 64 64">
