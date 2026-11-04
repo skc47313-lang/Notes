@@ -7,7 +7,7 @@
  <title>Notes Bazar &ndash; Class 1-12 Notes, Books &amp; PYQ | Student Study Hub</title>
     <meta name="description" content="Class 1-12 notes, reference books and previous year questions (PYQ) in Science, Math, Hindi, English, SST and Maithili. Browse, preview and download study material in one place.">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#635BFF">
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -83,6 +83,7 @@
     <script src="admin.js?v=20261103d" defer></script>
     <script src="layouts.js?v=20261031i" defer></script>
     <script src="community.js?v=20261103d" defer></script>
+    <script src="dash2.js?v=20261104a" defer></script>
     <style>html,body{max-width:100%;overflow-x:hidden}img,video,iframe,table{max-width:100%}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,6 +93,7 @@
     <link rel="stylesheet" href="admin.css?v=20261031h">
     <link rel="stylesheet" href="layouts.css?v=20261101a">
     <link rel="stylesheet" href="community.css?v=20261103d">
+    <link rel="stylesheet" href="dash2.css?v=20261104a">
 </head>
 <body class="max-w-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden">
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="nbLogo" viewBox="0 0 64 64">
@@ -896,6 +898,8 @@
                     <div id="adminPanel-wish" class="a-page hidden"><div id="adminList-wish" class="a-list"></div></div>
 
                     <!-- ===== Safe folder (existing) ===== -->
+                    <div id="adminPanel-verify" class="a-page hidden"></div>
+                    <div id="adminPanel-audit" class="a-page hidden"></div>
                     <div id="adminPanel-safe" class="a-page hidden"><div id="safeRoot"></div></div>
 
                     <footer class="a-foot">
@@ -915,7 +919,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center">
                 <div><h3 class="font-extrabold text-lg"><i class="fa-solid fa-cloud-arrow-up dynamic-text mr-2"></i> Upload Study Material</h3><p class="text-[11px] text-slate-500 mt-0.5">Publish Notes, Books or PYQs to the cloud</p></div>
-                <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button aria-label="Close" onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="uploadForm" onsubmit="handleUploadItem(event)" class="space-y-3 text-xs">
                 <div>
@@ -1081,7 +1085,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-base"><i class="fa-solid fa-lightbulb text-teal-500 mr-2"></i> What if you want?</h3>
-                <button onclick="closeModal('wishModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button aria-label="Close" onclick="closeModal('wishModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <p class="text-xs text-slate-500">Tell us which notes, book or PYQ you need and we will try to upload it.</p>
             <form id="wishForm" onsubmit="submitWish(event)" class="space-y-3 text-xs">
@@ -1105,7 +1109,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-base"><i class="fa-solid fa-headset text-emerald-500 mr-2"></i> Support</h3>
-                <button onclick="closeModal('supportModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button aria-label="Close" onclick="closeModal('supportModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="supportForm" onsubmit="submitUserMessage(event, 'support')" class="space-y-3 text-xs">
                 <div><label class="block font-medium mb-1">Name</label><input type="text" id="supportName" maxlength="80" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
@@ -1120,7 +1124,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-base"><i class="fa-solid fa-circle-exclamation text-rose-500 mr-2"></i> Complain / Report</h3>
-                <button onclick="closeModal('complainModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button aria-label="Close" onclick="closeModal('complainModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="complainForm" onsubmit="submitUserMessage(event, 'complain')" class="space-y-3 text-xs">
                 <div><label class="block font-medium mb-1">Name</label><input type="text" id="complainName" maxlength="80" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></div>
@@ -1169,6 +1173,7 @@
                         </select></div>
                 </div>
                 <div><label class="block font-medium mb-1">Description</label><textarea id="editDesc" rows="3" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none"></textarea></div>
+                <div><label class="block font-medium mb-1">Verification status</label><select id="editVerify" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 focus:outline-none font-semibold"><option value="">Not reviewed</option><option value="pending">Pending review</option><option value="verified">Verified</option><option value="needs">Needs correction</option><option value="rejected">Rejected</option></select></div>
                 <div>
                     <label class="block font-medium mb-1">Visibility (who can see this?)</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -1221,7 +1226,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-base">Reply to User</h3>
-                <button onclick="closeReplyModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button aria-label="Close" onclick="closeReplyModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <p id="replyTargetInfo" class="text-xs text-indigo-600 font-semibold"></p>
             <form onsubmit="sendAdminReply(event)" class="space-y-3 text-xs">

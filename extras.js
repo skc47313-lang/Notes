@@ -3050,7 +3050,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
                     else notif.maybeAsk(3600);
                 });
             } else if (adminMode) { /* admin is opening the dashboard: no student sign-up prompt */ }
-            else ui.openAuth('signup');   // no account yet: the sign-up / login page is shown every time (see the gate below)
+            else ui.openAuth('login');   // no account yet: the sign-up / login page is shown every time (see the gate below)
         });
     }
     NB.openProfile = ui.openProfile;
@@ -4615,7 +4615,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         try { document.activeElement && document.activeElement.blur && document.activeElement.blur(); } catch (x) {}
         if (NB.isOpen && NB.isOpen('nbAuth')) return;
         if (Date.now() - last < 350) return; last = Date.now();
-        if (NB.ui && NB.ui.openAuth) { NB.ui.openAuth('signup'); if (NB.toast) NB.toast('Create your free account to use Notes Bazar 🔐', 2600); }
+        if (NB.ui && NB.ui.openAuth) { NB.ui.openAuth('login'); if (NB.toast) NB.toast('Create your free account to use Notes Bazar 🔐', 2600); }
     }
     ['click', 'pointerdown', 'submit', 'focusin', 'keydown'].forEach(function (ev) {
         document.addEventListener(ev, function (e) {

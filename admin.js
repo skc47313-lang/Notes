@@ -50,6 +50,8 @@
         { id: 'appearance', label: 'Appearance', icon: 'fa-palette' },
         { id: 'notifications', label: 'Notifications', icon: 'fa-bell', badge: 'pending' },
         { id: 'support', label: 'Support', icon: 'fa-circle-question', group: ['support', 'complain', 'wish'] },
+        { id: 'verify', label: 'Content Verification', icon: 'fa-circle-check' },
+        { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left' },
         { id: 'safe', label: 'Safe Folder', icon: 'fa-lock' }
     ];
     var BNAV = [['overview', 'Home', 'fa-house'], ['uploads', 'Notes', 'fa-file-lines'], ['users', 'Users', 'fa-users'], ['settings', 'Settings', 'fa-gear']];
@@ -65,6 +67,8 @@
         support: { t: 'Support', d: 'Questions, complaints and requests from students.' },
         complain: { t: 'Support', d: 'Questions, complaints and requests from students.' },
         wish: { t: 'Support', d: 'Questions, complaints and requests from students.' },
+        verify: { t: 'Content Verification', d: 'Check every upload: verify it, send it for review, ask for corrections or reject it.' },
+        audit: { t: 'Audit Log', d: 'Everything the admin changed on this device: edits, verification, visibility and deletes.' },
         safe: { t: 'Safe Folder', d: 'Your private, password-protected files.' }
     };
 
@@ -234,6 +238,7 @@
         if (S.tab === 'uploads') acts = '<button class="a-btn pri" onclick="openUploadModal()"><i class="fa-solid fa-plus"></i>Upload New</button>';
         else if (S.tab === 'categories') acts = '<button class="a-btn" onclick="adminSwitchTab(\'uploads\')"><i class="fa-solid fa-file-lines"></i>Manage Notes</button>';
         else if (S.tab === 'users') acts = '<button class="a-btn" onclick="NBAdmin.reloadUsers()"><i class="fa-solid fa-rotate"></i>Refresh</button>';
+        else if (S.tab === 'audit') acts = '<button class="a-btn" onclick="NBAdmin.auditClear()"><i class="fa-solid fa-trash-can"></i>Clear log</button>';
         else if (S.tab === 'analytics') acts = '<button class="a-btn" onclick="NBAdmin.reloadDaily()"><i class="fa-solid fa-rotate"></i>Refresh</button>';
         else if (S.tab === 'appearance' || S.tab === 'settings') acts = '<button class="a-btn pri" onclick="NBAdmin.hero()"><i class="fa-solid fa-wand-magic-sparkles"></i>Customize Hero</button>';
         h.innerHTML = '<div><h1>' + esc(p.t) + '</h1><p>' + esc(p.d) + '</p></div><div class="acts">' + acts + '</div>';
@@ -525,9 +530,57 @@
             (top.length ? '<div class="a-tw"><table class="a-table"><thead><tr><th>Title</th><th class="r">Views</th><th class="r">Downloads</th><th></th></tr></thead><tbody>' + top.map(function (x) { return '<tr><td class="nm">' + esc(x.i.title) + '<div style="font-weight:500;font-size:11.5px;color:var(--a-mute)">' + esc(x.i.className || '') + ' &middot; ' + esc(x.i.subject || '') + '</div><div class="a-bar" style="margin-top:6px"><i style="width:' + Math.max(4, x.v * 100 / maxv) + '%"></i></div></td><td class="r"><b>' + fmtN(x.v) + '</b></td><td class="r">' + fmtN(x.d) + '</td><td class="r"><button class="a-btn sm" onclick="openPreview(' + q(x.i.id) + ')"><i class="fa-solid fa-eye"></i></button></td></tr>'; }).join('') + '</tbody></table></div>' : '<div class="a-empty"><i class="fa-regular fa-eye"></i>Views and downloads will appear here once students open your resources.</div>') + '</section>' +
             '<div class="a-stack"><section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-layer-group"></i> By type</h3></div>' + (byType.length ? byType.map(function (x) { return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px"><span>' + esc(x.name) + '</span><span>' + x.n + '</span></div><div class="a-bar"><i style="width:' + Math.max(4, x.n * 100 / tmax) + '%"></i></div></div>'; }).join('') : '<div class="a-empty">No data yet.</div>') + '</section>' +
             '<section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-book"></i> Subjects by views</h3></div>' + (subj.length ? subj.map(function (x) { return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px"><span>' + esc(x.name) + '</span><span>' + fmtN(x.v) + '</span></div><div class="a-bar"><i style="width:' + Math.max(4, x.v * 100 / smax) + '%"></i></div></div>'; }).join('') : '<div class="a-empty">No views yet.</div>') + '</section></div></div>';
+        el.insertAdjacentHTML('afterbegin', compareCard(c));
         drawMain($('anChart'), c, $('anNote'));
     }
     A.reloadDaily = function () { loadDaily(true); };
+
+
+    /* =============================== Content verification =============================== */
+    var VER = { verified: ['Verified', '#059669', '#d1fae5'], pending: ['Pending review', '#b45309', '#fef3c7'], needs: ['Needs correction', '#1d4ed8', '#dbeafe'], rejected: ['Rejected', '#b91c1c', '#fee2e2'], '': ['Not reviewed', '#475569', '#e2e8f0'] };
+    function verPill(st) { var v = VER[st] || VER['']; return '<span class="nbx-vp" style="color:' + v[1] + ';background:' + v[2] + '">' + v[0] + '</span>'; }
+    function pageVerify(c) {
+        var el = $('adminPanel-verify'), items = allItems(c), f = S.verFilter || 'all', n = { all: items.length };
+        Object.keys(VER).forEach(function (k) { n[k || 'none'] = items.filter(function (i) { return (i.verify || '') === k; }).length; });
+        var tabs = [['all', 'All'], ['pending', 'Pending'], ['verified', 'Verified'], ['needs', 'Needs correction'], ['rejected', 'Rejected'], ['none', 'Not reviewed']];
+        var list = items.filter(function (i) { return f === 'all' || (i.verify || 'none') === f; }).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+        var rows = list.slice(0, 60).map(function (i) {
+            var st = i.verify || '';
+            return '<tr><td class="nm">' + esc(i.title) + '<div style="color:var(--a-mute);font-size:12px">' + esc(i.className || '-') + ' &middot; ' + esc(i.subject || '-') + ' &middot; ' + typeName(i.type) + (i.private ? ' &middot; private' : '') + '</div></td><td>' + verPill(st) + '</td>' +
+                '<td class="r" style="white-space:nowrap"><button class="a-btn" style="min-height:34px;padding:0 10px" onclick="NBAdmin.verSet(' + q(i.id) + ',\'verified\')" title="Verify"><i class="fa-solid fa-circle-check" style="color:#059669"></i></button> ' +
+                '<button class="a-btn" style="min-height:34px;padding:0 10px" onclick="NBAdmin.verSet(' + q(i.id) + ',\'pending\')" title="Send to review"><i class="fa-solid fa-hourglass-half" style="color:#d97706"></i></button> ' +
+                '<button class="a-btn" style="min-height:34px;padding:0 10px" onclick="NBAdmin.verSet(' + q(i.id) + ',\'needs\')" title="Needs correction"><i class="fa-solid fa-pen-to-square" style="color:#2563eb"></i></button> ' +
+                '<button class="a-btn" style="min-height:34px;padding:0 10px" onclick="NBAdmin.verSet(' + q(i.id) + ',\'rejected\')" title="Reject (makes it private)"><i class="fa-solid fa-ban" style="color:#dc2626"></i></button></td></tr>';
+        }).join('');
+        el.innerHTML = '<div class="nbx-vtabs">' + tabs.map(function (t) { return '<button type="button" class="' + (f === t[0] ? 'on' : '') + '" onclick="NBAdmin.verFilter(\'' + t[0] + '\')">' + t[1] + ' <b>' + (n[t[0]] || 0) + '</b></button>'; }).join('') + '</div>' +
+            '<section class="a-card">' + (rows ? '<div class="a-tw"><table class="a-table"><thead><tr><th>Material</th><th>Status</th><th class="r">Action</th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (list.length > 60 ? '<p style="color:var(--a-mute);font-size:12px;padding:10px 4px 0">Showing the newest 60 of ' + list.length + '.</p>' : '') : '<p style="color:var(--a-mute);padding:18px;text-align:center">Nothing here.</p>') + '</section>' +
+            '<p style="color:var(--a-mute);font-size:12px;margin-top:10px">Students see a green <b>Verified</b> badge on verified material. Rejecting moves the material to private so students no longer see it.</p>';
+    }
+    A.verFilter = function (f) { S.verFilter = f; rerender(); };
+    A.verSet = async function (id, st) {
+        if (st === 'rejected' && !confirm('Reject this material? It will be moved to private and students will not see it.')) return;
+        try { await window.NBA.setVerify(id, st); toast('Status updated ✓'); } catch (e) { toast('Could not update: ' + String((e && (e.code || e.message)) || e)); }
+    };
+
+    /* =============================== Audit log (this device) =============================== */
+    window.nbAudit = function (action, name, extra) {
+        try { var l = JSON.parse(lsGet('nb_audit') || '[]'); if (!Array.isArray(l)) l = []; l.unshift({ t: Date.now(), a: String(action), n: String(name || '').slice(0, 90), x: String(extra || '').slice(0, 90) }); lsSet('nb_audit', JSON.stringify(l.slice(0, 200))); } catch (e) {}
+    };
+    function pageAudit() {
+        var l = []; try { l = JSON.parse(lsGet('nb_audit') || '[]') || []; } catch (e) {}
+        $('adminPanel-audit').innerHTML = '<section class="a-card">' + (l.length ? '<div class="a-tw"><table class="a-table"><thead><tr><th>When</th><th>Action</th><th>Material</th></tr></thead><tbody>' + l.map(function (r) { return '<tr><td style="white-space:nowrap">' + esc(fdate(r.t)) + '<div style="color:var(--a-mute);font-size:12px">' + esc(ago(r.t)) + '</div></td><td><b>' + esc(r.a) + '</b></td><td class="nm">' + esc(r.n) + (r.x ? '<div style="color:var(--a-mute);font-size:12px">' + esc(r.x) + '</div>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p style="color:var(--a-mute);padding:18px;text-align:center">No admin actions recorded yet.</p>') + '</section><p style="color:var(--a-mute);font-size:12px;margin-top:10px">The last 200 actions are kept in this browser only.</p>';
+    }
+    A.auditClear = function () { if (confirm('Clear the audit log on this device?')) { lsSet('nb_audit', '[]'); pageAudit(); } };
+
+    /* =============================== Date-wise comparison =============================== */
+    function compareCard(c) {
+        var n = S.range > 180 ? 30 : S.range, now = new Date(), t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), a = { v: 0, u: 0, up: 0 }, b = { v: 0, u: 0, up: 0 }, i, k;
+        for (i = 0; i < 2 * n; i++) { k = dkey(new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - i)); var o = i < n ? a : b; o.v += dayVal(k, 'v'); o.u += dayVal(k, 'u'); }
+        var lo = t0.getTime() - (n - 1) * DAY, lo2 = lo - n * DAY;
+        allItems(c).forEach(function (x) { if (!x.createdAt) return; if (x.createdAt >= lo) a.up++; else if (x.createdAt >= lo2) b.up++; });
+        function cell(l, x, y) { var d = y ? Math.round((x - y) * 100 / y) : (x ? 100 : 0), up = d >= 0; return '<div class="a-kpi"><small>' + l + '</small><b>' + fmtN(x) + '</b><span style="color:' + (d === 0 ? 'var(--a-mute)' : up ? '#059669' : '#dc2626') + '"><i class="fa-solid ' + (up ? 'fa-arrow-up' : 'fa-arrow-down') + '"></i> ' + Math.abs(d) + '% vs previous ' + n + ' days (' + fmtN(y) + ')</span></div>'; }
+        return '<h4 style="margin:0 0 8px;font-size:13px;color:var(--a-mute);font-weight:700">Last ' + n + ' days compared with the ' + n + ' days before</h4><div class="a-kpis" style="margin-bottom:18px">' + (daily.state === 'ok' ? cell('Visits', a.v, b.v) + cell('Unique visitors', a.u, b.u) : '') + cell('New uploads', a.up, b.up) + '</div>';
+    }
 
     /* =============================== Settings =============================== */
     var RULES = {
@@ -665,6 +718,8 @@
         else if (tab === 'settings') pageSettings(c);
         else if (tab === 'appearance') pageAppearance();
         else if (tab === 'notifications') pageNotifications(c);
+        else if (tab === 'verify') pageVerify(c);
+        else if (tab === 'audit') pageAudit();
     };
     A.go = function (id) { window.adminSwitchTab(id); };
     A.setRange = function (r) { S.range = r; rerender(); };

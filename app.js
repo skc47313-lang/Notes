@@ -379,6 +379,7 @@
                             <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg">${esc(t(item.subject || 'General'))}</span>
                         </div>
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-2">${esc(item.title)}</h3>
+                        <div class="nbx-meta">${item.verify === 'verified' ? '<span class="nbx-ver" title="Checked by the Notes Bazar team"><i class="fa-solid fa-circle-check"></i> Verified</span>' : ''}<span class="nbx-by"><i class="fa-solid fa-user-pen"></i> ${esc(item.uploader || 'Notes Bazar Team')}</span></div>
                         <div class="nb-marks" data-marks="${esc(item.id)}">${marksHtml(item.id)}</div>
                         ${getChapter(item) ? `<p class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 mb-2"><i class="fa-solid fa-bookmark mr-1.5"></i>${esc(t('Chapter'))}: ${esc(getChapter(item))}</p>` : ''}
                         <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-3 line-clamp-3">${esc(getDesc(item))}</p>
@@ -1550,7 +1551,7 @@ function sha256(str) {
             const it = findAnyItem(id); if (!it) return;
             const toVis = it.private ? 'public' : 'private';
             if (!confirm(toVis === 'private' ? 'Make this item PRIVATE?\n(Users will not see it, only the admin.)' : 'Make this item PUBLIC?\n(All users will see it.)')) return;
-            try { await persistItem(it, {}, toVis); await refreshAfterChange(); }
+            try { await persistItem(it, {}, toVis); if (window.nbAudit) nbAudit(toVis === 'private' ? 'Made private' : 'Made public', it.title); await refreshAfterChange(); }
             catch (err) { console.error(err); if (!rulesProblem(err)) alert('Could not make the change: ' + String((err && (err.code || err.message)) || err)); }
         };
 
@@ -1566,6 +1567,7 @@ function sha256(str) {
             g('editDesc').value = getDesc(it);
             ensureOption(g('editClass'), it.className); g('editClass').value = it.className || g('editClass').options[0].value;
             ensureOption(g('editSubject'), it.subject); g('editSubject').value = it.subject || g('editSubject').options[0].value;
+            if (g('editVerify')) g('editVerify').value = it.verify || '';
             visState.edit = it.private ? 'private' : 'public'; paintVis('edit');
             g('editItemModal').classList.remove('hidden');
         };
@@ -1578,7 +1580,8 @@ function sha256(str) {
             btn.disabled = true; btn.textContent = 'Saving...';
             const ch = g('editChapter').value.trim();
             const patch = { type: g('editType').value, title: g('editTitle').value.trim() || it.title, className: g('editClass').value, subject: g('editSubject').value, description: g('editDesc').value, chapter: ch || null };
-            try { await persistItem(it, patch, visState.edit); closeEditItem(); await refreshAfterChange(); }
+            if (g('editVerify')) patch.verify = g('editVerify').value || null;
+            try { await persistItem(it, patch, visState.edit); if (window.nbAudit) nbAudit('Edited', patch.title, (it.verify || '') !== (patch.verify || '') ? 'Status: ' + (patch.verify || 'not reviewed') : ''); closeEditItem(); await refreshAfterChange(); }
             catch (err) { console.error(err); if (!rulesProblem(err)) alert('Could not save: ' + String((err && (err.code || err.message)) || err)); }
             finally { btn.disabled = false; btn.textContent = 'Save changes'; }
         };
@@ -1837,6 +1840,8 @@ function sha256(str) {
             { id: 'support', label: 'Support', icon: 'fa-circle-question' },
             { id: 'complain', label: 'Complaints', icon: 'fa-circle-exclamation' },
             { id: 'wish', label: 'User Requests', icon: 'fa-lightbulb' },
+            { id: 'verify', label: 'Content Verification', icon: 'fa-circle-check' },
+            { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left' },
             { id: 'safe', label: 'Safe Folder', icon: 'fa-lock' }
         ];
         const TYPE_STYLE = {
@@ -1961,6 +1966,14 @@ function sha256(str) {
         const admCtx = () => ({ items: window.allItems || [], priv: window.privateItems || [], msgs: window.messages || [], stats: homeStats || {}, statsLoaded: homeStats !== null, tab: adminTab, privateError, search: (document.getElementById('adminSearch') || {}).value || '' });
         window.NBA = {
             ctx: admCtx,
+            // content verification: status = verified | pending | needs | rejected | '' (not reviewed)
+            setVerify: async (id, status) => {
+                const it = findAnyItem(id); if (!it) throw new Error('Item not found');
+                const patch = { verify: status || null };
+                await persistItem(it, patch, status === 'rejected' ? 'private' : (it.private ? 'private' : 'public'));
+                if (window.nbAudit) nbAudit(status === 'verified' ? 'Verified' : status === 'rejected' ? 'Rejected (made private)' : status === 'needs' ? 'Needs correction' : status === 'pending' ? 'Sent to review' : 'Status cleared', it.title);
+                await refreshAfterChange();
+            },
             sdk: loadSdk,
             dburl: DBURL,
             chapter: getChapter,
@@ -1994,6 +2007,7 @@ function sha256(str) {
                 const { db, ref, remove } = await loadSdk();
                 if (priv) { await remove(ref(db, 'notes_bazar_private/items/' + id)); try { await remove(ref(db, 'notes_bazar_private/files/' + id)); } catch (e) {} }
                 else { await remove(ref(db, 'notes_bazar_data/' + id)); try { await remove(ref(db, 'notes_bazar_files/' + id)); } catch (e) {} }
+                if (window.nbAudit) nbAudit('Deleted', it ? it.title : id);
                 alert("Deleted successfully!");
                 await refreshAfterChange();
             } catch (err) {
