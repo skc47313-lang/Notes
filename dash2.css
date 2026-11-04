@@ -30,6 +30,11 @@ html.dark {
 }
 
 /* ---------- dashboard ---------- */
+/* Everything below only shows when the admin picks the "Student Super App (Pro)" layout. Default look is untouched. */
+.d2, .d2-bn, .nbx-meta { display: none !important; }
+html[data-layout="nbpro"] .d2 { display: block !important; }
+html[data-layout="nbpro"] .nbx-meta { display: flex !important; }
+html[data-layout="nbpro"] .d2-card, html[data-layout="nbpro"] .qo-card, html[data-layout="nbpro"] .class-tile { border-radius: 18px; }
 .d2 { max-width: 1240px; margin: 28px auto 8px; padding: 0 16px; color: var(--nbx-text); font-family: Inter, system-ui, sans-serif; }
 .d2 * { box-sizing: border-box; }
 .d2-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -161,12 +166,12 @@ html.dark .d2-in { background: rgba(255, 255, 255, .05); }
 /* ---------- mobile bottom navigation ---------- */
 .d2-bn { display: none; }
 @media (max-width: 767px) {
-  .d2-bn { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; display: flex; justify-content: space-around; padding: 6px 6px calc(env(safe-area-inset-bottom, 0px) + 6px); background: var(--nbx-card); border-top: 1px solid var(--nbx-line); box-shadow: 0 -10px 30px -18px rgba(15, 23, 42, .4); }
-  .d2-bn button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; border: 0; background: transparent; color: var(--nbx-mute); font: 600 10.5px Inter, system-ui, sans-serif; cursor: pointer; transition: color 150ms; }
-  .d2-bn button i { font-size: 18px; transition: transform 200ms; }
-  .d2-bn button.on { color: var(--nbx-primary); }
-  .d2-bn button.on i { transform: translateY(-2px) scale(1.1); }
-  body.d2-hasbn { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 68px); }
+  html[data-layout="nbpro"] .d2-bn { display: flex !important; position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; display: flex; justify-content: space-around; padding: 6px 6px calc(env(safe-area-inset-bottom, 0px) + 6px); background: var(--nbx-card); border-top: 1px solid var(--nbx-line); box-shadow: 0 -10px 30px -18px rgba(15, 23, 42, .4); }
+  html[data-layout="nbpro"] .d2-bn button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; border: 0; background: transparent; color: var(--nbx-mute); font: 600 10.5px Inter, system-ui, sans-serif; cursor: pointer; transition: color 150ms; }
+  html[data-layout="nbpro"] .d2-bn button i { font-size: 18px; transition: transform 200ms; }
+  html[data-layout="nbpro"] .d2-bn button.on { color: var(--nbx-primary); }
+  html[data-layout="nbpro"] .d2-bn button.on i { transform: translateY(-2px) scale(1.1); }
+  html[data-layout="nbpro"] body.d2-hasbn { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 68px); }
 }
 
 @media (max-width: 1023px) {
@@ -200,24 +205,23 @@ html.dark .nbx-ver { background: rgba(16, 185, 129, .18); color: #6ee7b7; }
 .nbx-vp { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
 
 /* ---------- Bazar AI: wide two-pane layout on desktop ---------- */
-.bz-chat { scroll-behavior: smooth; }
 @media (min-width: 1024px) {
-  #aiModal .bz-wrap { max-width: min(1180px, 94vw); height: min(90vh, 820px); padding-left: 290px; }
-  #aiModal .bz-wrap > .bz-scrim { display: none; }
-  #aiModal .bz-wrap > .bz-drawer { position: absolute; top: 0; bottom: 0; left: 0; width: 290px; max-width: none; transform: none !important; box-shadow: none; z-index: 1; visibility: visible; }
-  #aiModal .bz-dh button, #aiModal .bz-head > .bz-ib:first-child { display: none; }
-  #aiModal .bz-chat { padding-left: max(24px, calc((100% - 860px) / 2)); padding-right: max(24px, calc((100% - 860px) / 2)); }
-  #aiModal .bz-chat .bz-bot { font-size: 14px; line-height: 1.7; border-radius: 18px; }
-  #aiModal .bz-chat .dynamic-bg { font-size: 14px; }
-  #aiModal .bz-input { padding-left: max(20px, calc((100% - 860px) / 2)); padding-right: max(20px, calc((100% - 860px) / 2)); }
-  #aiModal .bz-input input { font-size: 14px; padding: 13px 18px; }
-  #aiModal .bz-chips { padding-left: max(20px, calc((100% - 860px) / 2)); }
+  html[data-layout="nbpro"] #aiModal .bz-wrap { max-width: min(1180px, 94vw); height: min(90vh, 820px); padding-left: 290px; }
+  html[data-layout="nbpro"] #aiModal .bz-wrap > .bz-scrim { display: none; }
+  html[data-layout="nbpro"] #aiModal .bz-wrap > .bz-drawer { position: absolute; top: 0; bottom: 0; left: 0; width: 290px; max-width: none; transform: none !important; box-shadow: none; z-index: 1; visibility: visible; }
+  html[data-layout="nbpro"] #aiModal .bz-dh button, html[data-layout="nbpro"] #aiModal .bz-head > .bz-ib:first-child { display: none; }
+  html[data-layout="nbpro"] #aiModal .bz-chat { padding-left: max(24px, calc((100% - 860px) / 2)); padding-right: max(24px, calc((100% - 860px) / 2)); }
+  html[data-layout="nbpro"] #aiModal .bz-chat .bz-bot { font-size: 14px; line-height: 1.7; border-radius: 18px; }
+  html[data-layout="nbpro"] #aiModal .bz-chat .dynamic-bg { font-size: 14px; }
+  html[data-layout="nbpro"] #aiModal .bz-input { padding-left: max(20px, calc((100% - 860px) / 2)); padding-right: max(20px, calc((100% - 860px) / 2)); }
+  html[data-layout="nbpro"] #aiModal .bz-input input { font-size: 14px; padding: 13px 18px; }
+  html[data-layout="nbpro"] #aiModal .bz-chips { padding-left: max(20px, calc((100% - 860px) / 2)); }
 }
 /* formatted answers: code, tables, quotes inside AI replies */
-.bz-chat .bz-bot pre { margin: 8px 0; padding: 12px 14px; border-radius: 12px; background: #0f172a; color: #e2e8f0; font-size: 12.5px; line-height: 1.55; overflow-x: auto; max-width: 100%; }
-.bz-chat .bz-bot code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.bz-chat .bz-bot :not(pre) > code { padding: 1px 6px; border-radius: 6px; background: rgba(99, 91, 255, .12); font-size: .92em; }
-.bz-chat .bz-bot table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 8px 0; font-size: 12.5px; }
-.bz-chat .bz-bot th, .bz-chat .bz-bot td { padding: 6px 10px; border: 1px solid var(--nbx-line); }
-.bz-chat .bz-bot blockquote { margin: 8px 0; padding: 4px 12px; border-left: 3px solid var(--nbx-primary); color: var(--nbx-mute); }
-.bz-chat .bz-bot ul, .bz-chat .bz-bot ol { padding-left: 20px; margin: 6px 0; }
+html[data-layout="nbpro"] .bz-chat .bz-bot pre { margin: 8px 0; padding: 12px 14px; border-radius: 12px; background: #0f172a; color: #e2e8f0; font-size: 12.5px; line-height: 1.55; overflow-x: auto; max-width: 100%; }
+html[data-layout="nbpro"] .bz-chat .bz-bot code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+html[data-layout="nbpro"] .bz-chat .bz-bot :not(pre) > code { padding: 1px 6px; border-radius: 6px; background: rgba(99, 91, 255, .12); font-size: .92em; }
+html[data-layout="nbpro"] .bz-chat .bz-bot table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 8px 0; font-size: 12.5px; }
+html[data-layout="nbpro"] .bz-chat .bz-bot th, .bz-chat .bz-bot td { padding: 6px 10px; border: 1px solid var(--nbx-line); }
+html[data-layout="nbpro"] .bz-chat .bz-bot blockquote { margin: 8px 0; padding: 4px 12px; border-left: 3px solid var(--nbx-primary); color: var(--nbx-mute); }
+html[data-layout="nbpro"] .bz-chat .bz-bot ul, .bz-chat .bz-bot ol { padding-left: 20px; margin: 6px 0; }

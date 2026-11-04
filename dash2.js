@@ -271,7 +271,9 @@
     /* ---------- render on Home ---------- */
     var rendering = false;
     function render() {
-        var home = $('homeView'); if (!home || rendering) return; rendering = true;
+        var home = $('homeView'); if (!home || rendering) return;
+        if (document.documentElement.getAttribute('data-layout') !== 'nbpro') { var off = $('nbDash2'); if (off) off.remove(); return; }
+        rendering = true;
         try {
             var s = $('nbDash2');
             if (!s) {
@@ -324,6 +326,7 @@
         render(); buildBnav(); paintBnav();
         var o = window.switchView;
         if (typeof o === 'function' && !o.__d2) { var w = function () { var r = o.apply(this, arguments); setTimeout(paintBnav, 30); setTimeout(render, 60); return r; }; w.__d2 = true; window.switchView = w; }
+        try { new MutationObserver(function () { soon(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-layout'] }); } catch (e) {}
         window.addEventListener('storage', soon);
         document.addEventListener('visibilitychange', function () { if (!document.hidden) soon(); });
         // refresh when allItems (Firebase) arrive and when other modules save progress
