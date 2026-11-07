@@ -17,7 +17,7 @@
    ===================================================================== */
 (function () {
     'use strict';
-    var DRIVE_API_KEY = 'AIzaSyCdxFavNFKb8WPZxIY6mX78ezAtNB8gYIc';                                  // <- paste your Drive API key here
+    var DRIVE_API_KEY = '';                                  // <- paste your Drive API key here
     var FALLBACK_KEY = 'AIzaSyChG_jBGcieowmVVKHdwaiI1zvOwvvPag0';   // Firebase web key (works only if Drive API is enabled for that project and the key is not restricted)
     var B = 'https://www.googleapis.com/drive/v3/files';
     var MAX_FILES = 150, MAX_BYTES = 450 * 1024 * 1024, MAX_DEPTH = 4, PAR = 3;
@@ -89,9 +89,19 @@
         });
     }
 
+    // downloads one file and reports every received chunk (opt.onBytes(n)) so the app can show "12 MB of 85 MB"
     function getBlob(f, opt) {
         var url = f.exp ? B + '/' + f.id + '/export?' + q({ mimeType: 'application/pdf', key: key() }) : B + '/' + f.id + '?' + q({ alt: 'media', supportsAllDrives: 'true', key: key() });
-        return api(url, opt).then(function (r) { return r.blob(); });
+        return api(url, opt).then(function (r) {
+            if (!r.body || !r.body.getReader || !opt.onBytes) return r.blob().then(function (b) { if (opt.onBytes) opt.onBytes(b.size); return b; });
+            var rd = r.body.getReader(), parts = [];
+            return (function pump() {
+                return rd.read().then(function (x) {
+                    if (x.done) return new Blob(parts, { type: r.headers.get('content-type') || '' });
+                    parts.push(x.value); opt.onBytes(x.value.length); return pump();
+                });
+            })();
+        });
     }
 
     /* link -> { kind:'file'|'folder', name, files:[{name:path, path, blob, mime, size}], skipped:[] }
@@ -118,6 +128,7 @@
             var total = st.files.reduce(function (a, f) { return a + f.size; }, 0);
             if (total > MAX_BYTES) throw err('big', 'This is too big for the app storage (' + Math.round(total / 1048576) + ' MB, max ' + Math.round(MAX_BYTES / 1048576) + ' MB).');
             var done = 0, next = 0, out = new Array(st.files.length), n = st.files.length;
+            if (opt.onStart) opt.onStart({ files: n, bytes: total, skipped: st.skipped.length });
             if (opt.onProgress) opt.onProgress(0, n, st.files[0].path);
             function worker() {
                 if (next >= n) return Promise.resolve();

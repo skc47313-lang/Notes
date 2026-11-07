@@ -2660,6 +2660,15 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         NB.onClose.nbNt = function () { NP.run++; NP.busy = false; };
     }
     NB.openNotes = function () { closeSiteMenu(); NB.close('nbPm'); if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npForm(); };
+    // used by "YouTube link -> Notes" (yt.js): opens the Notes Maker with the video text as its source and starts it
+    NB.notesFromText = function (p) {
+        closeSiteMenu(); NB.close('nbPm'); if (!$('nbNt')) buildNotes(); NB.open('nbNt'); npForm();
+        var set = function (id, v) { var e = $(id); if (e) e.value = v; };
+        set('npCls', p.cls); npFillSubj('other'); chRender('np');
+        set('npType', p.type); set('npLang', p.lang); set('npPics', p.pics ? '1' : '0'); set('npTopic', p.title); set('npSrc', p.text);
+        var more = $('npMore'); if (more) more.open = true;
+        if (p.auto && $('npGo')) $('npGo').click();
+    };
 
 
     /* =====================================================================
@@ -2990,12 +2999,14 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
                 '<h3 class="nbo-h"><i class="fa-solid fa-file-pdf"></i> AI PDF Maker</h3><p class="nbo-sub">What do you want to make today?</p>' +
                 '<button type="button" class="pm-card" id="pmQp" style="--pm:linear-gradient(135deg,#0ea5e9,#6366f1)"><span class="pm-ic"><i class="fa-solid fa-file-circle-question"></i></span><span class="pm-tx"><b>Question Paper Maker</b><small>MCQ, short and long questions or a full Model Set, with answers, as PDF</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
                 '<button type="button" class="pm-card" id="pmNt" style="--pm:linear-gradient(135deg,#f97316,#db2777)"><span class="pm-ic"><i class="fa-solid fa-book-open"></i></span><span class="pm-tx"><b>Notes Maker</b><small>Colourful short or long notes with definitions, formulas, diagrams and pictures, as PDF</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
+                '<button type="button" class="pm-card" id="pmYt" style="--pm:linear-gradient(135deg,#7c3aed,#4f46e5)"><span class="pm-ic"><i class="fa-brands fa-youtube"></i></span><span class="pm-tx"><b>YouTube Link → Notes</b><small>Paste a video link and get colourful notes, a quiz and a PDF from it</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
                 '<button type="button" class="pm-card pm-my" id="pmMy"><span class="pm-ic"><i class="fa-solid fa-folder-open"></i></span><span class="pm-tx"><b>My PDFs <span id="pmMyN"></span></b><small>Open the notes and papers you made before, no waiting for the AI</small></span><i class="fa-solid fa-chevron-right"></i></button>' +
                 '</div></div>'));
             $('pmMy').addEventListener('click', function () { NB.openMyPdfs(); });
             $('nbpmX').addEventListener('click', function () { NB.close('nbPm'); });
             $('pmQp').addEventListener('click', function () { NB.close('nbPm'); NB.openPaper(); });
             $('pmNt').addEventListener('click', function () { NB.close('nbPm'); NB.openNotes(); });
+            $('pmYt').addEventListener('click', function () { NB.close('nbPm'); if (NB.openYoutube) NB.openYoutube(); });
         }
         var n = myAll().length; $('pmMyN').textContent = n ? '(' + n + ')' : '';
         NB.open('nbPm');

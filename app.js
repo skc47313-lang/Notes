@@ -323,6 +323,30 @@
 
         // ---- Google Drive items: the file / whole folder is downloaded INSIDE the app (see drive.js) ----
         const driveBusy = new Set();
+        const dlActive = new Map();          // id -> { title, files, done, loaded, total, t0, ctrl }  (downloads running right now)
+        let dlTickT = 0;
+        function dlActiveHtml() {
+            return [...dlActive.entries()].map(([id, a]) => {
+                const pct = a.total > 0 ? Math.min(99, Math.floor(a.loaded * 100 / a.total)) : 0, known = a.total > 0;
+                const sec = Math.max(1, (Date.now() - a.t0) / 1000), spd = a.loaded / sec;
+                const eta = known && spd > 0 && a.loaded < a.total ? Math.ceil((a.total - a.loaded) / spd) : 0;
+                const line = !a.files ? 'Preparing...' : (fmtSize(a.loaded) || '0 KB') + (known ? ' of ' + fmtSize(a.total) + ' \u2022 ' + pct + '%' : ' downloaded') + (a.files > 1 ? ' \u2022 ' + a.done + '/' + a.files + ' files' : '') + (spd > 1024 ? ' \u2022 ' + fmtSize(spd) + '/s' : '') + (eta ? ' \u2022 ' + (eta >= 60 ? Math.ceil(eta / 60) + ' min' : eta + ' s') + ' left' : '');
+                return `<div class="dl-row dl-act"><div class="dl-ic"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                    <div class="min-w-0 flex-1"><div class="dl-t" title="${esc(a.title)}">${esc(a.title)}</div><div class="dl-bar"><i style="width:${known ? pct : 8}%"${known ? '' : ' class="ind"'}></i></div><div class="dl-m">${esc(line)}</div></div>
+                    <button type="button" class="dl-b del" onclick="dlCancel(${jsArg(id)})" title="Cancel" aria-label="Cancel download"><i class="fa-solid fa-xmark"></i></button></div>`;
+            }).join('');
+        }
+        function dlTick(now) {                // redraw only the "downloading now" box (cheap), at most 4 times a second
+            const go = () => {
+                dlTickT = 0;
+                const box = document.getElementById('dlActive'); if (box) box.innerHTML = dlActiveHtml();
+                const bd = document.getElementById('dlBadge');
+                if (bd) { if (dlActive.size) { bd.textContent = '\u2193'; bd.classList.remove('hidden'); bd.classList.add('dl-pulse'); } else bd.classList.remove('dl-pulse'); }
+                const sm = document.getElementById('dlSummary'); if (sm && dlActive.size) sm.textContent = 'Downloading ' + dlActive.size + ' file' + (dlActive.size > 1 ? 's' : '') + '...';
+            };
+            if (now) { clearTimeout(dlTickT); go(); } else if (!dlTickT) dlTickT = setTimeout(go, 250);
+        }
+        window.dlCancel = function(id) { const a = dlActive.get(id); if (a && a.ctrl) a.ctrl.abort(); };
         function isDriveLink(u) { try { return /(^|\.)(drive|docs)\.google\.com$/i.test(new URL(String(u)).hostname); } catch (e) { return false; } }
         function openLinkOnly(item, link) {
             if (!item.private) { trackStat(item.id, 'd'); markDownloaded(item); }
@@ -348,18 +372,26 @@
             try { const had = await dlTx('readonly', st => st.get(item.id)); if (had) { toast('Already saved in the app ✅', 1800); window.dlOpen(item.id); return; } } catch (e) {}
             if (!navigator.onLine) { toast('You are offline. Connect to the internet to download.', 3200); return; }
             driveBusy.add(item.id);
-            toast('Starting download...', 60000);
+            const act = { title: item.title || 'Download', files: 0, done: 0, loaded: 0, total: 0, t0: Date.now(), ctrl: new AbortController() };
+            dlActive.set(item.id, act); dlTick(true);
+            toast('Download started. See progress in Downloads (the green arrow).', 3200);
             try {
-                const res = await window.nbDrive.fetchAll(link, { onProgress: (d, n) => toast(n > 1 ? 'Downloading ' + d + ' / ' + n + ' files...' : 'Downloading...', 60000) });
+                const res = await window.nbDrive.fetchAll(link, {
+                    signal: act.ctrl.signal,
+                    onStart: s => { act.files = s.files; act.total = s.bytes; act.t0 = Date.now(); dlTick(); },
+                    onBytes: n => { act.loaded += n; dlTick(); },
+                    onProgress: (d) => { act.done = d; dlTick(); }
+                });
                 await saveDriveRecord(item, res);
                 trackStat(item.id, 'd'); markDownloaded(item);
                 toast('Saved in the app ✅' + (res.files.length > 1 ? ' (' + res.files.length + ' files)' : '') + (res.skipped.length ? ', ' + res.skipped.length + ' skipped' : '') + '. Open it from Downloads.', 4200);
             } catch (e) {
                 console.warn('drive download failed', e);
+                if (e && e.name === 'AbortError') { toast('Download cancelled.', 2200); return; }
                 if (e && /quota/i.test(String(e.name || e.message)) && e.code !== 'quota') e.code = 'storage';
                 toast(driveWhy(e), 4200);
                 try { window.openPreview(item.id); } catch (x) {}      // shows the "Open Google Drive Link" button as a fallback
-            } finally { driveBusy.delete(item.id); }
+            } finally { driveBusy.delete(item.id); dlActive.delete(item.id); dlTick(true); try { await dlRefresh(); } catch (x) {} }
         }
         async function saveDriveRecord(item, res) {
             const files = res.files, single = files.length === 1;
@@ -1079,7 +1111,7 @@
             renderDlHist();
             box.innerHTML = list.length ? list.map(dlRow).join('') : `<div class="text-center py-14 text-xs text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700"><i class="fa-solid fa-circle-down text-3xl text-slate-300 mb-3 block"></i>${dlItems.length ? 'No matches found.' : 'Nothing downloaded yet.<br>Tap <b>Download</b> on any note and it will be saved here.'}</div>`;
         };
-        window.openDownloads = async function() { await dlRefresh(); openModal('downloadsModal'); };
+        window.openDownloads = async function() { await dlRefresh(); openModal('downloadsModal'); dlTick(true); };
         window.dlOpen = async function(id) {
             try {
                 const rec = await dlTx('readonly', st => st.get(id));
@@ -1597,7 +1629,7 @@ function sha256(str) {
 
         function findAnyItem(id) { return window.allItems.find(i => i.id === id) || window.privateItems.find(i => i.id === id); }
         function cleanMeta(it) { const o = { ...it }; delete o.id; delete o.fileData; delete o.private; return o; }
-        function fmtSize(b) { if (!b) return ''; return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+        function fmtSize(b) { if (!b) return ''; return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : b < 1073741824 ? (b / 1048576).toFixed(1) + ' MB' : (b / 1073741824).toFixed(2) + ' GB'; }
         function readAsDataUrl(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(file); }); }
         function dataUrlToBlob(d) {
             const i = d.indexOf(','), mime = (d.slice(5, i).split(';')[0]) || 'application/octet-stream';

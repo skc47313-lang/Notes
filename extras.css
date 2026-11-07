@@ -1281,3 +1281,13 @@ html.dark .nb-aiask{color:#c4b5fd;border-color:rgba(196,181,253,.35)}
 
 .nbh-st .nbh-stl{font-size:12.5px;font-weight:700;white-space:nowrap;line-height:1}
 @media (max-width:420px){ .nbh-st .nbh-stl{display:none} }
+
+/* live download progress (My Downloads) */
+.dl-act{border-color:#a5b4fc!important;background:linear-gradient(135deg,rgba(99,102,241,.07),rgba(16,185,129,.07))}
+.dl-bar{height:7px;border-radius:99px;background:rgba(100,116,139,.25);overflow:hidden;margin:5px 0 4px}
+.dl-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#6366f1,#10b981);transition:width .25s}
+.dl-bar i.ind{animation:dlInd 1.1s ease-in-out infinite alternate}
+@keyframes dlInd{from{margin-left:0}to{margin-left:calc(100% - 8%)}}
+.dl-pulse{animation:dlPulse 1s ease-in-out infinite}
+@keyframes dlPulse{50%{transform:scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.dl-bar i.ind,.dl-pulse{animation:none}}

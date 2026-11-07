@@ -666,6 +666,7 @@
         var dark = document.documentElement.classList.contains('dark'), cur = curAccent();
         $('adminPanel-appearance').innerHTML =
             '<div class="a-hero-card" style="margin-bottom:18px"><div class="tx"><b><i class="fa-solid fa-wand-magic-sparkles"></i> Home hero slider</b><p>The big banner on the Home page. Add, reorder or hide slides and change text, colours and buttons. Changes go live for everyone when you publish.</p></div><button class="a-btn-y" onclick="NBAdmin.hero()"><i class="fa-solid fa-pen-ruler"></i> Customize Hero</button></div>' +
+            (window.NBFx ? '<div style="margin-bottom:18px">' + NBFx.adminCard() + '</div>' : '') +
             '<div class="a-two"><div class="a-stack"><section class="a-card"><div class="a-ch"><h3><i class="fa-solid fa-circle-half-stroke"></i> Mode</h3></div><div class="a-mode"><button class="' + (!dark ? 'on' : '') + '" onclick="NBAdmin.mode(\'light\')"><i class="fa-solid fa-sun"></i>Light</button><button class="' + (dark ? 'on' : '') + '" onclick="NBAdmin.mode(\'dark\')"><i class="fa-solid fa-moon"></i>Dark</button></div><p class="a-note" style="background:var(--a-hover);border-color:var(--a-line);color:var(--a-mute)">Applies to the dashboard and the whole website on this device.</p></section>' +
             accentCard(cur) + '</div>' +
             '<div class="a-stack">' + bgCard() +
