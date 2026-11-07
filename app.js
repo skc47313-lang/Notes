@@ -281,15 +281,25 @@
             const container = document.getElementById('previewContentContainer');
             container.innerHTML = '';
             if (previewBlobUrl) { try { URL.revokeObjectURL(previewBlobUrl); } catch (e) {} previewBlobUrl = ''; }
+            revokeParts();
+            container.dataset.pv = String(item.id);
             const note = (cls, txt) => `<p class="text-xs ${cls} text-center py-6">${esc(txt)}</p>`;
 
             if (item.fileLink) {
                 const link = safeHttp(item.fileLink);
+                const drv = isDriveLink(link);
                 container.innerHTML = link ? `
                     <div class="p-6 text-center bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">${esc(t('This item is hosted via Google Drive link.'))}</p>
-                        <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-block shadow">${esc(t('Open Google Drive Link'))}</a>
+                        <div class="flex gap-2 justify-center flex-wrap">
+                            ${drv && !item.private ? `<button type="button" onclick="downloadItem(${jsArg(item.id)})" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-download mr-1.5"></i>${esc(t('Download'))}</button>` : ''}
+                            <a href="${esc(link)}" target="_blank" rel="noopener noreferrer" class="${drv && !item.private ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200' : 'dynamic-btn text-white'} px-5 py-2.5 rounded-xl text-xs font-bold inline-block shadow">${esc(t('Open Google Drive Link'))}</a>
+                        </div>
                     </div>` : note('text-red-500', t('This link is not valid.'));
+                // already saved inside the app? then show that copy (works offline, no Drive needed)
+                if (drv && !item.private) {
+                    dlTx('readonly', st => st.get(item.id)).then(rec => { if (rec && container.dataset.pv === String(item.id)) renderLocal(container, rec); }).catch(() => {});
+                }
             } else {
                 container.innerHTML = note('text-slate-400', t('Loading file...'));
                 getFileData(item).then(async data => {
@@ -311,15 +321,82 @@
             openModal('previewModal');
         };
 
+        // ---- Google Drive items: the file / whole folder is downloaded INSIDE the app (see drive.js) ----
+        const driveBusy = new Set();
+        function isDriveLink(u) { try { return /(^|\.)(drive|docs)\.google\.com$/i.test(new URL(String(u)).hostname); } catch (e) { return false; } }
+        function openLinkOnly(item, link) {
+            if (!item.private) { trackStat(item.id, 'd'); markDownloaded(item); }
+            const w = window.open(link, '_blank', 'noopener,noreferrer');
+            if (!w) toast('Pop-up blocked. Allow pop-ups to open this link.', 3200);
+        }
+        function driveWhy(e) {
+            const c = e && e.code;
+            if (c === 'api') return 'Drive download is not set up yet (admin: add the Drive API key in drive.js).';
+            if (c === 'private') return 'This Drive item is private. Ask the admin to share it as "Anyone with the link".';
+            if (c === 'quota') return 'Google Drive download limit reached. Try again later.';
+            if (c === 'big') return e.message;
+            if (c === 'empty') return 'This Drive folder is empty.';
+            if (c === 'net') return 'No connection to Google Drive.';
+            if (c === 'storage') return 'Not enough storage on this device for this download.';
+            return 'Could not download from Google Drive.';
+        }
+        async function downloadDriveItem(item) {
+            const link = safeHttp(item.fileLink);
+            if (!link) { alert(t('This link is not valid.')); return; }
+            if (!isDriveLink(link) || !window.nbDrive || !window.nbDrive.parse(link)) { openLinkOnly(item, link); return; }
+            if (driveBusy.has(item.id)) { toast('This one is already downloading...', 1800); return; }
+            try { const had = await dlTx('readonly', st => st.get(item.id)); if (had) { toast('Already saved in the app ✅', 1800); window.dlOpen(item.id); return; } } catch (e) {}
+            if (!navigator.onLine) { toast('You are offline. Connect to the internet to download.', 3200); return; }
+            driveBusy.add(item.id);
+            toast('Starting download...', 60000);
+            try {
+                const res = await window.nbDrive.fetchAll(link, { onProgress: (d, n) => toast(n > 1 ? 'Downloading ' + d + ' / ' + n + ' files...' : 'Downloading...', 60000) });
+                await saveDriveRecord(item, res);
+                trackStat(item.id, 'd'); markDownloaded(item);
+                toast('Saved in the app ✅' + (res.files.length > 1 ? ' (' + res.files.length + ' files)' : '') + (res.skipped.length ? ', ' + res.skipped.length + ' skipped' : '') + '. Open it from Downloads.', 4200);
+            } catch (e) {
+                console.warn('drive download failed', e);
+                if (e && /quota/i.test(String(e.name || e.message)) && e.code !== 'quota') e.code = 'storage';
+                toast(driveWhy(e), 4200);
+                try { window.openPreview(item.id); } catch (x) {}      // shows the "Open Google Drive Link" button as a fallback
+            } finally { driveBusy.delete(item.id); }
+        }
+        async function saveDriveRecord(item, res) {
+            const files = res.files, single = files.length === 1;
+            const size = files.reduce((a, f) => a + (f.size || 0), 0);
+            const typed = f => /\.pdf$/i.test(f.name) && !/pdf/i.test(f.blob.type || '') ? new Blob([f.blob], { type: 'application/pdf' }) : f.blob;
+            const rec = {
+                id: item.id, title: item.title || 'Document', className: item.className || '', subject: item.subject || '', type: item.type || 'note',
+                chapter: getChapter(item), description: getDesc(item), createdAt: item.createdAt || 0, savedAt: Date.now(), size, drive: true,
+                fileName: single ? String(files[0].name).split('/').pop() : (res.name || item.title || 'folder'),
+                mime: single ? (typed(files[0]).type || files[0].mime || '') : 'application/x-folder',
+                blob: single ? typed(files[0]) : null,
+                parts: single ? null : files.map(f => ({ name: f.name, mime: f.mime || f.blob.type || '', size: f.size, blob: typed(f) }))
+            };
+            await dlTx('readwrite', st => st.put(rec));
+            try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+            await dlRefresh();
+        }
+
+        // Download = save INSIDE the app (My Downloads, works offline). Nothing is written to the phone's Downloads folder;
+        // the user can still export a copy from My Downloads > "Save to device".
         window.downloadItem = async function(id) {
             const item = findAnyItem(id);
+            if (item && item.fileLink) {
+                if (item.private) { const l = safeHttp(item.fileLink); if (l) openLinkOnly(item, l); return; }
+                return downloadDriveItem(item);
+            }
             let data = "";
             try { data = item ? await getFileData(item) : ""; } catch (e) {}
             if (!item || !data) {
                 alert("File data not available.");
                 return;
             }
-            if (!item.private) { trackStat(id, 'd'); markDownloaded(item); saveOffline(item, data); }
+            if (!item.private) {
+                trackStat(id, 'd'); markDownloaded(item);
+                if (await saveOffline(item, data)) return;       // saved in the app: done
+                // could not be stored in the app (no storage / private mode): fall back to a normal browser download
+            }
             const a = document.createElement('a');
             a.href = data;
             a.download = item.fileName || 'document.pdf';
@@ -390,7 +467,7 @@
                         <span class="text-xs text-slate-400 truncate max-w-[120px]"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${esc(item.fileName || t('Document'))}</span>
                         <div class="flex items-center space-x-2">
                             <button onclick="openPreview(${jsArg(item.id)})" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition">${esc(t('Preview'))}</button>
-                            ${item.fileLink ? (safeHttp(item.fileLink) ? `<a href="${esc(safeHttp(item.fileLink))}" onclick="trackStat(${jsArg(item.id)},'d');nbMarkDl(${jsArg(item.id)})" target="_blank" rel="noopener noreferrer" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">${esc(t('Drive'))}</a>` : '') : `<button onclick="downloadItem(${jsArg(item.id)})" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">${esc(t('Download'))}</button>`}
+                            ${item.fileLink && !isDriveLink(item.fileLink) ? (safeHttp(item.fileLink) ? `<a href="${esc(safeHttp(item.fileLink))}" onclick="trackStat(${jsArg(item.id)},'d');nbMarkDl(${jsArg(item.id)})" target="_blank" rel="noopener noreferrer" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold inline-block shadow">${esc(t('Open'))}</a>` : '') : `<button onclick="downloadItem(${jsArg(item.id)})" class="dynamic-btn text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">${esc(t('Download'))}</button>`}
                         </div>
                     </div>
                 `;
@@ -904,7 +981,7 @@
         async function dlGetData(id) { const rec = await dlTx('readonly', st => st.get(id)); return rec && rec.blob ? blobToDataUrl(rec.blob) : ''; }
 
         async function saveOffline(item, data) {
-            if (!item || item.private || !data) return;
+            if (!item || item.private || !data) return false;
             try {
                 const blob = dataUrlToBlob(data);
                 const rec = { id: item.id, title: item.title || 'Document', className: item.className || '', subject: item.subject || '', type: item.type || 'note', chapter: getChapter(item), description: getDesc(item), fileName: item.fileName || 'document.pdf', mime: blob.type, size: blob.size, createdAt: item.createdAt || 0, savedAt: Date.now(), blob };
@@ -912,12 +989,62 @@
                 await dlTx('readwrite', st => st.put(rec));
                 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
                 await dlRefresh();
-                toast(had ? 'Download updated ✅' : 'Saved to Downloads. It will open offline too ✅', 3000);
+                toast(had ? 'Updated in the app ✅' : 'Saved in the app ✅ Open it from Downloads. It works offline too.', 3200);
+                return true;
             } catch (e) {
                 console.warn('offline save failed', e);
-                toast(/quota/i.test(String(e && (e.name || e.message))) ? 'Not enough storage on this device, so it was not saved offline.' : 'Could not save offline (the file was still downloaded).', 3200);
+                toast(/quota/i.test(String(e && (e.name || e.message))) ? 'Not enough storage in the app, so the file was saved to your device instead.' : 'Could not save inside the app, so the file was saved to your device instead.', 3600);
+                return false;
             }
         }
+        // ---- folder copies (several files) and the shared viewer ----
+        let partUrls = [];
+        function revokeParts() { partUrls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} }); partUrls = []; }
+        const partIsPdf = p => /pdf/i.test(p.mime || '') || /\.pdf$/i.test(p.name || '');
+        const partIsImg = p => /^image\//i.test(p.mime || '') || /\.(png|jpe?g|gif|webp)$/i.test(p.name || '');
+        // draws a saved copy (one file or a folder of files) into the preview window
+        function renderLocal(container, rec) {
+            revokeParts();
+            if (previewBlobUrl) { try { URL.revokeObjectURL(previewBlobUrl); } catch (e) {} previewBlobUrl = ''; }
+            if (rec.parts && rec.parts.length) {
+                const rows = rec.parts.map((p, i) => `<div class="dl-row"><div class="dl-ic"><i class="fa-solid ${partIsPdf(p) ? 'fa-file-pdf' : partIsImg(p) ? 'fa-file-image' : 'fa-file'}"></i></div>
+                    <div class="min-w-0 flex-1"><div class="dl-t" title="${esc(p.name)}">${esc(p.name)}</div><div class="dl-m">${esc(fmtSize(p.size))}</div></div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button type="button" class="dl-b go" onclick="dlPartView(${jsArg(rec.id)},${i})" title="Open" aria-label="Open"><i class="fa-solid fa-eye"></i></button>
+                        <button type="button" class="dl-b" onclick="dlPartSave(${jsArg(rec.id)},${i})" title="Save to device" aria-label="Save to device"><i class="fa-solid fa-download"></i></button>
+                    </div></div>`).join('');
+                container.innerHTML = `<div class="flex gap-2 mb-3"><button type="button" onclick="dlSave(${jsArg(rec.id)})" class="flex-1 dynamic-btn text-white py-2.5 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-file-zipper mr-1.5"></i>Save all to device (ZIP)</button></div>
+                    <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-folder-open mr-1"></i>${rec.parts.length} files saved inside the app${rec.size ? ' \u2022 ' + esc(fmtSize(rec.size)) : ''}. Tap the eye to open one.</p>
+                    <div class="space-y-1.5 max-h-[32vh] overflow-auto mb-3">${rows}</div><div id="dlPartView"></div>`;
+                return;
+            }
+            if (!rec.blob) { container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">This saved copy is empty. Remove it from Downloads and download it again.</p>'; return; }
+            previewBlobUrl = URL.createObjectURL(rec.blob);
+            const isPdf = /pdf/i.test(rec.mime || '') || /\.pdf$/i.test(rec.fileName || '');
+            container.innerHTML = `
+                    <div class="flex gap-2 mb-3">
+                        <a href="${previewBlobUrl}" download="${esc(rec.fileName)}" class="flex-1 text-center dynamic-btn text-white py-2.5 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-download mr-1.5"></i>Save to device</a>
+                        <a href="${previewBlobUrl}" target="_blank" rel="noopener" class="flex-1 text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2.5 rounded-xl text-xs font-bold">Open in new tab</a>
+                    </div>` + (isPdf ? `<div class="w-full h-[55vh] min-h-[300px] bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700"><iframe src="${previewBlobUrl}" class="w-full h-full" title="Preview"></iframe></div>` : `<p class="text-xs text-slate-500 text-center py-6">Preview is not available for this file. Save it to your device to open it.</p>`);
+        }
+        window.dlPartView = async function(id, i) {
+            try {
+                const rec = await dlTx('readonly', st => st.get(id)), p = rec && rec.parts && rec.parts[i], box = document.getElementById('dlPartView'); if (!p || !box) return;
+                const b = partIsPdf(p) && !/pdf/i.test(p.blob.type || '') ? new Blob([p.blob], { type: 'application/pdf' }) : p.blob, u = URL.createObjectURL(b); partUrls.push(u);
+                if (partIsPdf(p)) box.innerHTML = `<div class="w-full h-[50vh] min-h-[280px] bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700"><iframe src="${u}" class="w-full h-full" title="${esc(p.name)}"></iframe></div>`;
+                else if (partIsImg(p)) box.innerHTML = `<img src="${u}" alt="${esc(p.name)}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700">`;
+                else { window.open(u, '_blank', 'noopener'); return; }
+                box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (e) { toast('Could not open the file.'); }
+        };
+        window.dlPartSave = async function(id, i) {
+            try {
+                const rec = await dlTx('readonly', st => st.get(id)), p = rec && rec.parts && rec.parts[i]; if (!p) return;
+                const u = URL.createObjectURL(p.blob), a = document.createElement('a');
+                a.href = u; a.download = String(p.name).split('/').pop() || 'file'; document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(u), 4000);
+            } catch (e) { toast('Could not save the file.'); }
+        };
         async function dlRefresh() {
             try { dlItems = (await dlTx('readonly', st => st.getAll())) || []; } catch (e) { dlItems = []; }
             dlItems.sort((a, b) => b.savedAt - a.savedAt);
@@ -933,7 +1060,7 @@
             renderDlModal();
         }
         function dlRow(r) {
-            const meta = [r.className, r.subject, fmtSize(r.size), 'Saved ' + shortDate(r.savedAt)].filter(Boolean).join(' \u2022 ');
+            const meta = [r.className, r.subject, r.parts ? r.parts.length + ' files' : '', fmtSize(r.size), 'Saved ' + shortDate(r.savedAt)].filter(Boolean).join(' \u2022 ');
             return `<div class="dl-row"><div class="dl-ic"><i class="fa-solid fa-file-pdf"></i></div>
                 <div class="min-w-0 flex-1"><div class="dl-t" title="${esc(r.title)}">${esc(r.title)}</div><div class="dl-m">${esc(meta)}</div></div>
                 <div class="flex items-center gap-1.5 shrink-0">
@@ -958,26 +1085,26 @@
                 const rec = await dlTx('readonly', st => st.get(id));
                 if (!rec) { toast('File not found.'); return; }
                 markSeen(id);
-                if (previewBlobUrl) { try { URL.revokeObjectURL(previewBlobUrl); } catch (e) {} }
-                previewBlobUrl = URL.createObjectURL(rec.blob);
                 document.getElementById('previewTitle').textContent = rec.title;
                 document.getElementById('previewMeta').textContent = [rec.className || 'General', rec.subject || 'General'].join(' \u2022 ') + (rec.chapter ? ' \u2022 Chapter: ' + rec.chapter : '');
                 document.getElementById('previewDesc').textContent = rec.description || '';
                 ['previewReportBtn', 'previewFavBtn'].forEach(x => { const b = document.getElementById(x); if (b) b.classList.add('hidden'); });
-                const isPdf = /pdf/i.test(rec.mime || '');
-                document.getElementById('previewContentContainer').innerHTML = `
-                    <div class="flex gap-2 mb-3">
-                        <a href="${previewBlobUrl}" download="${esc(rec.fileName)}" class="flex-1 text-center dynamic-btn text-white py-2.5 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-download mr-1.5"></i>Save to device</a>
-                        <a href="${previewBlobUrl}" target="_blank" rel="noopener" class="flex-1 text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2.5 rounded-xl text-xs font-bold">Open in new tab</a>
-                    </div>` + (isPdf ? `<div class="w-full h-[55vh] min-h-[300px] bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700"><iframe src="${previewBlobUrl}" class="w-full h-full" title="Preview"></iframe></div>` : `<p class="text-xs text-slate-500 text-center py-6">Preview is not available for this file. Save it to your device to open it.</p>`);
+                const cont = document.getElementById('previewContentContainer'); cont.dataset.pv = String(id);
+                renderLocal(cont, rec);
                 openModal('previewModal');
             } catch (e) { console.warn(e); toast('Could not open the file.'); }
         };
         window.dlSave = async function(id) {
             try {
                 const rec = await dlTx('readonly', st => st.get(id)); if (!rec) return;
-                const u = URL.createObjectURL(rec.blob), a = document.createElement('a');
-                a.href = u; a.download = rec.fileName || 'document.pdf'; document.body.appendChild(a); a.click(); a.remove();
+                let blob = rec.blob, name = rec.fileName || 'document.pdf';
+                if (rec.parts && rec.parts.length) {
+                    if (!window.nbDrive) { toast('ZIP maker is still loading, try again.'); return; }
+                    toast('Making the ZIP...', 8000);
+                    blob = await window.nbDrive.zip(rec.parts); name = String(rec.title || rec.fileName || 'folder').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 80) + '.zip';
+                }
+                const u = URL.createObjectURL(blob), a = document.createElement('a');
+                a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
                 setTimeout(() => URL.revokeObjectURL(u), 4000);
             } catch (e) { toast('Could not save the file.'); }
         };
@@ -1842,6 +1969,7 @@ function sha256(str) {
             { id: 'wish', label: 'User Requests', icon: 'fa-lightbulb' },
             { id: 'verify', label: 'Content Verification', icon: 'fa-circle-check' },
             { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left' },
+            { id: 'sources', label: 'AI Sources', icon: 'fa-book-open-reader' },
             { id: 'safe', label: 'Safe Folder', icon: 'fa-lock' }
         ];
         const TYPE_STYLE = {
@@ -2267,7 +2395,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         const AI_TYPEW = ['note', 'book', 'pyq'];
 
         function aiTokens(s) {
-            return String(s || '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).map(w => AI_SYN[w] || w);
+            return String(s || '').toLowerCase().split(/[^\p{L}\p{M}\p{N}]+/u).filter(Boolean).map(w => AI_SYN[w] || w);   // \p{M}: Hindi matras must not split a word
         }
 
         // Look for matching items inside Notes Bazar (only when the user is asking for material)
@@ -2319,6 +2447,8 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         }
 
         async function callAi(messages, opt) {
+            // Source Library (admin material): adds the matching excerpts to the system prompt so answers follow the admin's books/notes
+            try { if (opt && opt.src && window.nbSources && window.nbSources.augment) messages = await window.nbSources.augment(messages, opt.src); } catch (e) { console.warn('source library skipped', e); }
             const extraMs = (opt && opt.timeout) || 0;       // long jobs (AI test maker) may wait longer than a chat reply
             let lastErr = new Error('no provider available'), proxyErr = null;
             if (AI_CONFIG.proxyUrl && (aiFailUntil.proxy || 0) <= Date.now()) {
@@ -2362,6 +2492,12 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
         }
 
         window.nbCallAi = callAi;   // used by the AI Test Maker (extras.js)
+        // what the Source Library should search for when the student chats with Bazar AI
+        function aiSrcHint(q) {
+            let cls = '';
+            try { const m = bzMem(); cls = m.cls || ''; if (!cls) { const pr = window.NB && NB.profile && NB.profile(); cls = (pr && pr.cls) || ''; } } catch (e) {}
+            return { q: String(q || ''), cls, chat: true };
+        }
 
 
         // ----- no live AI? still answer "anything" from Wikipedia (English or Hindi), with a link to the source -----
@@ -2866,6 +3002,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             if (fab) fab.classList.add('thinking');
 
             aiRetryText = userText;
+            if (window.nbSources) window.nbSources.lastUsed = null;
             let reply = '', related = { intent: false, list: [] }, offline = false, wiki = null;
             try { related = await findRelated(userText); } catch (e) {}
             try {
@@ -2882,14 +3019,14 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
                 }
                 const bodyTxt = fl ? userText + '\n\n[Attached file: ' + fl.name + ']\n' + fl.text : userText;
                 try {
-                    reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), img ? { role: 'user', content: [{ type: 'text', text: bodyTxt }, { type: 'image_url', image_url: { url: img } }] } : { role: 'user', content: bodyTxt }]);
+                    reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), img ? { role: 'user', content: [{ type: 'text', text: bodyTxt }, { type: 'image_url', image_url: { url: img } }] } : { role: 'user', content: bodyTxt }], { src: aiSrcHint(userText) });
                 } catch (e1) {
                     if (!img) throw e1;
                     // the AI server cannot see pictures: read the text from the photo on this device (OCR) and ask with that text
                     const blob = await (await fetch(img)).blob();
                     const ocr = await NB.readDoc(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
                     if (!ocr || ocr.replace(/\s/g, '').length < 12) throw e1;
-                    reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), { role: 'user', content: userText + '\n\n[Text read from the student photo, may contain small reading mistakes]\n' + ocr.slice(0, 6000) }]);
+                    reply = await callAi([{ role: 'system', content: sys }, ...aiHistory.slice(-10), { role: 'user', content: userText + '\n\n[Text read from the student photo, may contain small reading mistakes]\n' + ocr.slice(0, 6000) }], { src: aiSrcHint(userText + ' ' + ocr.slice(0, 300)) });
                 }
                 aiHistory.push({ role: 'user', content: userText + (fl ? ' (attached file: ' + fl.name + ')' : '') }, { role: 'assistant', content: reply });
             } catch (err) {
@@ -2905,7 +3042,9 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             const note = offline ? `<div class="mt-2 text-[10px] text-amber-600">⚠️ Live AI is not reachable (${esc(aiWhy(aiLastErr))}), so ${wiki ? 'this answer is from Wikipedia' : 'this was answered in offline mode'}. <button type="button" onclick="nbAiRetry()" class="underline font-bold">Try the live AI again</button></div>` : '';
             const wikiHtml = wiki ? `<strong>${esc(wiki.title)}</strong><br>${esc(wiki.text).replace(/\n/g, '<br>')}` + (wiki.url ? `<br><a href="${wiki.url}" target="_blank" rel="noopener noreferrer" class="underline font-semibold">Read more on Wikipedia</a>` : '') : '';
             const rd = wiki ? { html: wikiHtml, extra: '' } : aiRender(reply);
-            botBubble(rd.html, rd.extra + note + aiRelatedHtml(related.list));
+            const su = window.nbSources && window.nbSources.lastUsed;
+            const srcChip = !offline && su && su.length ? `<div class="mt-2 text-[10px] text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-book-open mr-1"></i>Notes Bazar library: ${esc(su.slice(0, 3).join(', '))}</div>` : '';
+            botBubble(rd.html, rd.extra + note + srcChip + aiRelatedHtml(related.list));
             aiSave('b', wiki ? (wiki.title + ': ' + wiki.text) : reply);
             finish();
         };

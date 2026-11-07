@@ -1397,7 +1397,7 @@
         try {
             if (lg === 'Both' && n > 15) n = 15;                  // a bilingual test is twice as long, so keep it shorter
             var seen0 = LSX.get('nb_ai_seen', []); if (!Array.isArray(seen0)) seen0 = [];
-            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n, lg, diff, seen0.slice(-30)) }].concat(AIT.hist), { timeout: lg === 'Both' ? 90000 : 60000, temperature: 0.95 });
+            var out = await window.nbCallAi([{ role: 'system', content: aiSystem(QZ.cls, n, lg, diff, seen0.slice(-30)) }].concat(AIT.hist), { timeout: lg === 'Both' ? 90000 : 60000, temperature: 0.95, src: { q: AIT.hist.filter(function (m) { return m.role === 'user'; }).slice(-3).map(function (m) { return m.content; }).join(' '), cls: QZ.cls, subj: AIT.subj } });
             var t = aiParseTest(out, lg === 'Both');
             if (wait.parentNode) wait.remove();
             if (t) {
@@ -1563,7 +1563,7 @@
         var L = 'ABCDEF', ask = 'A Class ' + (r.cls || 10) + ' student got this multiple-choice question wrong. Explain in 3 to 4 very short, simple sentences why the correct answer is right and why the student\'s choice is wrong (if they chose one). Reply in the same language as the question. No headings.\nQuestion: ' + q.q + '\nOptions: ' + q.o.map(function (o, j) { return L[j] + ') ' + o; }).join('  ') + '\nCorrect: ' + L[q.a] + ') ' + q.o[q.a] + '\nStudent chose: ' + (q.x >= 0 ? L[q.x] + ') ' + q.o[q.x] : 'no answer');
         try {
             if (typeof window.nbCallAi !== 'function') throw new Error('no ai');
-            var out = await window.nbCallAi([{ role: 'system', content: ask }, { role: 'user', content: 'Explain now.' }], { timeout: 45000 });
+            var out = await window.nbCallAi([{ role: 'system', content: ask }, { role: 'user', content: 'Explain now.' }], { timeout: 45000, src: { q: q.q, cls: r.cls } });
             box.textContent = String(out || '').replace(/[*#`]/g, '').trim().slice(0, 700) || 'No explanation came back. Please try again.';
         } catch (e) { box.textContent = 'The AI is busy right now. Please try again in a minute.'; }
         btn.disabled = false;
@@ -1824,7 +1824,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
             ctx.prog(fails);
             try {
                 out = await window.nbCallAi([{ role: 'system', content: qpPrompt(o, n, ctx.pool, c) },
-                    { role: 'user', content: 'Make the questions now. ' + qpLangRule(o.lang, o.subj) + ' (variation ' + ctx.seed + '-' + call + ')' }], { timeout: 90000 });
+                    { role: 'user', content: 'Make the questions now. ' + qpLangRule(o.lang, o.subj) + ' (variation ' + ctx.seed + '-' + call + ')' }], { timeout: 90000, src: { q: (o.topic || '') + ' ' + (o.book || ''), cls: o.cls, subj: o.subj } });
             } catch (e) { fails++; continue; }
             if (ctx.run !== QP.run) return null;
             if (/"unsure"\s*:\s*true/i.test(String(out || ''))) { if (!ctx.pool.length) msg = 'I am not sure what is in "' + o.topic + '". To get the real chapter, write the exact lesson name and book name, or paste the chapter text in the box below, then try again.'; break; }
@@ -2408,11 +2408,11 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
     }
 
     /* --- generation --- */
-    async function npAi(msgs, run) {                             // the AI key is shared by all students, so when it is busy wait and try again
+    async function npAi(msgs, run, o) {                             // the AI key is shared by all students, so when it is busy wait and try again
         var d = [0, 12000, 25000, 40000], i;
         for (i = 0; i < d.length; i++) {
             if (d[i]) { npStatus('The AI is busy right now, trying again in a few seconds…'); await new Promise(function (r) { setTimeout(r, d[i]); }); if (run !== NP.run) return ''; }
-            try { return await window.nbCallAi(msgs, { timeout: 90000 }); } catch (e) {}
+            try { return await window.nbCallAi(msgs, { timeout: 90000, src: o ? { q: (o.topic || '') + ' ' + (o.book || ''), cls: o.cls, subj: o.subj } : undefined }); } catch (e) {}
         }
         throw new Error('AI busy');
     }
@@ -2420,7 +2420,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         var a, out, bl, nb;
         for (a = 0; a < 2; a++) {
             if (run !== NP.run) return null;
-            try { out = await npAi([{ role: 'system', content: npSecPrompt(o, outline, i, words) }, { role: 'user', content: 'Write the section now. ' + qpLangRule(o.lang, o.subj) }], run); } catch (e) { return null; }
+            try { out = await npAi([{ role: 'system', content: npSecPrompt(o, outline, i, words) }, { role: 'user', content: 'Write the section now. ' + qpLangRule(o.lang, o.subj) }], run, o); } catch (e) { return null; }
             if (run !== NP.run) return null;
             bl = npBlocks(out); if (!bl) continue;
             nb = bl.map(npNB).filter(Boolean);
@@ -2432,7 +2432,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         var run = ++NP.run, band = npBand(o.cls), N = NP_SEC[o.type][band], words = NP_WORDS[o.type][band], maxImg = o.pics ? (o.type === 'short' ? 2 : 4) : 0, outline = null, tries, out, j, msg = '', secs, res, next = 0, done = 0, notes = [];
         npStatus('Planning the notes…');
         for (tries = 0; tries < 2 && !outline; tries++) {
-            try { out = await npAi([{ role: 'system', content: npOutlinePrompt(o, N, maxImg) }, { role: 'user', content: 'Make the outline now. ' + qpLangRule(o.lang, o.subj) }], run); } catch (e) { msg = 'The AI is busy right now (many students use it at the same time). Please wait a minute and tap "Make notes" again.'; break; }
+            try { out = await npAi([{ role: 'system', content: npOutlinePrompt(o, N, maxImg) }, { role: 'user', content: 'Make the outline now. ' + qpLangRule(o.lang, o.subj) }], run, o); } catch (e) { msg = 'The AI is busy right now (many students use it at the same time). Please wait a minute and tap "Make notes" again.'; break; }
             if (run !== NP.run) return null;
             if (/"unsure"\s*:\s*true/i.test(String(out || '')) && !o.src) { msg = 'I am not sure what is in "' + o.topic + '". To get the real chapter, write the exact lesson name and book name, or paste / scan the chapter text in the box below, then try again.'; break; }
             j = npJson(out);
@@ -2501,7 +2501,7 @@ QP_L.Hindi.insA = QP_L.English.insA; QP_L.Hinglish.insA = QP_L.English.insA;   /
         n = parseInt($('npQzN').value, 10) || 10; mode = $('npQzM').value;
         NP.qzBusy = true; go.disabled = true; st.textContent = 'Making your quiz from these notes…';
         try {
-            out = await npAi([{ role: 'system', content: npQuizPrompt(d.o, n, npPlain(d)) }, { role: 'user', content: 'Make the quiz now.' }], run);
+            out = await npAi([{ role: 'system', content: npQuizPrompt(d.o, n, npPlain(d)) }, { role: 'user', content: 'Make the quiz now.' }], run, d.o);
             t = aiParseTest(out);
             if (!t) st.textContent = 'The quiz could not be made this time. Please tap Start quiz again.';
         } catch (e) { st.textContent = 'The AI is busy right now. Please wait a minute and try again.'; }

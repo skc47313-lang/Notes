@@ -51,6 +51,7 @@
         { id: 'notifications', label: 'Notifications', icon: 'fa-bell', badge: 'pending' },
         { id: 'support', label: 'Support', icon: 'fa-circle-question', group: ['support', 'complain', 'wish'] },
         { id: 'verify', label: 'Content Verification', icon: 'fa-circle-check' },
+        { id: 'sources', label: 'AI Sources', icon: 'fa-book-open-reader' },
         { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left' },
         { id: 'safe', label: 'Safe Folder', icon: 'fa-lock' }
     ];
@@ -68,6 +69,7 @@
         complain: { t: 'Support', d: 'Questions, complaints and requests from students.' },
         wish: { t: 'Support', d: 'Questions, complaints and requests from students.' },
         verify: { t: 'Content Verification', d: 'Check every upload: verify it, send it for review, ask for corrections or reject it.' },
+        sources: { t: 'AI Sources', d: 'Books, notes and Drive material that Bazar AI, the notes maker and the question paper maker must use as their source.' },
         audit: { t: 'Audit Log', d: 'Everything the admin changed on this device: edits, verification, visibility and deletes.' },
         safe: { t: 'Safe Folder', d: 'Your private, password-protected files.' }
     };
@@ -720,6 +722,7 @@
         else if (tab === 'notifications') pageNotifications(c);
         else if (tab === 'verify') pageVerify(c);
         else if (tab === 'audit') pageAudit();
+        else if (tab === 'sources') { if (window.NBSources) window.NBSources.adminRender($('adminPanel-sources')); else $('adminPanel-sources').innerHTML = '<div class="a-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading…</div>'; }
     };
     A.go = function (id) { window.adminSwitchTab(id); };
     A.setRange = function (r) { S.range = r; rerender(); };
