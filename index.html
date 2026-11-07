@@ -59,7 +59,7 @@
                 var low = (nv.deviceMemory && nv.deviceMemory <= 2) || (nv.hardwareConcurrency && nv.hardwareConcurrency <= 2) || (nv.connection && nv.connection.saveData) || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
                 if (an === '0') de.classList.add('no-anim');
                 else if (an === '1') de.classList.add('force-anim');
-                else if (low) de.classList.add('lite');
+                else if (low || localStorage.getItem('nb_autolite') === '1') de.classList.add('lite');
                 if (localStorage.getItem('nb_rgb') === '0') de.classList.add('no-rgb');
                 if (localStorage.getItem('nb_nebula') === '1') { de.classList.add('nebula', 'dark'); }
                 if (localStorage.getItem('nb_scrollfx') === '1') { de.classList.add('scrollfx'); de.classList.remove('lite'); }
@@ -77,7 +77,8 @@
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     
     <link rel="stylesheet" href="style.css?v=20261103d">
-    <link rel="stylesheet" href="fx.css?v=20261107a">
+    <link rel="stylesheet" href="fx.css?v=20261107b">
+    <link rel="stylesheet" href="motion.css?v=20261107c">
 
     <!-- Firebase Realtime Database Script -->
     <script type="module" src="app.js?v=20261107a"></script>
@@ -86,7 +87,8 @@
     <script src="sources.js?v=20261107a" defer></script>
     <script src="extras.js?v=20261107b" defer></script>
     <script src="yt.js?v=20261107a" defer></script>
-    <script src="fx.js?v=20261107a" defer></script>
+    <script src="fx.js?v=20261107b" defer></script>
+    <script src="motion.js?v=20261107c" defer></script>
     <script src="admin.js?v=20261107a" defer></script>
     <script src="layouts.js?v=20261104a" defer></script>
     <script src="community.js?v=20261103d" defer></script>
@@ -691,9 +693,14 @@
                 <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600" aria-label="Close"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div class="space-y-3 text-xs">
-                <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-                    <div><p class="font-bold text-sm">Moving animations</p><p class="text-slate-500 dark:text-slate-400 mt-0.5">Cards, logo and icons keep floating</p></div>
-                    <button id="togAnim" type="button" role="switch" aria-checked="true" aria-label="Moving animations" onclick="toggleSetting('anim')" class="nb-switch"></button>
+                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <p class="font-bold text-sm"><i class="fa-solid fa-gauge-high dynamic-text mr-1.5"></i>Animation mode</p>
+                    <p id="nbAnimHint" class="text-slate-500 dark:text-slate-400 mt-0.5">Auto: switches to Lite by itself on slow phones.</p>
+                    <div class="nb-seg" id="nbAnimSeg" role="group" aria-label="Animation mode">
+                        <button type="button" data-nbm="auto" aria-pressed="true" onclick="NBMotion.setMode('auto')">Auto<small>Recommended</small></button>
+                        <button type="button" data-nbm="full" aria-pressed="false" onclick="NBMotion.setMode('full')">Full<small>All effects</small></button>
+                        <button type="button" data-nbm="lite" aria-pressed="false" onclick="NBMotion.setMode('lite')">Lite<small>Fast &amp; light</small></button>
+                    </div>
                 </div>
                 <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
                     <div><p class="font-bold text-sm">RGB hover glow</p><p class="text-slate-500 dark:text-slate-400 mt-0.5">Rotating RGB border and colour change on hover</p></div>

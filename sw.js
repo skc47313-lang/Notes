@@ -1,10 +1,10 @@
 /* Notes Bazar service worker – app shell + offline support */
-const VER = 'v43';
+const VER = 'v44';
 const SHELL = 'nb-shell-' + VER;      // index.html, manifest, icons
 const STATIC = 'nb-static-' + VER;    // font-awesome, firebase sdk, fonts
 const DATA = 'nb-data-' + VER;        // lists + opened files (so they open offline)
 const FILE_LIMIT = 25;                // max opened files kept offline
-const SHELL_FILES = ['./', './index.html', './manifest.json', './style.css', './extras.css', './app.js', './extras.js', './community.js', './community.css', './bseb-chapters.js', './admin.css', './admin.js', './layouts.css', './layouts.js', './dash2.css', './dash2.js', './planner.css', './planner.js', './drive.js', './sources.js', './yt.js', './fx.js', './fx.css', './questions.json', './icon-192.png', './icon-512.png'];
+const SHELL_FILES = ['./', './index.html', './manifest.json', './style.css', './extras.css', './app.js', './extras.js', './community.js', './community.css', './bseb-chapters.js', './admin.css', './admin.js', './layouts.css', './layouts.js', './dash2.css', './dash2.js', './planner.css', './planner.js', './drive.js', './sources.js', './yt.js', './fx.js', './fx.css', './motion.js', './motion.css', './questions.json', './icon-192.png', './icon-512.png'];
 const STATIC_HOSTS = ['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com'];
 
 self.addEventListener('install', e => {

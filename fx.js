@@ -10,7 +10,7 @@
     function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; }
     var HUES = [262, 215, 160, 24, 330, 275, 195], NEB = [262, 285, 310, 245, 275, 325, 255];       // one colour family per section while scrolling
     var on = { nebula: root.classList.contains('nebula'), scrollfx: root.classList.contains('scrollfx') };
-    var io = null, mo = null, secIo = null, ticking = false, bound = false, prevDark = null;
+    var io = null, mo = null, secIo = null, ticking = false, bound = false, prevDark = null, singleN = 0;
 
     function isOn(k) { return !!on[k]; }
     function $(id) { return document.getElementById(id); }
@@ -31,65 +31,112 @@
         t.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; document.body.appendChild(t);
     }
 
-    /* ---------- scroll state (only writes CSS variables, so it stays smooth) ---------- */
-    var lastY = 0, vel = 0, raf2 = 0;
+    /* ---------- scroll state ----------
+       Variables are written ONLY on the few elements that use them (not on <html>), so the browser does not
+       re-calculate the style of the whole page on every scroll frame. */
+    var cache = {};
+    function el1(id, sel) { var e = cache[id]; if (!e || !e.isConnected) e = cache[id] = (sel ? document.querySelector(sel) : $(id)); return e; }
+    var lastSy = -1, lastTop = null, lastScr = null;
     function frame() {
         ticking = false;
-        var y = window.pageYOffset || root.scrollTop || 0, max = Math.max(1, (root.scrollHeight || 1) - window.innerHeight);
-        root.style.setProperty('--sy', y.toFixed(0));
-        root.style.setProperty('--sp', Math.min(1, Math.max(0, y / max)).toFixed(4));
-        root.style.setProperty('--hp', Math.min(1, y / 520).toFixed(3));
-        root.classList.toggle('fx-scrolled', on.scrollfx && y > 40);
-        root.classList.toggle('fx-top', on.scrollfx && y > 420);
-        if (on.scrollfx) { vel += (y - lastY); if (!raf2) raf2 = requestAnimationFrame(decay); }
-        lastY = y;
-    }
-    function decay() {                        /* scroll speed -> a small skew on the card grids, eases back to 0 */
-        vel *= 0.86; var v = Math.max(-1, Math.min(1, vel / 60)) * 2.2;
-        root.style.setProperty('--vel', v.toFixed(3));
-        if (Math.abs(vel) > 0.4) raf2 = requestAnimationFrame(decay); else { vel = 0; raf2 = 0; root.style.setProperty('--vel', '0'); }
+        var y = window.pageYOffset || root.scrollTop || 0;
+        if (y === lastSy) return; lastSy = y;
+        var max = Math.max(1, (root.scrollHeight || 1) - window.innerHeight), sp = Math.min(1, Math.max(0, y / max)).toFixed(4);
+        var bg = el1('bg'), pr = el1('prog'), tp = el1('top'), hero = el1('hero', '#heroSlider');
+        if (bg) { bg.style.setProperty('--sy', y.toFixed(0)); bg.style.setProperty('--sp', sp); }
+        if (pr) pr.style.setProperty('--sp', sp);
+        if (tp) tp.style.setProperty('--sp', sp);
+        if (hero && y < 900) { hero.style.setProperty('--hp', Math.min(1, y / 520).toFixed(3)); hero.style.setProperty('--sy', y.toFixed(0)); }
+        var wm = document.querySelectorAll('.watermark-book'); for (var i = 0; i < wm.length; i++) wm[i].style.setProperty('--sy', y.toFixed(0));
+        var scr = on.scrollfx && y > 40, top = on.scrollfx && y > 420;
+        if (scr !== lastScr) { lastScr = scr; root.classList.toggle('fx-scrolled', scr); }
+        if (top !== lastTop) { lastTop = top; root.classList.toggle('fx-top', top); }
     }
     function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
 
-    /* ---------- reveal on scroll ---------- */
-    var SEL = 'main:not(.hidden) > section, main:not(.hidden) > div, main:not(.hidden) .sec-title, main:not(.hidden) .hm-grid > *, ' +
-        'main:not(.hidden) [id$="Grid"] > *, main:not(.hidden) #homeResults > *, main:not(.hidden) #homeQuickSection > div > *';
+    /* ---------- reveal on scroll ----------
+       Every card gets a direction from where it really sits in its grid (works for 1, 2, 3 or 4 columns, PC and mobile):
+         first column -> slides in from the LEFT, last column -> from the RIGHT, middle columns -> rise from the BOTTOM.
+       Single blocks (sections, banners, headings) alternate between "rise from the bottom" and "soft fade-in". */
+    var SEL = 'main:not(.hidden) > section, main:not(.hidden) > div, main:not(.hidden) .sec-title, main:not(.hidden) > section > p, ' +
+        'main:not(.hidden) .hm-grid > *, main:not(.hidden) [id$="Grid"] > *, main:not(.hidden) #homeResults > *, ' +
+        'main:not(.hidden) #homeQuickSection > h3, main:not(.hidden) #homeQuickSection .qo-grid > .qo-card, main:not(.hidden) #homeQuickSection .qo-extra-in > .qo-card, ' +
+        'main:not(.hidden) #homeBrowseSection .grid > *, main:not(.hidden) #homeDl > *, main:not(.hidden) #homeRecent > *, main:not(.hidden) #homeFav > *';
     var TILT = '.hm-grid > *, [id$="Grid"] > *, #homeResults > *';
+    var GRID_CHILD = '.qo-grid, .hm-grid, [id$="Grid"], #homeResults, #homeBrowseSection > .grid';
+    var DIRS = ['fx-l', 'fx-rt', 'fx-fade'];
     function splitTitle(el) {
         var sp = el.querySelector(':scope > span:not([class*="rounded"])');
         if (!sp || sp.children.length || !sp.textContent.trim() || sp.__sp) return;
         sp.__sp = 1; sp.classList.add('fx-split');
         sp.innerHTML = sp.textContent.trim().split(/\s+/).map(function (w, i) { return '<span class="fx-w"><i style="--wi:' + i + '">' + w.replace(/[<>&]/g, '') + '</i></span>'; }).join(' ');
     }
+    function hasGridChild(el) {            // a wrapper whose cards animate on their own must not animate twice
+        var c = el.children;
+        for (var i = 0; i < c.length; i++) if (c[i].matches && c[i].matches(GRID_CHILD)) return true;
+        return false;
+    }
     function scan() {
         if (!on.scrollfx) return;
         var list = document.querySelectorAll(SEL);
         for (var i = 0; i < list.length; i++) {
             var el = list[i];
-            if (el.__fx || el.id === 'heroSlider') continue;
+            if (el.__fx || el.id === 'heroSlider' || el.classList.contains('qo-extra')) continue;
+            if (el.matches('main > section, main > div') && hasGridChild(el)) { el.__fx = 3; continue; }
             el.__fx = 1;
-            var par = el.parentElement, idx = par ? Array.prototype.indexOf.call(par.children, el) : 0;
             if (el.classList.contains('sec-title')) { splitTitle(el); el.classList.add('fx-title'); }
-            else {
-                el.classList.add('fx-r');
-                if (par && /grid/.test(par.className + par.id)) { el.style.setProperty('--d', (Math.min(idx % 4, 3) * 90) + 'ms'); el.classList.add(idx % 3 === 0 ? 'fx-l' : (idx % 3 === 2 ? 'fx-rt' : 'fx-z')); }
-            }
+            else el.classList.add('fx-r');
             io.observe(el);
         }
+    }
+    function gridOf(el) {
+        var p = el.parentElement;
+        while (p && p !== document.body) {
+            var d = getComputedStyle(p).display;
+            if (d === 'grid' || d === 'inline-grid') return p;
+            if (d !== 'contents') return null;
+            p = p.parentElement;
+        }
+        return null;
+    }
+    function pickDir(el) {
+        var g = gridOf(el);
+        if (g) {
+            var cols = getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length;
+            if (cols >= 2) {
+                var gr = g.getBoundingClientRect(), r = el.getBoundingClientRect();
+                var col = Math.floor((r.left + r.width / 2 - gr.left) / (gr.width / cols));
+                col = Math.max(0, Math.min(cols - 1, col));
+                if (col === 0) return 'fx-l';
+                if (col === cols - 1) return 'fx-rt';
+                return '';                                   // middle -> from the bottom (the default state)
+            }
+        }
+        return (singleN++ % 2) ? 'fx-fade' : '';             // single block: fade-in / rise, alternately
+    }
+    function reveal(el, i) {
+        if (el.classList.contains('fx-title')) { el.classList.add('in'); return; }
+        var dir = pickDir(el);
+        el.style.setProperty('--d', Math.min(i, 8) * 70 + 'ms');
+        el.classList.remove.apply(el.classList, DIRS);
+        el.style.transition = 'none';                         // jump to the right start position without animating...
+        if (dir) el.classList.add(dir);
+        void el.offsetWidth;
+        el.style.transition = '';                             // ...then animate to the final position
+        el.classList.add('in');
+        setTimeout(function () {                              // give transforms back to the page's own hover effects
+            el.classList.remove('fx-r', 'in', 'fx-l', 'fx-rt', 'fx-fade'); el.style.removeProperty('--d'); el.__fx = 2;
+            if (el.matches && el.matches(TILT)) el.classList.add('fx-tilt');
+        }, 1700);
     }
     function mkObservers() {
         if (io) return;
         io = new IntersectionObserver(function (es) {
-            es.forEach(function (e) {
-                if (!e.isIntersecting) return;
-                var el = e.target; io.unobserve(el); el.classList.add('in');
-                if (el.classList.contains('fx-title')) return;
-                setTimeout(function () {            // give transforms back to the page's own hover effects
-                    el.classList.remove('fx-r', 'in', 'fx-l', 'fx-rt', 'fx-z'); el.style.removeProperty('--d'); el.__fx = 2;
-                    if (el.matches && el.matches(TILT)) el.classList.add('fx-tilt');
-                }, 1900);
-            });
-        }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+            var vis = es.filter(function (e) { return e.isIntersecting; });
+            if (!vis.length) return;
+            vis.sort(function (a, b) { var A = a.boundingClientRect, B = b.boundingClientRect; return (Math.round(A.top / 40) - Math.round(B.top / 40)) || (A.left - B.left); });
+            vis.forEach(function (e, i) { io.unobserve(e.target); reveal(e.target, i); });
+        }, { threshold: 0.06, rootMargin: '0px 0px -4% 0px' });
         secIo = new IntersectionObserver(function (es) {
             es.forEach(function (e) {
                 if (e.isIntersecting && e.intersectionRatio > 0.2) {
@@ -134,10 +181,10 @@
     }
     function stopScroll() {
         if (mo) mo.disconnect();
-        var l = document.querySelectorAll('.fx-r, .fx-tilt');
-        for (var i = 0; i < l.length; i++) { l[i].classList.remove('fx-r', 'in', 'fx-l', 'fx-rt', 'fx-z', 'fx-tilt'); l[i].__fx = 0; }
+        var l = document.querySelectorAll('.fx-r, .fx-tilt, .fx-title');
+        for (var i = 0; i < l.length; i++) { l[i].classList.remove('fx-r', 'in', 'fx-l', 'fx-rt', 'fx-fade', 'fx-tilt'); l[i].style.removeProperty('--d'); l[i].__fx = 0; }
         root.classList.remove('fx-top');
-        root.classList.remove('fx-scrolled');
+        root.classList.remove('fx-scrolled'); lastScr = lastTop = null; lastSy = -1;
     }
 
     /* ---------- Nebula: it is a dark look, so it switches dark mode on and puts it back when turned off ---------- */

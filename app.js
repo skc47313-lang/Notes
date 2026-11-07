@@ -509,12 +509,9 @@
         function skeletonCards(n) {
             let h = '';
             for (let i = 0; i < n; i++) {
-                h += `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow animate-pulse space-y-3">
-                    <div class="flex justify-between"><div class="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg"></div><div class="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div>
-                    <div class="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                    <div class="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded"></div>
-                    <div class="h-3 w-2/3 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                    <div class="h-9 w-full bg-slate-100 dark:bg-slate-800 rounded-xl mt-4"></div></div>`;
+                h += `<div class="nb-skel" aria-hidden="true">
+                    <div class="row"><div class="nb-sk w1"></div><div class="nb-sk w1"></div></div>
+                    <div class="nb-sk w2"></div><div class="nb-sk w3"></div><div class="nb-sk w4"></div><div class="nb-sk w5"></div></div>`;
             }
             return h;
         }
@@ -569,7 +566,7 @@
             if (countSpan) countSpan.textContent = filtered.length + (window.hasMore ? '+' : '');
 
             grid.innerHTML = '';
-            if (!window.loaded && window.allItems.length === 0) { grid.innerHTML = skeletonCards(3); return; }
+            if (!window.loaded && window.allItems.length === 0) { grid.innerHTML = skeletonCards(6); return; }
             if (window.loadError) {
                 grid.innerHTML = `<div class="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800"><p class="text-sm font-semibold mb-3">${esc(t('Could not load data. Check your internet.'))}</p><button onclick="loadCloudData()" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">${esc(t('Retry'))}</button></div>`;
                 return;

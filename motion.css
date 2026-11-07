@@ -1,0 +1,65 @@
+/* Notes Bazar - motion.css
+   Polish layer: shimmer skeletons, image blur-up, page transitions, count-up, press feedback + ripple,
+   bottom-sheet modals on mobile, and the "Animation mode" control in Settings.
+   Everything here is switched off automatically in Lite mode / "no-anim" / reduced-motion (unless the person forced Full). */
+
+/* ---------------------------------------------------------------- 1) Shimmer skeleton cards */
+.nb-skel { background: var(--nb-surface, #fff); border: 1px solid var(--nb-border, #e2e8f0); border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 14px -6px rgba(15, 23, 42, .12);
+    display: flex; flex-direction: column; gap: 12px; }
+html.dark .nb-skel { background: #0f172a; border-color: #1e293b; }
+.nb-sk { position: relative; overflow: hidden; border-radius: 8px; background: #e2e8f0; }
+html.dark .nb-sk { background: #1e293b; }
+.nb-sk::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .65), transparent); animation: nbShim 1.35s cubic-bezier(.4, 0, .2, 1) infinite; }
+html.dark .nb-sk::after { background: linear-gradient(90deg, transparent, rgba(148, 163, 184, .16), transparent); }
+@keyframes nbShim { to { transform: translateX(100%); } }
+.nb-sk.w1 { height: 20px; width: 64px; } .nb-sk.w2 { height: 16px; width: 75%; } .nb-sk.w3 { height: 12px; width: 100%; } .nb-sk.w4 { height: 12px; width: 66%; }
+.nb-sk.w5 { height: 36px; width: 100%; border-radius: 12px; margin-top: 10px; }
+.nb-skel .row { display: flex; justify-content: space-between; }
+html.lite .nb-sk::after, html.no-anim .nb-sk::after { animation: none; display: none; }
+
+/* ---------------------------------------------------------------- 2) Image blur-up */
+img.nb-bu { filter: blur(14px); opacity: .55; transform: scale(1.04); }
+img.nb-bu-go { transition: filter .7s ease, opacity .55s ease, transform .7s cubic-bezier(.22, 1, .36, 1); }
+
+/* ---------------------------------------------------------------- 3) Page transition (Home <-> Notes / Books / PYQ ...) */
+@keyframes nbPgR { from { opacity: 0; transform: translate3d(26px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes nbPgL { from { opacity: 0; transform: translate3d(-26px, 0, 0); } to { opacity: 1; transform: none; } }
+.nb-pg-r { animation: nbPgR .42s cubic-bezier(.22, 1, .36, 1) backwards; }
+.nb-pg-l { animation: nbPgL .42s cubic-bezier(.22, 1, .36, 1) backwards; }
+
+/* ---------------------------------------------------------------- 4) Press feedback + ripple (uses the separate "scale" property, so it never fights other transforms) */
+@keyframes nbPress { to { scale: .97; } }
+@keyframes nbRel { 0% { scale: .97; } 55% { scale: 1.012; } 100% { scale: 1; } }
+.nb-press { animation: nbPress .12s ease-out forwards; }
+.nb-rel { animation: nbRel .34s ease-out; }
+.nb-rip { position: absolute; border-radius: 50%; pointer-events: none; background: currentColor; opacity: .26; transform: scale(0); animation: nbRip .6s ease-out forwards; z-index: 0; }
+@keyframes nbRip { to { transform: scale(1); opacity: 0; } }
+
+/* ---------------------------------------------------------------- 5) Modals: soft pop on PC, spring bottom-sheet on phones */
+@keyframes nbFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nbPop { from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes nbSheet { 0% { transform: translate3d(0, 100%, 0); } 62% { transform: translate3d(0, -1.6%, 0); } 82% { transform: translate3d(0, .5%, 0); } 100% { transform: none; } }
+.nb-modal:not(.hidden) { animation: nbFade .24s ease backwards; }
+.nb-modal:not(.hidden) > :first-child { animation: nbPop .36s cubic-bezier(.22, 1, .36, 1) backwards; }
+@media (max-width: 640px) {
+    .nb-modal.nb-sheet { align-items: flex-end !important; padding: 0 !important; }
+    .nb-modal.nb-sheet > :first-child { max-width: none !important; width: 100% !important; border-radius: 26px 26px 0 0 !important; position: relative;
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); max-height: 92vh !important; touch-action: pan-y; }
+    .nb-modal.nb-sheet:not(.hidden) > :first-child { animation: nbSheet .55s ease-out backwards; }
+    .nb-modal.nb-sheet > :first-child::before { content: ""; position: absolute; top: 7px; left: 50%; width: 38px; height: 4px; margin-left: -19px; border-radius: 4px; background: rgba(148, 163, 184, .55); }
+    .nb-modal.nb-sheet > :first-child.nb-drag { transition: none; }
+}
+html.lite .nb-modal:not(.hidden), html.lite .nb-modal:not(.hidden) > :first-child,
+html.no-anim .nb-modal:not(.hidden), html.no-anim .nb-modal:not(.hidden) > :first-child { animation: none !important; }
+html.lite .nb-pg-r, html.lite .nb-pg-l, html.no-anim .nb-pg-r, html.no-anim .nb-pg-l { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+    html:not(.force-anim) .nb-modal:not(.hidden), html:not(.force-anim) .nb-modal:not(.hidden) > :first-child { animation: none !important; }
+    html:not(.force-anim) .nb-sk::after { animation: none; display: none; }
+}
+
+/* ---------------------------------------------------------------- 6) Animation mode control (Settings) */
+.nb-seg { display: flex; gap: 4px; padding: 3px; border-radius: 14px; background: rgba(148, 163, 184, .18); margin-top: 10px; }
+.nb-seg button { flex: 1; padding: 8px 6px; border-radius: 11px; border: 0; background: transparent; color: inherit; font-weight: 700; font-size: 12px; cursor: pointer; transition: background .2s, color .2s, box-shadow .2s; }
+.nb-seg button[aria-pressed="true"] { background: var(--theme-primary, #6366f1); color: #fff; box-shadow: 0 4px 12px -4px rgba(99, 102, 241, .7); }
+.nb-seg small { display: block; font-weight: 500; font-size: 9.5px; opacity: .8; margin-top: 1px; }
