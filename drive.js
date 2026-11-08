@@ -17,7 +17,7 @@
    ===================================================================== */
 (function () {
     'use strict';
-    var DRIVE_API_KEY = '';                                  // <- paste your Drive API key here
+    var DRIVE_API_KEY = 'AIzaSyCdxFavNFKb8WPZxIY6mX78ezAtNB8gYIc';                                  // <- paste your Drive API key here
     var FALLBACK_KEY = 'AIzaSyChG_jBGcieowmVVKHdwaiI1zvOwvvPag0';   // Firebase web key (works only if Drive API is enabled for that project and the key is not restricted)
     var B = 'https://www.googleapis.com/drive/v3/files';
     var MAX_FILES = 150, MAX_BYTES = 450 * 1024 * 1024, MAX_DEPTH = 4, PAR = 3;
