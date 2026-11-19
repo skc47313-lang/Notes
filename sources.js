@@ -379,7 +379,8 @@
     }
     function rulesText(em) { return '"notes_bazar_src": {\n  ".read": true,\n  ".write": "auth != null && auth.token.email === \'' + (em || 'YOUR_ADMIN_EMAIL') + '\'"\n}'; }
     function fmtK(n) { return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n || 0); }
-    function dt(ts) { return ts ? new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''; }
+    var _dtF = null; try { _dtF = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
+    function dt(ts) { if (!ts) return ''; var d = new Date(ts); try { return _dtF ? _dtF.format(d) : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
 
     async function loadList() {
         S.state = 'loading'; paintList();

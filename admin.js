@@ -32,7 +32,8 @@
         var d = Math.floor(h / 24); if (d < 31) return d + (d === 1 ? ' day ago' : ' days ago');
         var mo = Math.floor(d / 30); return mo < 12 ? mo + (mo === 1 ? ' month ago' : ' months ago') : Math.floor(mo / 12) + ' yr ago';
     }
-    function fdate(ts) { return ts ? new Date(ts).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''; }
+    var _fdF = null; try { _fdF = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
+    function fdate(ts) { if (!ts) return ''; var d = new Date(ts); try { return _fdF ? _fdF.format(d) : d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
     function toast(m) { if (window.nbToast) window.nbToast(m, 3200); else try { alert(m); } catch (e) {} }
 
     var S = {

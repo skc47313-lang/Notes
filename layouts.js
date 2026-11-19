@@ -188,7 +188,7 @@
         H.setAttribute('data-layout', id);
         if (id === 'dark' || (BYID[id] && BYID[id].dark)) H.classList.add('dark');
         else if (id !== 'classic') H.classList.remove('dark');
-        else { var d = ls('nb_dark'); if (d === null) d = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? '1' : '0'; H.classList.toggle('dark', d === '1'); }
+        else { var d = ls('nb_dark'); if (d === null) d = '0'; H.classList.toggle('dark', d === '1'); }
         if (footer) footer.innerHTML = footerHTML(id);
         if (persist) lsSet('nb_layout', id);
     }
@@ -197,7 +197,8 @@
         if (persist) lsSet('nb_lx', JSON.stringify(s));
     }
     function loadLive() {
-        return fetch(DB + '/notes_bazar_layout.json', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        var early = window.__nbLxP; window.__nbLxP = null;          // the head already started the first request
+        return (early || fetch(DB + '/notes_bazar_layout.json', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }))
             .then(function (v) {
                 live = norm(v);
                 if (editing) { refreshBar(); return live.id; }       // the admin is previewing something: do not overwrite it

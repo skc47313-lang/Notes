@@ -288,14 +288,14 @@ html:not(.lite):not(.no-anim) #homeView > div.dynamic-bg:first-child > :nth-chil
 html:not(.lite):not(.no-anim) #homeView > div.dynamic-bg:first-child > :nth-child(5) { animation-delay: -2.1s; }
 html:not(.lite):not(.no-anim) #homeView > div.dynamic-bg:first-child > div:first-child { animation: nbSway 8s ease-in-out infinite; }
 html:not(.lite):not(.no-anim) #homeView .hover-rgb-glow > .dynamic-bg { animation: nbSway 3.6s ease-in-out infinite; }
-/* cards keep floating (entrance + endless float) */
-html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > * { content-visibility: visible; animation: nbIn .5s cubic-bezier(.22,1,.36,1) backwards, nbFloatS 6s ease-in-out .5s infinite; }
-html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > :nth-child(3n+2) { animation-delay: .08s, .58s; animation-duration: .5s, 7s; }
-html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > :nth-child(3n) { animation-delay: .16s, .66s; animation-duration: .5s, 5.5s; }
-html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > :nth-child(-n+24) { will-change: translate; }
+/* cards: entrance for every card, endless float only for the first 6 (an endless animation on every card made long lists lag) */
+html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > * { content-visibility: visible; animation: nbIn .5s cubic-bezier(.22,1,.36,1) backwards; }
+html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > :nth-child(-n+6) { animation: nbIn .5s cubic-bezier(.22,1,.36,1) backwards, nbFloatS 6s ease-in-out .5s infinite; will-change: translate; }
+html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > :nth-child(3n+2) { animation-delay: .08s, .58s; }
+html:not(.lite):not(.no-anim) :is(#notesGrid, #booksGrid, #pyqGrid) > :nth-child(3n) { animation-delay: .16s, .66s; }
 html:not(.lite):not(.no-anim) .watermark-book { animation: waterMarkFloat 10s ease-in-out infinite; }
 html:not(.lite):not(.no-anim) .nav-btn-active, html:not(.lite):not(.no-anim) #aiFabBtn .ai-fab-glow { will-change: transform, opacity; }
-html:not(.lite):not(.no-anim) .dynamic-btn.text-white:not(:hover) { animation: nbPulse 3.2s ease-in-out infinite; }
+html:not(.lite):not(.no-anim) .dynamic-btn.text-white:not(:hover):not(.hover-rgb-glow *) { animation: nbPulse 3.2s ease-in-out infinite; }   /* not inside cards: one pulsing button per card was too many */
 
 /* ===== Mobile fix: modals never wider than the screen ===== */
 .fixed[id$="Modal"] > div { min-width: 0; max-width: 100%; }

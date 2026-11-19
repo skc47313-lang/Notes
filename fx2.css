@@ -1,0 +1,81 @@
+/* =====================================================================
+   Notes Bazar - fx2.css   (modern motion layer, ON by default)
+   1) Reveal on scroll: left column slides from the left, right column from the right, middle + single blocks rise
+   2) Hero text arrives line by line on every slide
+   3) Header + tabs drop in after the intro
+   4) Soft spring-in for every pop-up (quiz, planner, profile, login ...)
+   5) Thin scroll-progress bar   6) Card tilt on PC (JS)
+   Nothing here changes colours, sizes or layout. Everything switches itself off in Lite mode, "no-anim",
+   reduced-motion (unless Full is forced) and when the older optional "Scroll animations" are on.
+   JS (fx2.js) adds html.fx2-ok only when motion is allowed, so without JS the page simply shows normally.
+   ===================================================================== */
+
+/* ------------------------------------------------------------ 1) reveal on scroll */
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) #homeView { overflow-x: clip; }   /* sideways slides can never create a horizontal scrollbar */
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r {
+    opacity: 0; translate: 0 34px;
+    transition: opacity .7s cubic-bezier(.22, 1, .36, 1) var(--fx2-d, 0ms), translate .85s cubic-bezier(.22, 1, .36, 1) var(--fx2-d, 0ms), scale .85s cubic-bezier(.22, 1, .36, 1) var(--fx2-d, 0ms) !important;   /* !important: the site's own #id card rules would otherwise win; it only lives ~1.3s, until the reveal is done */
+}
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.fx2-l { translate: -48px 0; }
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.fx2-rt { translate: 48px 0; }
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.fx2-fade { translate: 0 0; scale: .965; }
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.in { opacity: 1; translate: 0 0; scale: 1; }
+/* the little icon in every section title pops when the title arrives */
+@keyframes fx2Icon { 0% { scale: .3; rotate: -40deg; opacity: 0; } 60% { scale: 1.25; rotate: 8deg; opacity: 1; } 100% { scale: 1; rotate: 0deg; opacity: 1; } }
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.in > i:first-child { animation: fx2Icon .7s cubic-bezier(.34, 1.56, .64, 1) .12s backwards; }
+@media (max-width: 640px) {
+    html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.fx2-l { translate: -26px 0; }
+    html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r.fx2-rt { translate: 26px 0; }
+    html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) .fx2-r { translate: 0 26px; }
+}
+
+/* ------------------------------------------------------------ 2) hero text, line by line */
+html.fx2-ok:not(.lite):not(.no-anim) #heroSlider.fx2-hero .hs-slide > :not(.hs-deco) {
+    opacity: 0; translate: 0 22px;
+    transition: opacity .55s cubic-bezier(.22, 1, .36, 1), translate .7s cubic-bezier(.22, 1, .36, 1);
+}
+html.fx2-ok:not(.lite):not(.no-anim) #heroSlider.fx2-hero .hs-slide.fx2-on > :not(.hs-deco) {
+    opacity: 1; translate: 0 0;
+    transition-delay: calc(var(--i, 0) * 90ms + 80ms);
+}
+html.fx2-ok:not(.lite):not(.no-anim) #heroSlider.fx2-hero .hs-slide .hs-deco { transition: opacity .8s ease, scale .9s cubic-bezier(.22, 1, .36, 1); scale: .85; opacity: .6; }
+html.fx2-ok:not(.lite):not(.no-anim) #heroSlider.fx2-hero .hs-slide.fx2-on .hs-deco { scale: 1; opacity: 1; }
+
+/* ------------------------------------------------------------ 3) header drops in once the intro is gone */
+@keyframes fx2Drop { from { opacity: 0; translate: 0 -100%; } to { opacity: 1; translate: 0 0; } }
+@keyframes fx2Tab { from { opacity: 0; translate: 0 -10px; } to { opacity: 1; translate: 0 0; } }
+html.fx2-ok.fx2-go:not(.lite):not(.no-anim) #nbHeader { animation: fx2Drop .7s cubic-bezier(.22, 1, .36, 1) backwards; }
+html.fx2-ok.fx2-go:not(.lite):not(.no-anim) #nbHeader .nbh-tab { animation: fx2Tab .55s cubic-bezier(.22, 1, .36, 1) backwards; }
+html.fx2-ok.fx2-go:not(.lite):not(.no-anim) #nbHeader .nbh-tab:nth-of-type(1) { animation-delay: .25s; }
+html.fx2-ok.fx2-go:not(.lite):not(.no-anim) #nbHeader .nbh-tab:nth-of-type(2) { animation-delay: .33s; }
+html.fx2-ok.fx2-go:not(.lite):not(.no-anim) #nbHeader .nbh-tab:nth-of-type(3) { animation-delay: .41s; }
+html.fx2-ok.fx2-go:not(.lite):not(.no-anim) #nbHeader .nbh-tab:nth-of-type(4) { animation-delay: .49s; }
+
+/* ------------------------------------------------------------ 4) pop-ups: fade the backdrop, spring the card */
+@keyframes fx2Fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fx2Spring { 0% { opacity: 0; transform: translate3d(0, 26px, 0) scale(.94); } 60% { opacity: 1; transform: translate3d(0, -4px, 0) scale(1.008); } 100% { opacity: 1; transform: none; } }
+@keyframes fx2Up { 0% { opacity: 0; transform: translate3d(0, 46px, 0); } 65% { opacity: 1; transform: translate3d(0, -4px, 0); } 100% { opacity: 1; transform: none; } }
+html:not(.lite):not(.no-anim) .nbo.open { animation: fx2Fade .22s ease backwards; }
+html:not(.lite):not(.no-anim) .nbo.open > .nbo-card { animation: fx2Spring .5s cubic-bezier(.22, 1, .36, 1) backwards; }
+@media (max-width: 640px) { html:not(.lite):not(.no-anim) .nbo.open > .nbo-card { animation-name: fx2Up; } }
+
+/* ------------------------------------------------------------ 5) scroll-progress bar */
+#fx2Prog { position: fixed; left: 0; top: 0; height: 3px; width: 100%; z-index: 89; pointer-events: none; opacity: 0; transform: scaleX(0); transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--theme-primary, #7c3aed), var(--theme-secondary, #ec4899)); border-radius: 0 3px 3px 0; transition: opacity .25s ease; }
+html.fx2-ok:not(.lite):not(.no-anim):not(.scrollfx) #fx2Prog.on { opacity: 1; }
+html.scrollfx #fx2Prog, html.lite #fx2Prog, html.no-anim #fx2Prog { display: none; }
+
+/* ------------------------------------------------------------ 6) card tilt (PC only; the tilt itself is set from JS) */
+html.fx2-ok .fx2-persp { perspective: 1100px; }
+
+/* ------------------------------------------------------------ 7) theme change = soft colour fade (JS adds .fx2-xf for ~0.4s only) */
+html.fx2-xf body, html.fx2-xf body *, html.fx2-xf body *::before, html.fx2-xf body *::after {
+    transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease, fill .35s ease, stroke .35s ease !important;
+}
+
+/* ------------------------------------------------------------ reduced motion: off unless the person forced Full */
+@media (prefers-reduced-motion: reduce) {
+    html:not(.force-anim) .fx2-r, html:not(.force-anim) #heroSlider.fx2-hero .hs-slide > * { opacity: 1 !important; translate: none !important; scale: none !important; transition: none !important; }
+    html:not(.force-anim) .nbo.open, html:not(.force-anim) .nbo.open > .nbo-card, html:not(.force-anim) #nbHeader, html:not(.force-anim) #nbHeader .nbh-tab { animation: none !important; }
+    html:not(.force-anim) #fx2Prog { display: none; }
+}

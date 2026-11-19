@@ -75,10 +75,11 @@
 
         function mergeData(data) {
             let n = 0;
+            const have = new Set(window.allItems.map(i => i.id));
             Object.keys(data || {}).forEach(key => {
                 if (!data[key] || typeof data[key] !== 'object') return;
                 n++;
-                if (!window.allItems.some(i => i.id === key)) window.allItems.push({ id: key, ...data[key] });
+                if (!have.has(key)) { have.add(key); window.allItems.push({ id: key, ...data[key] }); }
                 if (window.oldestKey === null || key < window.oldestKey) window.oldestKey = key;
             });
             window.allItems.sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0) || (y.id > x.id ? 1 : -1));
@@ -445,7 +446,8 @@
         }
         function getDesc(item) { return (item.description || '').replace(/^Chapter: .+? \u2022 /, ''); }
         function typeLabel(item) { const ty = item.type || 'note'; return ty === 'pyq' ? 'PYQ' : t(ty === 'book' ? 'Books' : 'Notes'); }
-        function shortDate(ts) { try { return new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
+        const _dfShort = (() => { try { return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return null; } })();
+        function shortDate(ts) { try { const d = new Date(ts); return _dfShort ? _dfShort.format(d) : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
 
         // Views / downloads counter (used for "Trending"). Best effort: needs the notes_bazar_stats rule.
         window.trackStat = function(id, kind) {
@@ -565,18 +567,33 @@
             const countSpan = document.getElementById(k + 'Count');
             if (countSpan) countSpan.textContent = filtered.length + (window.hasMore ? '+' : '');
 
-            grid.innerHTML = '';
-            if (!window.loaded && window.allItems.length === 0) { grid.innerHTML = skeletonCards(6); return; }
+            if (!window.loaded && window.allItems.length === 0) { grid.__nbc = null; grid.innerHTML = skeletonCards(6); return; }
             if (window.loadError) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800"><p class="text-sm font-semibold mb-3">${esc(t('Could not load data. Check your internet.'))}</p><button onclick="loadCloudData()" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">${esc(t('Retry'))}</button></div>`;
+                grid.__nbc = null; grid.innerHTML = `<div class="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800"><p class="text-sm font-semibold mb-3">${esc(t('Could not load data. Check your internet.'))}</p><button onclick="loadCloudData()" class="dynamic-btn text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">${esc(t('Retry'))}</button></div>`;
                 return;
             }
             if (filtered.length === 0 && (!window.hasMore || filtering)) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">${esc(window.hasMore ? t('Searching...') : t('Nothing found yet'))}</h3></div>`;
+                grid.__nbc = null; grid.innerHTML = `<div class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 class="font-bold text-slate-800 dark:text-slate-200 text-lg">${esc(window.hasMore ? t('Searching...') : t('Nothing found yet'))}</h3></div>`;
                 return;
             }
+            // Reuse the card elements that are already in the grid (same item + same text), so loading the next page
+            // only builds the NEW cards and the old ones do not flash / re-animate.
+            const lang = (typeof curLang === 'string') ? curLang : '';
+            const oldCache = grid.__nbc || new Map(), newCache = new Map(), cards = [];
+            filtered.forEach(item => {
+                const sig = [lang, item.title, item.className, item.subject, item.description, item.chapter, item.fileLink, item.fileName, item.verify, item.uploader, item.type, item.private ? 1 : 0, item.createdAt].join('\u0001');
+                const hit = oldCache.get(item.id);
+                const el = (hit && hit.sig === sig && hit.el) ? hit.el : makeCard(item);
+                newCache.set(item.id, { sig: sig, el: el });
+                cards.push(el);
+            });
+            grid.__nbc = newCache;
+            const kids = Array.prototype.slice.call(grid.children);
+            let keep = 0;
+            while (keep < kids.length && keep < cards.length && kids[keep] === cards[keep]) keep++;
+            for (let j = kids.length - 1; j >= keep; j--) grid.removeChild(kids[j]);
             const frag = document.createDocumentFragment();
-            filtered.forEach(item => frag.appendChild(makeCard(item)));
+            for (let j = keep; j < cards.length; j++) frag.appendChild(cards[j]);
             if (window.hasMore && !filtering) frag.appendChild(makeSentinel());
             grid.appendChild(frag);
             saveFilters();
@@ -2012,7 +2029,8 @@ function sha256(str) {
             wish: { icon: 'fa-lightbulb', color: 'bg-teal-500', label: 'User Request' }
         };
         const ago = ts => { if (!ts) return ''; const m = Math.max(0, Math.floor((Date.now() - ts) / 60000)); if (m < 1) return 'just now'; if (m < 60) return m + ' min'; const h = Math.floor(m / 60); if (h < 24) return h + ' h'; const d = Math.floor(h / 24); return d + ' d'; };
-        const fmtDate = ts => ts ? new Date(ts).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        const _dfFull = (() => { try { return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return null; } })();
+        const fmtDate = ts => { if (!ts) return ''; try { const d = new Date(ts); return _dfFull ? _dfFull.format(d) : d.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
 
         window.adminSwitchTab = function(t) { adminTab = t; renderAdmin(); const b = document.getElementById('aBody'); if (b) b.scrollTop = 0; };
         window.adminSetType = function(t) { adminType = t; renderAdmin(); };
