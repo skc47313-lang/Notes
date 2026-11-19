@@ -73,6 +73,46 @@ html.fx2-xf body, html.fx2-xf body *, html.fx2-xf body *::before, html.fx2-xf bo
     transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease, fill .35s ease, stroke .35s ease !important;
 }
 
+/* ------------------------------------------------------------ 8) intro splash: WHITE design in Light mode (Dark mode keeps its dark intro) */
+html:not(.dark):not(.lite):not(.no-anim) #splash {
+    background:
+        radial-gradient(60% 50% at 50% 46%, rgba(124, 58, 237, .13), transparent 72%),
+        radial-gradient(45% 45% at 12% 88%, rgba(236, 72, 153, .12), transparent 70%),
+        radial-gradient(45% 45% at 92% 8%, rgba(59, 130, 246, .13), transparent 70%),
+        #ffffff;
+}
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-stars {
+    background-image:
+        radial-gradient(2px 2px at 12% 20%, #c4b5fd, transparent), radial-gradient(1.5px 1.5px at 28% 70%, #f0abfc, transparent),
+        radial-gradient(2.5px 2.5px at 44% 12%, #a5b4fc, transparent), radial-gradient(1.5px 1.5px at 63% 82%, #c4b5fd, transparent),
+        radial-gradient(2px 2px at 78% 30%, #f9a8d4, transparent), radial-gradient(1.5px 1.5px at 90% 64%, #93c5fd, transparent),
+        radial-gradient(2px 2px at 7% 58%, #a5b4fc, transparent), radial-gradient(2.5px 2.5px at 54% 52%, #ddd6fe, transparent),
+        radial-gradient(1.5px 1.5px at 36% 90%, #c4b5fd, transparent), radial-gradient(1.5px 1.5px at 95% 10%, #f0abfc, transparent);
+}
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-glow { filter: blur(54px); }
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-ring { border-color: rgba(124, 58, 237, .38); }
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-logo { filter: drop-shadow(0 0 20px rgba(139, 92, 246, .45)) drop-shadow(0 8px 16px rgba(79, 70, 229, .22)); }
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-name i { background: linear-gradient(180deg, #4338ca 15%, #7c3aed 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-name::after { background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .95) 50%, transparent 65%); background-size: 250% 100%; mix-blend-mode: normal; }
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-tag { color: #6d28d9; }
+html:not(.dark):not(.lite):not(.no-anim) #splash .sp-spark { box-shadow: 0 0 8px 1px var(--c); }
+
+/* ------------------------------------------------------------ 9) profile page: stats + option cards arrive one after another */
+@keyframes fx2Item { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
+html:not(.lite):not(.no-anim) #nbPf.open > .nbo-card { animation-name: fx2Fade; animation-duration: .3s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-stats > *, html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > *, html:not(.lite):not(.no-anim) #nbPf.open .nbp-foot > * { animation: fx2Item .55s cubic-bezier(.22, 1, .36, 1) backwards; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-stats > :nth-child(1) { animation-delay: .10s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-stats > :nth-child(2) { animation-delay: .17s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-stats > :nth-child(3) { animation-delay: .24s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-foot > * { animation-delay: .32s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(1) { animation-delay: .14s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(2) { animation-delay: .20s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(3) { animation-delay: .26s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(4) { animation-delay: .32s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(5) { animation-delay: .38s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(6) { animation-delay: .44s; }
+html:not(.lite):not(.no-anim) #nbPf.open .nbp-list > :nth-child(n+7) { animation-delay: .50s; }
+
 /* ------------------------------------------------------------ reduced motion: off unless the person forced Full */
 @media (prefers-reduced-motion: reduce) {
     html:not(.force-anim) .fx2-r, html:not(.force-anim) #heroSlider.fx2-hero .hs-slide > * { opacity: 1 !important; translate: none !important; scale: none !important; transition: none !important; }

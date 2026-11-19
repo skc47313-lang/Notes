@@ -98,7 +98,8 @@ html.dark .nbo-in{border-color:#334155}
 /* ---------- profile sheet ---------- */
 .nbp{padding:0;overflow-x:hidden}
 .nbp-head{display:flex;align-items:center;gap:14px;padding:20px 18px 18px;color:#fff;background:var(--nb-grad)}
-.nbp-head .nb-av{background:#fff;color:var(--theme-primary,#6366f1);border:0;cursor:pointer}
+.nbp-head .nb-av{background-color:#fff;color:var(--theme-primary,#6366f1);border:0;cursor:pointer}   /* background-color, not the shorthand: the shorthand reset the photo size and cropped the DP */
+.nbp-head .nb-av:not(.has-photo){background-image:none}
 .nbp-head .nb-av.has-photo{color:transparent}
 .nbp-cam{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--theme-primary,#6366f1);display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .nbp-who{min-width:0;display:flex;flex-direction:column;line-height:1.35}
@@ -328,7 +329,7 @@ a[href*="instagram.com"] .bg-pink-500{background:linear-gradient(45deg,#f58529 0
   --pad:max(16px,calc((100vw - 1120px) / 2));
   width:100%;max-width:none;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;
   overflow-y:auto;overflow-x:hidden;background:var(--nb-surface);
-  display:grid;align-content:start;
+  display:grid;align-content:start;align-items:start;   /* everything starts at the top, nothing floats to the bottom */
   grid-template-columns:var(--pad) minmax(260px,340px) minmax(0,1fr) var(--pad);
   grid-template-areas:
     "head head head head"
@@ -336,8 +337,9 @@ a[href*="instagram.com"] .bg-pink-500{background:linear-gradient(45deg,#f58529 0
     ". foot  list .";
   grid-template-rows:auto auto 1fr;
 }
-#nbPf .nbp-head{grid-area:head;padding:calc(env(safe-area-inset-top,0px) + 28px) var(--pad) 26px;gap:18px}
-#nbPf .nbp-head .nb-av-lg{width:84px;height:84px;border-radius:26px;font-size:34px}
+#nbPf .nbp-head{grid-area:head;padding:calc(env(safe-area-inset-top,0px) + 64px) var(--pad) 26px;gap:20px}   /* room above for the back / close buttons so they never sit on the photo */
+#nbPf .nbp-head .nb-av-lg{width:96px;height:96px;border-radius:30px;font-size:38px;background-size:cover;background-position:center;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 12px 28px -8px rgba(0,0,0,.45);transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s}
+#nbPf .nbp-head .nb-av-lg:hover{transform:scale(1.05) rotate(-2deg);box-shadow:0 0 0 4px rgba(255,255,255,.55),0 16px 34px -8px rgba(0,0,0,.5)}
 #nbPf .nbp-who b{font-size:22px}
 #nbPf .nbp-who small{font-size:13.5px}
 #nbPf .nbo-x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(14px,calc(var(--pad) - 6px));width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.18);font-size:16px;z-index:5}

@@ -213,6 +213,7 @@
         var c = null; try { c = JSON.parse(ls('nb_lx') || 'null'); } catch (e) {}
         var s = norm(c || { id: ls('nb_layout') }); live = s; pend = JSON.parse(JSON.stringify(s)); applyAll(s, false);
     })();
+    window.nbLayoutsReapply = function () { if (editing) return; applyAll(live, false); };   // account / admin look changed: apply the published layout again on top of it
     loadLive();
     document.addEventListener('visibilitychange', function () { if (!document.hidden) loadLive(); });
 

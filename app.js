@@ -47,6 +47,7 @@
         let selectedFileName = "";
 
         const PAGE_SIZE = 3;          // 3 items at a time, next 3 load automatically on scroll
+        const FIRST_PAGE = 6;         // first screen: newest 6, each fetched on its own and shown the moment it arrives
         window.hasMore = false;
         window.oldestKey = null;
         window.loaded = false;
@@ -60,7 +61,7 @@
                 let p = '?orderBy=%22%24key%22';
                 if (beforeKey) p += '&endAt=' + encodeURIComponent('"' + beforeKey + '"');
                 if (limit) p += '&limitToLast=' + (limit + (beforeKey ? 1 : 0));
-                const data = (await restGet('notes_bazar_data', p)) || {};
+                const data = (await tget('notes_bazar_data', p, 2)) || {};
                 if (beforeKey) delete data[beforeKey];
                 return data;
             } catch (e) {
@@ -86,21 +87,99 @@
             return n;
         }
 
+
+        // ---- one-by-one loading: tiny list of keys first, then every note on its own request, drawn as soon as it arrives ----
+        async function tget(path, params, tries) {
+            tries = tries || 3; let err;
+            for (let i = 0; i < tries; i++) {
+                const ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                const to = ac ? setTimeout(() => ac.abort(), 8000 + i * 6000) : 0;   // a hanging request can never keep the skeletons forever
+                try {
+                    const r = await fetch(DBURL + '/' + path + '.json' + (params || ''), ac ? { signal: ac.signal } : undefined);
+                    if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+                    return await r.json();
+                } catch (e) {
+                    err = e;
+                    if (e && e.status >= 400 && e.status < 500) break;                 // permission / bad request: retrying will not help
+                    if (i < tries - 1) await new Promise(res => setTimeout(res, 300 * (i + 1)));
+                } finally { if (to) clearTimeout(to); }
+            }
+            throw err;
+        }
+        let keysP = null, keysUsed = false;
+        function getKeys(fresh) {
+            if (!keysP || fresh) {
+                const early = !fresh && window.__nbKeysP; window.__nbKeysP = null;      // index.html already asked for the key list while the scripts were loading
+                const asKeys = o => { if (!o || typeof o !== 'object') return []; return Object.keys(o).filter(k => o[k]).sort(); };
+                const own = () => tget('notes_bazar_data', '?shallow=true').then(asKeys);
+                keysP = early ? early.then(asKeys).catch(own) : own();
+                keysP.catch(() => { keysP = null; });
+            }
+            return keysP;
+        }
+        let rT = 0;
+        function softRender() { if (rT) return; rT = requestAnimationFrame(() => { rT = 0; renderAllPages(); }); }
+        function addItem(key, val) {
+            if (!val || typeof val !== 'object') return;
+            if (window.allItems.some(i => i.id === key)) return;
+            window.allItems.push({ id: key, ...val });
+            window.allItems.sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0) || (y.id > x.id ? 1 : -1));
+        }
+        // fetch only the notes that are asked for by id (trending / saved / recent / open-by-link) instead of downloading the whole list
+        async function fetchByIds(ids) {
+            const need = [...new Set(ids)].filter(id => id && /^[-\w]{6,40}$/.test(id) && !window.allItems.some(i => i.id === id)).slice(0, 12);
+            if (!need.length) return 0;
+            await Promise.all(need.map(async id => { try { addItem(id, await tget('notes_bazar_data/' + id, '', 2)); } catch (e) {} }));
+            softRender(); return need.length;
+        }
+        // newest `limit` keys older than beforeKey, 3 requests at a time, each item is handed to onEach the moment it arrives
+        async function fetchOneByOne(beforeKey, limit, onEach) {
+            const keys = await getKeys();
+            const pool = beforeKey ? keys.filter(k => k < beforeKey) : keys;
+            const pick = pool.slice(-limit).reverse();
+            let next = 0, failed = 0;
+            const worker = async () => {
+                while (next < pick.length) {
+                    const k = pick[next++];
+                    try { const v = await tget('notes_bazar_data/' + k); if (v && typeof v === 'object') onEach(k, v); }
+                    catch (e) { failed++; }
+                }
+            };
+            await Promise.all([worker(), worker(), worker()].slice(0, Math.min(3, pick.length) || 1));
+            if (failed) throw new Error('some notes could not be loaded');
+            const last = pick.length ? pick[pick.length - 1] : (beforeKey || null);
+            return { last, more: !!last && keys.some(k => k < last) };
+        }
+
         function saveCache() {
             try {
-                const light = window.allItems.slice(0, PAGE_SIZE).map(i => { const c = { ...i }; delete c.fileData; return c; });
+                const light = window.allItems.slice(0, FIRST_PAGE).map(i => { const c = { ...i }; delete c.fileData; return c; });
                 localStorage.setItem('nb_cache_v4', JSON.stringify({ items: light, hasMore: window.hasMore }));
             } catch (e) {}
         }
 
         // First load: newest 5 only
         window.loadCloudData = async function() {
+            try {   // fast path: every note on its own request, drawn one after another
+                getKeys(keysUsed); keysUsed = true;                      // first call reuses the list index.html already asked for
+                let reset = false;
+                const r = await fetchOneByOne(null, FIRST_PAGE, (k, v) => {
+                    if (!reset) { reset = true; window.allItems = []; window.oldestKey = null; }
+                    addItem(k, v); window.loaded = true; window.loadError = false; softRender();
+                });
+                if (!reset) { window.allItems = []; window.oldestKey = null; }
+                window.oldestKey = r.last; window.hasMore = r.more;
+                window.loadError = false; window.loaded = true;
+                renderAllPages(); renderNotifications(); saveCache();
+                if (homeStats === null) loadStats();
+                return;
+            } catch (fastErr) { console.warn('one-by-one load failed, using the bulk request', fastErr); }
             try {
-                const data = await fetchItems(null, PAGE_SIZE);
+                const data = await fetchItems(null, FIRST_PAGE);
                 window.allItems = [];
                 window.oldestKey = null;
                 const n = mergeData(data);
-                window.hasMore = n >= PAGE_SIZE;
+                window.hasMore = n >= FIRST_PAGE;
                 window.loadError = false;
                 window.loaded = true;
                 renderAllPages();
@@ -121,13 +200,23 @@
             loadingMore = true;
             window.loadFailed = false;
             try {
-                const data = await fetchItems(window.oldestKey, PAGE_SIZE);
-                const n = mergeData(data);
-                window.hasMore = n >= PAGE_SIZE;
+                try {
+                    const r = await fetchOneByOne(window.oldestKey, PAGE_SIZE, (k, v) => { addItem(k, v); softRender(); });
+                    window.oldestKey = r.last; window.hasMore = r.more;
+                } catch (fastErr) {
+                    if (window.oldestKey === null) throw fastErr;
+                    const data = await fetchItems(window.oldestKey, PAGE_SIZE);
+                    const n = mergeData(data);
+                    window.hasMore = n >= PAGE_SIZE;
+                }
             } catch (e) { console.error(e); window.loadFailed = true; }
             loadingMore = false;
             renderAllPages();
         };
+        window.addEventListener('online', () => {
+            if (window.loadError || (window.loaded && !window.allItems.length)) window.loadCloudData();
+            else if (window.loadFailed) window.retryLoadMore();
+        });
         window.retryLoadMore = function() { window.loadFailed = false; window.loadMoreItems(); };
 
         // Needed for search/filters and admin: get everything that is left
@@ -550,18 +639,26 @@
             const subjectVal = sEl ? sEl.value : '';
             const sortMode = (viewOpts[k] && viewOpts[k].sort) || 'latest';
             const savedOnly = !!(viewOpts[k] && viewOpts[k].saved);
-            const filtering = !!(query || classVal || subjectVal || sortMode === 'popular' || savedOnly);
+            // "soft" class = the student's own class that was pre-selected for them (they did not pick it): it must never hide everything
+            const soft = !!(classVal && window.NB && NB.classes && NB.classes.isSoft && NB.classes.isSoft(type));
+            const filtering = !!(query || (classVal && !soft) || subjectVal || sortMode === 'popular' || savedOnly);
 
             // search/filter needs all items -> fetch the rest in background
             if (filtering && window.hasMore) window.loadAllRemaining();
 
-            const filtered = window.allItems.filter(item => {
+            const pick = useClass => window.allItems.filter(item => {
                 if ((item.type || 'note') !== type) return false;
                 const matchesQuery = !query || [item.title, item.subject, getChapter(item), item.description].some(f => (f || '').toLowerCase().includes(query));
-                const matchesClass = classVal === "" || (item.className || '').toLowerCase() === classVal.toLowerCase();
+                const matchesClass = !useClass || classVal === "" || (item.className || '').toLowerCase() === classVal.toLowerCase();
                 const matchesSubject = subjectVal === "" || (item.subject || '').toLowerCase() === subjectVal.toLowerCase();
                 return matchesQuery && matchesClass && matchesSubject && (!savedOnly || isFav(item.id));
             });
+            let filtered = pick(true);
+            // the student's own class has (almost) nothing in what is loaded: show every class instead of an empty / endlessly loading page
+            if (soft && window.loaded && ((filtered.length === 0 && !window.hasMore) || (window.allItems.length >= 12 && filtered.length < 6))) {
+                const all = pick(false);
+                if (all.length) { filtered = all; if (cEl) cEl.value = ''; }
+            }
             if (sortMode === 'popular' && homeStats) filtered.sort((a, b) => statScore(b.id) - statScore(a.id) || (b.createdAt || 0) - (a.createdAt || 0));
 
             const countSpan = document.getElementById(k + 'Count');
@@ -675,7 +772,11 @@
         async function loadStats() {
             try { const s = await restGet('notes_bazar_stats'); homeStats = (s && typeof s === 'object') ? s : {}; }
             catch (e) { homeStats = {}; }
-            if (Object.keys(homeStats).length && window.hasMore) window.loadAllRemaining();
+            if (Object.keys(homeStats).length) {      // trending only needs the few most popular notes, not every note
+                const sc = id => { const x = homeStats[id] || {}; return (x.d || 0) * 3 + (x.v || 0); };
+                const top = Object.keys(homeStats).filter(id => sc(id) > 0).sort((a, b) => sc(b) - sc(a)).slice(0, 6);
+                try { await fetchByIds(top); } catch (e) {}
+            }
             renderTrending();
             paintStats();
             ['note', 'book', 'pyq'].forEach(ty => { const o = viewOpts[TYPE_IDS[ty]]; if (o && o.sort === 'popular') window.filterItems(ty); });
@@ -769,7 +870,7 @@
         };
         window.nbRedownload = async function(id) {
             toast('Fetching the file...', 1800);
-            try { if (!findAnyItem(id) && window.hasMore) await window.loadAllRemaining(); } catch (e) {}
+            try { if (!findAnyItem(id)) await fetchByIds([id]); } catch (e) {}
             if (!findAnyItem(id)) { toast('This item is no longer available.', 3000); return; }
             window.downloadItem(id);
         };
@@ -832,7 +933,7 @@
         }
         function renderMine() {
             const byId = id => window.allItems.find(i => i.id === id);
-            if (!mineTried && window.hasMore && favIds.concat(recentIds).some(id => !byId(id))) { mineTried = true; window.loadAllRemaining(); }
+            if (!mineTried && window.hasMore && favIds.concat(recentIds).some(id => !byId(id))) { mineTried = true; fetchByIds(favIds.concat(recentIds)); }
             if (window.loaded && !window.hasMore && !window.loadError && window.allItems.length) {   // deleted items: clean up
                 const keepF = favIds.filter(byId), keepR = recentIds.filter(byId);
                 if (keepF.length !== favIds.length) { favIds = keepF; LS.set('nb_favs', favIds); }
@@ -1597,7 +1698,7 @@
         };
         window.adminLogout = async function() { lockSafe(); window.privateItems = [];
             try { const { auth, signOut } = await loadSdk(); await signOut(auth); } catch (e) {}
-            document.getElementById('adminDashboardModal').classList.add('hidden'); document.body.classList.remove('a-open');
+            document.getElementById('adminDashboardModal').classList.add('hidden'); document.body.classList.remove('a-open'); try { window.nbLookScope && window.nbLookScope(false); } catch (e) {}
             window.messages = [];
             window.loadCloudData();
         };
@@ -1979,6 +2080,7 @@ function sha256(str) {
 
         window.openAdminDashboard = async function() {
             document.getElementById('adminDashboardModal').classList.remove('hidden');
+            try { window.nbLookScope && window.nbLookScope(true); } catch (e) {}
             document.body.classList.add('a-open');
             renderAdmin();
             await loadMessages();
@@ -1993,7 +2095,7 @@ function sha256(str) {
         window.closeAdminDashboard = function() { lockSafe(); 
             document.body.classList.remove('a-open');
             if (window.NBAdmin && window.NBAdmin.closeAll) window.NBAdmin.closeAll();
-            document.getElementById('adminDashboardModal').classList.add('hidden'); 
+            document.getElementById('adminDashboardModal').classList.add('hidden'); try { window.nbLookScope && window.nbLookScope(false); } catch (e) {}
             window.loadCloudData(); 
         };
 
@@ -3130,6 +3232,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             renderLangButtons();
             applyLang();
             syncSettingsUI();
+            document.addEventListener('nb:look', () => { try { syncSettingsUI(); updateModeButtons(); } catch (e) {} });
             const h0 = location.hash.replace('#', '');
             if (VIEW_TITLES[h0] && h0 !== 'home') showView(h0, false);
             setTimeout(() => { const sp = document.getElementById('splash'); if (sp) sp.remove(); }, 2500);

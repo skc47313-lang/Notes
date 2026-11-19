@@ -283,13 +283,15 @@
 
     /* ---------- what gets synced ---------- */
     var SYNC = { favs: 'nb_favs', recent: 'nb_recent', seen: 'nb_seen', dl: 'nb_dlhist', days: 'nb_days', exam: 'nb_exam', quiz: 'nb_quiz', todo: 'nb_todo' };
-    var applying = false, pushT = 0;
+    var EXTRA = ['nb_habits', 'nb_pomo', 'nb_syl', 'nb_qp_hist'];   /* more personal history: kept as-is in the account, only ever fills what a device is missing (never overwrites) */
+    var applying = false, pushT = 0, pulledOK = false;                 /* pulledOK: this device has read the account at least once, so an empty device can never wipe the cloud copy */
     function asArr(x) { return Array.isArray(x) ? x : (x && typeof x === 'object' ? Object.keys(x).map(function (k) { return x[k]; }) : []); }
     function unionArr(a, b) { var s = {}, o = []; asArr(a).concat(asArr(b)).forEach(function (x) { if (!s[x]) { s[x] = 1; o.push(x); } }); return o; }
     function mergeObj(a, b) { var o = {}, k; a = a || {}; b = b || {}; for (k in b) o[k] = b[k]; for (k in a) o[k] = (o[k] && o[k] < a[k]) ? o[k] : a[k]; return o; }
     function snapshot() {
         var o = { updatedAt: Date.now() };
-        Object.keys(SYNC).forEach(function (k) { var v = LSX.get(SYNC[k], null); o[k] = v == null ? null : v; });
+        Object.keys(SYNC).forEach(function (k) { var v = LSX.get(SYNC[k], null); if (v != null || k === 'exam') o[k] = v == null ? null : v; });   // an empty value never erases the account copy
+        try { var xs = {}; EXTRA.forEach(function (k) { var raw = localStorage.getItem(k); if (raw && raw.length < 150000) xs[k] = raw; }); if (Object.keys(xs).length) o.x = xs; } catch (ex) {}
         try {   // compact copy of the saved test history (no questions), so the admin can see every test a student took
             var th = LSX.get('nb_tests', []);
             o.tests = Array.isArray(th) ? th.slice(0, 40).map(function (r) { return { t: r.t, title: r.title, subj: r.subj, cls: r.cls, mode: r.mode, src: r.src, score: r.score, total: r.total, secs: r.secs }; }) : null;
@@ -299,6 +301,10 @@
     }
     NB.pushNow = async function () {
         if (!NB.loggedIn()) return;
+        if (!pulledOK) {   // first read the account, so a fresh phone merges instead of overwriting
+            try { var c0 = await cloud('GET', ''); pulledOK = true; NB.cloudOk = true; if (c0) applyCloud(c0, 'union'); }
+            catch (e0) { console.warn('sync: could not read the account yet, not pushing', e0); if (e0.status === 401 || e0.status === 403) NB.cloudOk = false; return; }
+        }
         try { await cloud('PATCH', '', snapshot()); LSX.set('nb_sync_ts', Date.now()); NB.cloudOk = true; }
         catch (e) { console.warn('sync push failed', e); if (e.status === 401 || e.status === 403) NB.cloudOk = false; }
     };
@@ -307,7 +313,7 @@
     (function () {
         var orig = Storage.prototype.setItem, keys = {}, k;
         for (k in SYNC) keys[SYNC[k]] = 1;
-        keys[PKEY] = 1; keys['nb_tests'] = 1; keys['nb_act'] = 1;
+        keys[PKEY] = 1; keys['nb_tests'] = 1; keys['nb_act'] = 1; EXTRA.forEach(function (x) { keys[x] = 1; });
         Storage.prototype.setItem = function (key) {
             var r = orig.apply(this, arguments);
             try { if (this === window.localStorage && !applying) { if (aiIsKey(key)) NB.scheduleAiPush(); else if (keys[key]) { if (key === PKEY) NB.scheduleProfilePush(); else NB.schedulePush(); } } } catch (e) {}
@@ -400,6 +406,7 @@
                 if (mode === 'cloud' || !lt || !lt.w || lt.w < ct.w) LSX.set('nb_todo', ct);
                 else if (lt.w === ct.w) { var ids = {}; lt.items = asArr(lt.items); lt.items.forEach(function (x) { ids[x.id] = 1; }); ct.items.forEach(function (x) { if (!ids[x.id]) lt.items.push(x); }); LSX.set('nb_todo', lt); }
             } else if (mode === 'cloud') LSX.del('nb_todo');
+            try { if (c.x && typeof c.x === 'object') EXTRA.forEach(function (k) { if (typeof c.x[k] === 'string' && localStorage.getItem(k) == null) localStorage.setItem(k, c.x[k]); }); } catch (ex) {}
             if (c.exam) LSX.set('nb_exam', c.exam); else if (mode === 'cloud') LSX.del('nb_exam');
             var q = asArr(c.quiz).concat(mode === 'cloud' ? [] : asArr(LSX.get('nb_quiz', [])));
             var sq = {}; q = q.filter(function (x) { if (!x || sq[x.t]) return false; sq[x.t] = 1; return true; }).sort(function (a, b) { return b.t - a.t; });
@@ -417,7 +424,7 @@
         if (!NB.loggedIn()) return;
         try {
             var c = await cloud('GET', '');
-            NB.cloudOk = true;
+            NB.cloudOk = true; pulledOK = true;
             if (c && (mode === 'union' || (c.updatedAt || 0) > (LSX.get('nb_sync_ts', 0) || 0))) applyCloud(c, mode || 'cloud');
             return c;
         } catch (e) { console.warn('sync pull failed', e); if (e.status === 401 || e.status === 403) NB.cloudOk = false; }
@@ -432,6 +439,7 @@
         NB.markDay();
         try {
             await cloud('PUT', '/profile', { name: o.name, cls: o.cls, photo: o.photo || null, userId: o.userId });
+            pulledOK = true;
             await NB.pushNow();
         } catch (e) { NB.cloudOk = false; console.warn(e); }
         return cred.user;
@@ -441,7 +449,7 @@
         var cred = await s.au.signInWithEmailAndPassword(s.auth, emailOf(userId), password);
         LSX.set(AKEY, { uid: cred.user.uid, userId: userId });
         var c = null;
-        try { c = await cloud('GET', ''); NB.cloudOk = true; } catch (e) { NB.cloudOk = false; console.warn(e); }
+        try { c = await cloud('GET', ''); NB.cloudOk = true; pulledOK = true; } catch (e) { NB.cloudOk = false; pulledOK = false; console.warn(e); }
         if (c && c.profile) applyCloud(c, 'union');
         else if (!NB.profile()) NB.setProfile({ name: userId, cls: 'Class 10', photo: '', userId: userId });
         NB.markDay();
@@ -456,7 +464,7 @@
         try { clearTimeout(aiPushT); await NB.aiPush(); } catch (e) {}
         var aiLocal = AI_BASES.map(aiKey).filter(Boolean);   // remember this user's local AI keys before the account is cleared
         try { var s = await authSdk(); await s.au.signOut(s.auth); } catch (e) {}
-        applying = true; PERSONAL.concat(aiLocal, [AI_TS, 'nb_ai_localonly']).forEach(function (k) { LSX.del(k); }); applying = false;
+        pulledOK = false; applying = true; PERSONAL.concat(EXTRA, aiLocal, [AI_TS, 'nb_ai_localonly']).forEach(function (k) { LSX.del(k); }); applying = false;
         if (typeof window.nbApplyAiRemote === 'function') { try { window.nbApplyAiRemote(); } catch (e) {} }
         if (typeof window.nbApplyRemote === 'function') { try { window.nbApplyRemote(); } catch (e) {} }
         if (NB.ui && NB.ui.refreshAll) NB.ui.refreshAll();
@@ -878,6 +886,7 @@
         });
         var det = $('nbFontDet'); if (det) det.addEventListener('toggle', function () { if (det.open) loadFonts(); });
         applyFont(LSX.raw('nb_font') || 'inter', false);
+        document.addEventListener('nb:look', function () { applyFont(LSX.raw('nb_font') || 'inter', false); });
     }
 
     /* =====================================================================
@@ -892,6 +901,7 @@
     var manual = {};
     var classes = NB.classes = {};
     function filterPage(pg) { try { if (typeof window.filterItems === 'function') window.filterItems(pg.type); } catch (e) { console.warn(e); } }
+    classes.isSoft = function (type) { return !manual[type]; };   /* true while the class box still holds the automatic default (the student never chose it) */
     classes.apply = function (force) {
         var p = NB.profile();
         if (force) manual = {};
