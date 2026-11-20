@@ -53,6 +53,25 @@
         window.loaded = false;
         window.loadError = false;
         window.loadFailed = false;
+        // typo-tolerant search: "mathamatics" still finds Mathematics; every word of the query must match some word of the note
+        const SYN = { math: 'maths mathematics ganit', maths: 'math mathematics ganit', mathematics: 'math maths ganit', ganit: 'maths mathematics', sci: 'science vigyan', science: 'sci vigyan', vigyan: 'science', sst: 'social science samajik', hindi: 'hindi', eng: 'english', physics: 'bhautiki', chemistry: 'rasayan', bio: 'biology jeev', pyq: 'previous question paper', paper: 'pyq question' };
+        function edit1(a, b, max) {
+            if (Math.abs(a.length - b.length) > max) return false;
+            const m = a.length, n = b.length; let prev = Array.from({ length: n + 1 }, (_, j) => j);
+            for (let i = 1; i <= m; i++) { const cur = [i]; let lo = i; for (let j = 1; j <= n; j++) { const v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); cur.push(v); if (v < lo) lo = v; } if (lo > max) return false; prev = cur; }
+            return prev[n] <= max;
+        }
+        window.nbFuzzy = function(query, fields) {
+            const q = (query || '').toLowerCase().trim(); if (!q) return true;
+            const text = fields.map(f => (f || '') + '').join(' ').toLowerCase();
+            if (text.includes(q)) return true;
+            const words = text.split(/[^a-z0-9ऀ-ॿ]+/).filter(Boolean);
+            return q.split(/\s+/).every(tok => {
+                if (text.includes(tok)) return true;
+                const alts = [tok].concat((SYN[tok] || '').split(' ').filter(Boolean));
+                return alts.some(t => text.includes(t)) || (tok.length >= 4 && words.some(w => { const max = tok.length >= 8 ? 2 : 1; return (w.length >= 3 && (w.startsWith(tok) || tok.startsWith(w) && w.length >= tok.length - 1)) || edit1(tok, w.slice(0, tok.length + 1), max) || edit1(tok, w, max); }));
+            });
+        };
         let loadingMore = false;
 
         // beforeKey: only items older than this key. limit: how many (undefined = all)
@@ -154,8 +173,10 @@
 
         function saveCache() {
             try {
-                const light = window.allItems.slice(0, FIRST_PAGE).map(i => { const c = { ...i }; delete c.fileData; return c; });
-                localStorage.setItem('nb_cache_v4', JSON.stringify({ items: light, hasMore: window.hasMore }));
+                const light = window.allItems.slice(0, 30).map(i => { const c = { ...i }; delete c.fileData; return c; });
+                let txt = JSON.stringify({ items: light, hasMore: window.hasMore, t: Date.now() });
+                if (txt.length > 700000) txt = JSON.stringify({ items: light.slice(0, FIRST_PAGE), hasMore: window.hasMore, t: Date.now() });
+                localStorage.setItem('nb_cache_v4', txt);
             } catch (e) {}
         }
 
@@ -189,6 +210,7 @@
                 if (homeStats === null) loadStats();
             } catch (error) {
                 console.error("Error loading data: ", error);
+                if (window.allItems.length && !window.__nbOffToast) { window.__nbOffToast = 1; try { toast('No internet: showing your last saved notes.', 3200); } catch (e) {} }
                 window.loaded = true;
                 window.loadError = window.allItems.length === 0;
                 renderAllPages();
@@ -212,7 +234,7 @@
                 }
             } catch (e) { console.error(e); window.loadFailed = true; }
             loadingMore = false;
-            renderAllPages();
+            renderAllPages(); saveCache();
         };
         window.addEventListener('online', () => {
             if (window.loadError || (window.loaded && !window.allItems.length)) window.loadCloudData();
@@ -649,7 +671,7 @@
 
             const pick = useClass => window.allItems.filter(item => {
                 if ((item.type || 'note') !== type) return false;
-                const matchesQuery = !query || [item.title, item.subject, getChapter(item), item.description].some(f => (f || '').toLowerCase().includes(query));
+                const matchesQuery = !query || window.nbFuzzy(query, [item.title, item.subject, getChapter(item), item.description]);
                 const matchesClass = !useClass || classVal === "" || (item.className || '').toLowerCase() === classVal.toLowerCase();
                 const matchesSubject = subjectVal === "" || (item.subject || '').toLowerCase() === subjectVal.toLowerCase();
                 return matchesQuery && matchesClass && matchesSubject && (!savedOnly || isFav(item.id));

@@ -23,11 +23,12 @@
         var tests = arr(jget('nb_quiz', []));
         var best = 0, cur = 0;
         try { best = NB.bestStreak ? NB.bestStreak() : 0; cur = NB.streak ? NB.streak() : 0; } catch (e) {}
+        var pomo = 0, po = jget('nb_pomo', {}); Object.keys(po || {}).forEach(function (k) { pomo += +po[k] || 0; });
         var top = 0; tests.forEach(function (t) { if (t && t.total) top = Math.max(top, t.score / t.total); });
-        return { days: days, dl: dl, saved: saved, tests: tests, best: best, cur: cur, top: top };
+        return { days: days, dl: dl, saved: saved, tests: tests, best: best, cur: cur, top: top, pomo: pomo };
     }
     function levelOf(s) {
-        var xp = s.days.length * 10 + s.dl * 5 + s.tests.length * 15 + s.saved * 2 + s.best * 5;
+        var xp = s.days.length * 10 + s.dl * 5 + s.tests.length * 15 + s.saved * 2 + s.best * 5 + s.pomo * 3;
         var L = Math.floor(Math.sqrt(xp / 25)) + 1, lo = (L - 1) * (L - 1) * 25, hi = L * L * 25;
         return { xp: xp, level: L, pct: Math.max(0, Math.min(100, Math.round((xp - lo) / (hi - lo) * 100))), next: hi - xp };
     }
@@ -36,7 +37,7 @@
         return [
             ['🔥', '3-day streak', s.best >= 3], ['⚡', 'Week warrior', s.best >= 7], ['🏆', 'Month master', s.best >= 30],
             ['📥', 'First download', s.dl >= 1], ['📚', 'Collector', s.dl >= 10], ['❤️', 'Bookworm', s.saved >= 5],
-            ['📝', 'Test taker', s.tests.length >= 1], ['🎯', 'Quiz pro', s.tests.length >= 10], ['🌟', 'High scorer', s.top >= 0.9]
+            ['📝', 'Test taker', s.tests.length >= 1], ['🎯', 'Quiz pro', s.tests.length >= 10], ['🌟', 'High scorer', s.top >= 0.9], ['⏱️', 'Focus starter', s.pomo >= 1], ['🧠', 'Deep focus', s.pomo >= 25]
         ];
     }
 
@@ -95,7 +96,7 @@
             w = document.createElement('div'); w.id = 'plxWrap'; w.className = 'plx-wrap';
             w.innerHTML = '<button type="button" class="nbp-row" data-plx="folders"><i class="fa-regular fa-folder-open"></i><div><b>Saved folders</b><small id="plxFolderSub">Sort saved notes into your own folders</small></div></button>' +
                 '<button type="button" class="nbp-row" data-plx="share"><i class="fa-solid fa-share-nodes"></i><div><b>Share my progress</b><small>Make a picture of your streak and level</small></div></button>' +
-                '<section class="plx-card" id="plxLevel"></section><section class="plx-card" id="plxCal"></section><section class="plx-card" id="plxGraph"></section>';
+                '<section class="plx-card plx-cloud" id="plxCloud" hidden></section><section class="plx-card" id="plxLevel"></section><section class="plx-card" id="plxCal"></section><section class="plx-card" id="plxGraph"></section><section class="plx-card" id="plxBoard"></section>';
             list.appendChild(w);
             w.addEventListener('click', function (e) {
                 var b = e.target.closest('[data-plx]'); if (!b) return;
@@ -104,9 +105,13 @@
                 else if (a === 'calNext') { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); $('plxCal').innerHTML = cardCal(stats()); }
                 else if (a === 'folders') openFolders();
                 else if (a === 'share') shareCard();
+                else if (a === 'cloudRetry') { try { NB.pull && NB.pull('cloud'); } catch (e) {} NB.toast('Trying again…', 1800); setTimeout(build, 2500); }
+                else if (a === 'boardJoin') { jset('nb_board_on', 1); boardSync(true); }
+                else if (a === 'boardLeave') { jset('nb_board_on', 0); paintBoard(null); }
+                else if (a === 'boardRefresh') boardSync(true);
             });
         }
-        $('plxLevel').innerHTML = cardLevel(s); $('plxCal').innerHTML = cardCal(s); $('plxGraph').innerHTML = cardGraph(s);
+        paintCloud(); paintBoard(boardCache); $('plxLevel').innerHTML = cardLevel(s); $('plxCal').innerHTML = cardCal(s); $('plxGraph').innerHTML = cardGraph(s);
         var fo = jget('nb_folders', {}), n = Object.keys(fo).length, fs = $('plxFolderSub'); if (fs) fs.textContent = n ? n + (n === 1 ? ' folder' : ' folders') + ' · tap to open' : 'Sort saved notes into your own folders';
     }
 
@@ -188,8 +193,9 @@
     /* ------------------------------------------------------------------ continue reading (home) */
     function remember(id) {
         var it = itemById(id); if (!it || it.private) return;
+        try { logOpen(id); } catch (e) {}
         jset('nb_cont', { id: id, title: it.title || 'Study material', type: it.type || 'note', cls: it.className || '', sub: it.subject || '', t: Date.now() });
-        paintCont();
+        paintCont(); paintGoal(true);
     }
     function paintCont() {
         var c = jget('nb_cont', null), box = $('plxCont'), home = $('homeView');
@@ -257,11 +263,109 @@
     }
 
     /* ------------------------------------------------------------------ start */
+    /* ------------------------------------------------------------------ cloud-sync warning (profile) */
+    function paintCloud() {
+        var c = $('plxCloud'); if (!c) return;
+        var signed = false; try { signed = !!(NB.acct && NB.acct()) || !!jget('nb_acct', null); } catch (e) {}
+        if (NB.cloudOk === false) {
+            c.hidden = false;
+            c.innerHTML = '<div class="plx-warn"><i class="fa-solid fa-cloud-bolt"></i><div><b>Cloud sync is off</b><small>Your streak and history are saved only on this device right now. The site admin has to publish the Firebase rules once.</small></div><button type="button" data-plx="cloudRetry">Try again</button></div>';
+        } else if (!c.hidden) { c.hidden = true; c.innerHTML = ''; }
+    }
+
+    /* ------------------------------------------------------------------ weekly leaderboard (opt-in, name + points only) */
+    var boardCache = null, boardBusy = false;
+    function weekKey(d) { d = d || new Date(); var t = new Date(d.getFullYear(), d.getMonth(), d.getDate()); var dow = (t.getDay() + 6) % 7; t.setDate(t.getDate() - dow); return key(t); }
+    function weekPoints() {
+        var wk = weekKey(), pts = 0, d0 = new Date(wk + 'T00:00:00');
+        var days = arr(jget('nb_days', [])), po = jget('nb_pomo', {}), lg = jget('nb_goal_log', {});
+        for (var i = 0; i < 7; i++) { var d = new Date(d0); d.setDate(d0.getDate() + i); var k = key(d);
+            if (days.indexOf(k) >= 0) pts += 10; pts += 5 * (+(po && po[k]) || 0); pts += 3 * arr(lg && lg[k]).length; }
+        return pts;
+    }
+    var DBURL = 'https://notes-market-d309b-default-rtdb.firebaseio.com';
+    async function boardSync(show) {
+        if (boardBusy || !jget('nb_board_on', 0)) return paintBoard(boardCache); boardBusy = true;
+        try {
+            var a = NB.authInfo ? await NB.authInfo() : null;
+            if (!a) { boardCache = { err: 'login' }; return paintBoard(boardCache); }
+            var me = (NB.profile && NB.profile()) || {}, wk = weekKey();
+            var put = await fetch(DBURL + '/notes_bazar_board/' + a.uid + '.json?auth=' + encodeURIComponent(a.token), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ n: String(me.name || 'Student').slice(0, 24), p: weekPoints(), w: wk, t: Date.now() }) });
+            if (!put.ok) { boardCache = { err: put.status === 401 || put.status === 403 ? 'rules' : 'net' }; return paintBoard(boardCache); }
+            var r = await fetch(DBURL + '/notes_bazar_board.json?auth=' + encodeURIComponent(a.token));
+            if (!r.ok) { boardCache = { err: 'rules' }; return paintBoard(boardCache); }
+            var all = await r.json() || {}, rows = Object.keys(all).map(function (u) { var v = all[u] || {}; return { u: u, n: v.n, p: +v.p || 0, w: v.w }; }).filter(function (x) { return x.w === wk && x.n; }).sort(function (x, y) { return y.p - x.p; });
+            boardCache = { rows: rows.slice(0, 10), me: a.uid, rank: rows.findIndex(function (x) { return x.u === a.uid; }) + 1, total: rows.length };
+        } catch (e) { boardCache = { err: 'net' }; }
+        boardBusy = false; paintBoard(boardCache);
+    }
+    function paintBoard(b) {
+        var el = $('plxBoard'); if (!el) return;
+        var h = '<div class="plx-ch"><b><i class="fa-solid fa-ranking-star"></i> Weekly leaderboard</b>';
+        if (!jget('nb_board_on', 0)) { el.innerHTML = h + '</div><p class="plx-note">Compete with other students this week. Only your name and points are shown. Points: 10 per study day, 5 per focus session, 3 per note opened.</p><button type="button" class="plx-btn" data-plx="boardJoin">Join leaderboard</button>'; return; }
+        h += '<span><button type="button" data-plx="boardRefresh" aria-label="Refresh"><i class="fa-solid fa-rotate"></i></button></span></div>';
+        if (!b) { el.innerHTML = h + '<p class="plx-note">Loading…</p>'; boardSync(); return; }
+        if (b.err === 'rules') { el.innerHTML = h + '<p class="plx-note">Leaderboard is not enabled yet. The site admin has to add the <code>notes_bazar_board</code> rule in Firebase.</p><button type="button" class="plx-btn ghost" data-plx="boardLeave">Hide</button>'; return; }
+        if (b.err) { el.innerHTML = h + '<p class="plx-note">' + (b.err === 'login' ? 'Log in to join the leaderboard.' : 'Could not load right now. Check your internet.') + '</p><button type="button" class="plx-btn ghost" data-plx="boardLeave">Hide</button>'; return; }
+        var medal = ['🥇', '🥈', '🥉'];
+        h += '<ol class="plx-lb">' + b.rows.map(function (r, i) { return '<li' + (r.u === b.me ? ' class="me"' : '') + '><span>' + (medal[i] || (i + 1)) + '</span><b>' + esc(r.n) + (r.u === b.me ? ' (you)' : '') + '</b><em>' + r.p + ' pts</em></li>'; }).join('') + '</ol>';
+        h += '<p class="plx-note">' + (b.rank ? 'Your rank this week: #' + b.rank + ' of ' + b.total : 'Open a note to get on the board.') + ' · resets every Monday</p><button type="button" class="plx-btn ghost" data-plx="boardLeave">Leave</button>';
+        el.innerHTML = h;
+    }
+
+    /* ------------------------------------------------------------------ home: daily goal ring + study nudge */
+    function logOpen(id) {
+        var lg = jget('nb_goal_log', {}), k = key(new Date()), a = arr(lg[k]);
+        if (a.indexOf(id) < 0) { a.push(id); lg[k] = a; var ks = Object.keys(lg).sort(); while (ks.length > 14) delete lg[ks.shift()]; jset('nb_goal_log', lg); }
+    }
+    function goalState() {
+        var n = +jget('nb_goal', 2) || 2, c = arr((jget('nb_goal_log', {}) || {})[key(new Date())]).length;
+        return { n: n, c: c, done: c >= n };
+    }
+    function confetti() {
+        if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var box = document.createElement('div'); box.className = 'plx-conf'; var cols = ['#7c3aed', '#a855f7', '#3b82f6', '#22c55e', '#f59e0b', '#ef4444'];
+        for (var i = 0; i < 44; i++) { var p = document.createElement('i'); p.style.cssText = 'left:' + (Math.random() * 100) + '%;background:' + cols[i % 6] + ';animation-delay:' + (Math.random() * .4) + 's;animation-duration:' + (1.4 + Math.random() * 1.1) + 's;transform:rotate(' + (Math.random() * 360) + 'deg)'; box.appendChild(p); }
+        document.body.appendChild(box); setTimeout(function () { box.remove(); }, 3000);
+    }
+    function paintGoal(celebrate) {
+        var home = $('homeView'); if (!home) return;
+        var g = goalState(), el = $('plxGoal');
+        if (!el) { el = document.createElement('section'); el.id = 'plxGoal'; el.className = 'plx-goal'; home.insertBefore(el, home.firstChild);
+            el.addEventListener('click', function (e) { if (e.target.closest('[data-goal]')) { var o = [1, 2, 3, 5], n = +jget('nb_goal', 2) || 2; jset('nb_goal', o[(o.indexOf(n) + 1) % o.length]); paintGoal(); } else if (e.target.closest('[data-remind]')) remindOn(); }); }
+        var r = 24, C = 2 * Math.PI * r, off = C * (1 - Math.min(1, g.c / g.n));
+        var hr = new Date().getHours(), late = !g.done && hr >= 17;
+        var rem = ('Notification' in window) && Notification.permission !== 'denied' && !jget('nb_remind', 0) ? '<button type="button" class="plx-gb" data-remind>🔔 Remind me</button>' : '';
+        el.className = 'plx-goal' + (g.done ? ' done' : '');
+        el.innerHTML = '<svg viewBox="0 0 60 60" width="58" height="58" aria-hidden="true"><circle cx="30" cy="30" r="' + r + '" fill="none" stroke="currentColor" stroke-opacity=".15" stroke-width="6"/><circle cx="30" cy="30" r="' + r + '" fill="none" stroke="url(#plxG)" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 30 30)"/><defs><linearGradient id="plxG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs></svg>' +
+            '<div class="plx-gt"><b>' + (g.done ? 'Daily goal done! 🎉' : 'Today\'s goal') + '</b><small>' + Math.min(g.c, g.n) + ' / ' + g.n + ' notes opened' + (late ? ' · evening reminder: finish it today' : '') + '</small></div>' +
+            rem + '<button type="button" class="plx-gb" data-goal aria-label="Change daily goal">Goal: ' + g.n + '</button>';
+        if (celebrate && g.done && jget('nb_goal_done', '') !== key(new Date())) { jset('nb_goal_done', key(new Date())); confetti(); NB.toast('Daily goal complete! Keep the streak going 🔥', 3200); }
+    }
+    function remindOn() {
+        if (!('Notification' in window)) { NB.toast('This browser does not support reminders.', 2600); return; }
+        Notification.requestPermission().then(function (p) { if (p === 'granted') { jset('nb_remind', 1); NB.toast('Reminder on. Keep the site open in a tab and I will nudge you at 8 PM.', 3600); armReminder(); } paintGoal(); });
+    }
+    var remT = 0;
+    function armReminder() {
+        clearTimeout(remT);
+        if (!jget('nb_remind', 0) || !('Notification' in window) || Notification.permission !== 'granted') return;
+        var now = new Date(), at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0), ms = at - now;
+        if (ms < 0 || ms > 20 * 3600e3) return;
+        remT = setTimeout(function () {
+            var g = goalState(); if (g.done || jget('nb_rem_d', '') === key(new Date())) return;
+            jset('nb_rem_d', key(new Date()));
+            var body = 'Your daily goal is still pending (' + g.c + '/' + g.n + '). Open a note to keep your ' + (NB.streak ? NB.streak() : 0) + '-day streak!';
+            try { if (navigator.serviceWorker && navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(function (r) { r.showNotification('Notes Bazar', { body: body, icon: 'icon-192.png', tag: 'nb-goal' }); }); else new Notification('Notes Bazar', { body: body }); } catch (e) { try { new Notification('Notes Bazar', { body: body }); } catch (e2) {} }
+        }, ms);
+    }
+
     function boot() {
         var mo = new MutationObserver(function () {
             var pf = $('nbPf');
             if (pf && !pf.__plx) { pf.__plx = 1; new MutationObserver(function () { if (pf.classList.contains('open')) { calMonth = null; build(); } }).observe(pf, { attributes: true, attributeFilter: ['class'] }); if (pf.classList.contains('open')) { calMonth = null; build(); } }
             if ($('homeView') && !$('plxCont') && jget('nb_cont', null)) paintCont();
+            if ($('homeView') && !$('plxGoal')) paintGoal();
             voice();
         });
         mo.observe(document.body, { childList: true, subtree: true });
@@ -270,7 +374,7 @@
                 var o = window.openPreview; var w = function (id) { var r = o.apply(this, arguments); try { remember(id); } catch (e) {} return r; }; w.__plx = 1; window.openPreview = w; clearInterval(t);
             } else if (++tries > 100) clearInterval(t);
         }, 150);
-        paintCont(); voice(); touchBits();
+        paintCont(); paintGoal(); armReminder(); voice(); touchBits();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
