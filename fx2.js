@@ -186,3 +186,30 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
+
+/* ---------- intro splash: circle opens from the centre and reveals the website ---------- */
+(function () {
+    var root = document.documentElement, t0 = Date.now();
+    function go() {
+        var sp = document.getElementById('splash');
+        if (!sp || !sp.isConnected || sp.classList.contains('skip')) return;
+        if (root.classList.contains('no-splash') || root.classList.contains('lite') || root.classList.contains('no-anim')) return;
+        var w = innerWidth, h = innerHeight, R = Math.sqrt(w * w + h * h) / 2 + 6, D = 950, st = null;
+        var edge = document.createElement('div'); edge.id = 'spEdge'; document.body.appendChild(edge);
+        sp.style.setProperty('--rp', '0px'); sp.classList.add('sp-iris');
+        function ease(x) { return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+        function fin() { try { sp.remove(); edge.remove(); } catch (e) {} }
+        function step(ts) {
+            if (!sp.isConnected || sp.classList.contains('skip')) { try { edge.remove(); } catch (e) {} return; }
+            if (st === null) st = ts;
+            var k = Math.min(1, (ts - st) / D), r = ease(k) * R;
+            sp.style.setProperty('--rp', r.toFixed(1) + 'px');
+            edge.style.transform = 'scale(' + (r / 100).toFixed(3) + ')';
+            edge.style.opacity = k > .8 ? String(Math.max(0, (1 - k) / .2)) : '1';
+            if (k < 1) requestAnimationFrame(step); else fin();
+        }
+        requestAnimationFrame(step);
+    }
+    var wait = Math.max(0, 2350 - (Date.now() - t0));
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(go, wait); }); else setTimeout(go, wait);
+})();

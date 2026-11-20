@@ -132,6 +132,7 @@
             await Promise.all(need.map(async id => { try { addItem(id, await tget('notes_bazar_data/' + id, '', 2)); } catch (e) {} }));
             softRender(); return need.length;
         }
+        window.nbEnsureItems = ids => fetchByIds(ids || []);   // used by plus.js (folders / continue reading)
         // newest `limit` keys older than beforeKey, 3 requests at a time, each item is handed to onEach the moment it arrives
         async function fetchOneByOne(beforeKey, limit, onEach) {
             const keys = await getKeys();
@@ -3235,7 +3236,7 @@ Emotional safety: if the student sounds stressed, sad or lonely, listen first, b
             document.addEventListener('nb:look', () => { try { syncSettingsUI(); updateModeButtons(); } catch (e) {} });
             const h0 = location.hash.replace('#', '');
             if (VIEW_TITLES[h0] && h0 !== 'home') showView(h0, false);
-            setTimeout(() => { const sp = document.getElementById('splash'); if (sp) sp.remove(); }, 2500);
+            setTimeout(() => { const sp = document.getElementById('splash'); if (sp) sp.remove(); const e = document.getElementById('spEdge'); if (e) e.remove(); }, 4300);
             // tap outside to close (only popups that have no form to lose)
             const OVERLAY_CLOSE = ['downloadsModal', 'reportModal', 'mobileMenuModal', 'settingsModal', 'themeModal', 'notificationModal', 'previewModal', 'langModal', 'aiModal'];
             document.addEventListener('click', ev => { const id = ev.target && ev.target.id; if (id && OVERLAY_CLOSE.includes(id)) closeModal(id); });

@@ -283,7 +283,7 @@
 
     /* ---------- what gets synced ---------- */
     var SYNC = { favs: 'nb_favs', recent: 'nb_recent', seen: 'nb_seen', dl: 'nb_dlhist', days: 'nb_days', exam: 'nb_exam', quiz: 'nb_quiz', todo: 'nb_todo' };
-    var EXTRA = ['nb_habits', 'nb_pomo', 'nb_syl', 'nb_qp_hist'];   /* more personal history: kept as-is in the account, only ever fills what a device is missing (never overwrites) */
+    var EXTRA = ['nb_habits', 'nb_pomo', 'nb_syl', 'nb_qp_hist', 'nb_folders', 'nb_cont'];   /* more personal history: kept as-is in the account, only ever fills what a device is missing (never overwrites) */
     var applying = false, pushT = 0, pulledOK = false;                 /* pulledOK: this device has read the account at least once, so an empty device can never wipe the cloud copy */
     function asArr(x) { return Array.isArray(x) ? x : (x && typeof x === 'object' ? Object.keys(x).map(function (k) { return x[k]; }) : []); }
     function unionArr(a, b) { var s = {}, o = []; asArr(a).concat(asArr(b)).forEach(function (x) { if (!s[x]) { s[x] = 1; o.push(x); } }); return o; }
