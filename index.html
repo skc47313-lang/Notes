@@ -140,7 +140,7 @@
     <script src="yt.js?v=20261107a" defer></script>
     <script src="fx.js?v=20261107b" defer></script>
     <script src="motion.js?v=20261107c" defer></script>
-    <script src="fx2.js?v=20261121a" defer></script>
+    <script src="fx2.js?v=20261121b" defer></script>
     <script src="plus.js?v=20261120c" defer></script>
     <script src="admin.js?v=20261118a" defer></script>
     <script src="layouts.js?v=20261119a" defer></script>
@@ -175,15 +175,15 @@
   <path d="M47 14.2v8" stroke="#fde68a" stroke-width="1.6" stroke-linecap="round"/><circle cx="47" cy="24" r="1.7" fill="#fde68a"/>
 </symbol></svg>
     <!-- Intro splash: logo pops, then the name slides out of it, then Home is shown -->
-    <div id="splash" aria-hidden="true" onclick="skipSplash()">
-        <span class="sp-fx sp-stars"></span><span class="sp-fx sp-glow"></span>
-        <span class="sp-fx sp-ring" style="--d:.3s"></span><span class="sp-fx sp-ring" style="--d:.5s"></span><span class="sp-fx sp-ring" style="--d:.72s"></span>
-        <span class="sp-fx sp-spark" style="--a:0deg;--x:120px;--c:#f0abfc"></span><span class="sp-fx sp-spark" style="--a:30deg;--x:165px;--c:#a78bfa"></span><span class="sp-fx sp-spark" style="--a:60deg;--x:210px;--c:#67e8f9"></span><span class="sp-fx sp-spark" style="--a:90deg;--x:120px;--c:#fde68a"></span><span class="sp-fx sp-spark" style="--a:120deg;--x:165px;--c:#f9a8d4"></span><span class="sp-fx sp-spark" style="--a:150deg;--x:210px;--c:#c4b5fd"></span><span class="sp-fx sp-spark" style="--a:180deg;--x:120px;--c:#f0abfc"></span><span class="sp-fx sp-spark" style="--a:210deg;--x:165px;--c:#a78bfa"></span><span class="sp-fx sp-spark" style="--a:240deg;--x:210px;--c:#67e8f9"></span><span class="sp-fx sp-spark" style="--a:270deg;--x:120px;--c:#fde68a"></span><span class="sp-fx sp-spark" style="--a:300deg;--x:165px;--c:#f9a8d4"></span><span class="sp-fx sp-spark" style="--a:330deg;--x:210px;--c:#c4b5fd"></span>
-        <div class="sp-group">
-            <svg class="sp-logo" width="56" height="56" viewBox="0 0 64 64"><use href="#nbLogo"/></svg>
-            <div class="sp-text"><div class="sp-in"><span class="sp-name" aria-label="Notes Bazar"><i style="--i:0">N</i><i style="--i:1">o</i><i style="--i:2">t</i><i style="--i:3">e</i><i style="--i:4">s</i><i style="--i:5">&nbsp;</i><i style="--i:6">B</i><i style="--i:7">a</i><i style="--i:8">z</i><i style="--i:9">a</i><i style="--i:10">r</i></span><span class="sp-tag">Student Study Hub</span></div></div>
+    <div id="splash" class="nbs" aria-hidden="true" onclick="skipSplash()">
+        <span class="nbs-bg"></span>
+        <div class="nbs-stage">
+            <div class="nbs-mark"><span class="nbs-ring"></span><span class="nbs-ring r2"></span><svg class="nbs-logo" width="88" height="88" viewBox="0 0 64 64"><use href="#nbLogo"/></svg></div>
+            <div class="nbs-name"><span class="nbs-w"><span>Notes</span></span><span class="nbs-w"><span>Bazar</span></span></div>
+            <p class="nbs-tag">Student Study Hub</p>
+            <div class="nbs-chips"><b>Notes</b><b>Books</b><b>PYQ</b></div>
         </div>
-        <span class="sp-fx sp-dots"><b></b><b></b><b></b></span>
+        <div class="nbs-bar"><i></i></div>
     </div>
 
 
